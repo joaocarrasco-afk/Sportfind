@@ -1,3 +1,9 @@
+// To do List
+// Organizar páginas
+// Adicionar páginas que estão no figma
+// Tem um bug que o João falou mas eu não entendi, tem que estar vendo
+// Adicionar cores, animações, dark mode, etc.
+
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, TextInput, Modal, SafeAreaView, ScrollView, Image } from 'react-native';
 import { WebView } from 'react-native-webview';
