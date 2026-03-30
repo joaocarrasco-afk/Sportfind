@@ -3,6 +3,8 @@
 // Adicionar páginas que estão no figma
 // Tem um bug que o João falou mas eu não entendi, tem que estar vendo
 // Adicionar cores, animações, dark mode, etc.
+// Mudar animação de quando vc clica nas configurações e sobe uma tela preta esquisita
+// Tirar todos os emojis
 
 import { useEffect, useState } from 'react';
 import { Platform, View, Text, TouchableOpacity, FlatList, TextInput, Modal, SafeAreaView, ScrollView, Image } from 'react-native';
