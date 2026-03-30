@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, TextInput, Modal, SafeAreaView, ScrollView, Image } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Platform, View, Text, TouchableOpacity, FlatList, TextInput, Modal, SafeAreaView, ScrollView, Image } from 'react-native';
 import { WebView } from 'react-native-webview';
 import estilos from './styles';
 
@@ -41,11 +41,22 @@ const htmlMapa = (locais) => `
   </head><body><div id="mapa"></div><script>
     const mapa = L.map('mapa',{zoomControl:false}).setView([-23.5445,-46.3106],15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
+    function sendToApp(payload) {
+      try {
+        if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+          window.ReactNativeWebView.postMessage(String(payload));
+          return;
+        }
+        if (window.parent && window.parent !== window && window.parent.postMessage) {
+          window.parent.postMessage(String(payload), '*');
+        }
+      } catch (e) {}
+    }
     ${locais.map(l => `
       L.marker([${l.lat},${l.lng}],{icon:L.divIcon({
         html:'<div style="background:${l.cor};width:36px;height:36px;border-radius:50%;border:2px solid white;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 6px rgba(0,0,0,0.3)">${l.emoji}</div>',
         iconSize:[36,36],iconAnchor:[18,18],className:''
-      })}).addTo(mapa).on('click',()=>window.ReactNativeWebView.postMessage('${l.id}'));
+      })}).addTo(mapa).on('click',()=>sendToApp('${l.id}'));
     `).join('')}
   </script></body></html>
 `;
@@ -77,6 +88,17 @@ export default function App() {
   const [filtroAcesso, setFiltroAcesso]   = useState('Todos');
   const [mostrarFiltro, setMostrarFiltro] = useState(false);
   const [busca, setBusca]                 = useState('');
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const handler = (event) => {
+      const id = Number(event?.data);
+      if (!Number.isFinite(id)) return;
+      setLocal(LOCAIS.find(l => l.id === id) ?? null);
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, []);
 
   const locaisFiltrados = LOCAIS.filter(l =>
     (filtroTipo   === 'Todos' || l.tipo   === filtroTipo) &&
@@ -226,13 +248,23 @@ export default function App() {
     <SafeAreaView style={{ flex: 1 }}>
 
       {/* Mapa */}
-      <WebView
-        style={{ flex: 1 }}
-        source={{ html: htmlMapa(locaisFiltrados) }}
-        onMessage={e => setLocal(LOCAIS.find(l => l.id === Number(e.nativeEvent.data)))}
-        javaScriptEnabled
-        originWhitelist={['*']}
-      />
+      {Platform.OS === 'web' ? (
+        <View style={{ flex: 1 }}>
+          <iframe
+            title="Mapa"
+            style={{ border: 0, width: '100%', height: '100%' }}
+            srcDoc={htmlMapa(locaisFiltrados)}
+          />
+        </View>
+      ) : (
+        <WebView
+          style={{ flex: 1 }}
+          source={{ html: htmlMapa(locaisFiltrados) }}
+          onMessage={e => setLocal(LOCAIS.find(l => l.id === Number(e.nativeEvent.data)))}
+          javaScriptEnabled
+          originWhitelist={['*']}
+        />
+      )}
 
       {/* Botão Busca */}
       <TouchableOpacity style={estilos.botaoBusca} onPress={() => setTela('busca')}>
