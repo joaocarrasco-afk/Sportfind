@@ -1,0 +1,36 @@
+import { colors } from '../tokens';
+
+export const mapStyles = {
+  floatingButtonLeft: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    width: 48,
+    height: 48,
+    backgroundColor: colors.white,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  floatingButtonRight: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    width: 48,
+    height: 48,
+    backgroundColor: colors.white,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+  },
+};

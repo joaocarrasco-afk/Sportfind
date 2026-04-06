@@ -1,51 +1,61 @@
 import { FlatList, Image, SafeAreaView, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import estilos from '../../styles';
+import styles from '../../style';
 import ModalFiltros from '../components/ModalFiltros';
+import { useAppState } from '../state/AppStateContext';
 
-export default function TelaBusca({
-  busca,
-  setBusca,
-  locaisFiltrados,
-  abrirLocal,
-  onVoltar,
-  mostrarFiltro,
-  setMostrarFiltro,
-  filtroTipo,
-  filtroAcesso,
-  setFiltroTipo,
-  setFiltroAcesso,
-}) {
+export default function TelaBusca({ navigation }) {
+  const {
+    search,
+    setSearch,
+    filteredPlaces,
+    setSelectedPlaceId,
+    isFilterVisible,
+    setFilterVisible,
+    typeFilter,
+    accessFilter,
+    setTypeFilter,
+    setAccessFilter,
+  } = useAppState();
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
-      <View style={estilos.barraDeBusca}>
-        <TouchableOpacity style={estilos.botaoVoltarBusca} onPress={onVoltar}>
+    <SafeAreaView style={styles.screen}>
+      <View style={styles.searchBar}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Text style={{ fontSize: 22 }}>←</Text>
         </TouchableOpacity>
         <TextInput
-          style={estilos.campoDeBusca}
+          style={styles.searchInput}
           placeholder="Buscar local esportivo..."
-          value={busca}
-          onChangeText={setBusca}
+          value={search}
+          onChangeText={setSearch}
           autoFocus
         />
-        <TouchableOpacity style={estilos.botaoFiltroBusca} onPress={() => setMostrarFiltro(true)}>
+        <TouchableOpacity style={styles.filterButton} onPress={() => setFilterVisible(true)}>
           <Text style={{ fontSize: 20 }}>⚙️</Text>
         </TouchableOpacity>
       </View>
 
-      <Text style={estilos.rotuloSecao}>{busca === '' ? 'Recente' : `${locaisFiltrados.length} resultado(s)`}</Text>
+      <Text style={styles.sectionLabel}>
+        {search === '' ? 'Recente' : `${filteredPlaces.length} resultado(s)`}
+      </Text>
 
       <FlatList
-        data={locaisFiltrados}
+        data={filteredPlaces}
         keyExtractor={(i) => String(i.id)}
-        contentContainerStyle={{ padding: 16, gap: 8 }}
+        contentContainerStyle={styles.listContent}
         renderItem={({ item }) => (
-          <TouchableOpacity style={estilos.card} onPress={() => abrirLocal(item)}>
-            <Image source={{ uri: item.imagem }} style={estilos.imagemDoCard} />
-            <View style={estilos.textoDoCard}>
-              <Text style={estilos.nomeDoLocal}>{item.nome}</Text>
-              <Text style={estilos.infoDoLocal}>
-                {item.distancia}  •  {item.acesso}
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => {
+              setSelectedPlaceId(item.id);
+              navigation.navigate('TelaLocal');
+            }}
+          >
+            <Image source={{ uri: item.image }} style={styles.cardImage} />
+            <View style={styles.cardText}>
+              <Text style={styles.cardTitle}>{item.name}</Text>
+              <Text style={styles.cardInfo}>
+                {item.distance}  •  {item.access}
               </Text>
             </View>
           </TouchableOpacity>
@@ -53,12 +63,12 @@ export default function TelaBusca({
       />
 
       <ModalFiltros
-        visivel={mostrarFiltro}
-        fechar={() => setMostrarFiltro(false)}
-        filtroTipo={filtroTipo}
-        filtroAcesso={filtroAcesso}
-        setFiltroTipo={setFiltroTipo}
-        setFiltroAcesso={setFiltroAcesso}
+        visivel={isFilterVisible}
+        fechar={() => setFilterVisible(false)}
+        filtroTipo={typeFilter}
+        filtroAcesso={accessFilter}
+        setFiltroTipo={setTypeFilter}
+        setFiltroAcesso={setAccessFilter}
       />
     </SafeAreaView>
   );

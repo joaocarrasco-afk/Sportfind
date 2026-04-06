@@ -1,85 +1,32 @@
-export const LOCAIS = [
-  {
-    id: 1,
-    nome: 'Basquete Max Feffer',
-    tipo: 'Basquete',
-    distancia: '0.3 km',
-    acesso: 'Público',
-    emoji: '🏀',
-    lat: -23.5445,
-    lng: -46.3106,
-    cor: '#FF6B35',
-    imagem: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400',
-    descricao: 'Quadra de basquete pública no Parque Max Feffer. Aberta todos os dias das 6h às 22h.',
-  },
-  {
-    id: 2,
-    nome: 'Suzano Skatepark',
-    tipo: 'Skate',
-    distancia: '1.4 km',
-    acesso: 'Público',
-    emoji: '🛹',
-    lat: -23.5452,
-    lng: -46.3091,
-    cor: '#6393F2',
-    imagem: 'https://images.unsplash.com/photo-1572635148818-ef6fd45eb394?w=400',
-    descricao: 'Pista de skate pública com rampas e obstáculos variados.',
-  },
-  {
-    id: 3,
-    nome: 'Campo Society',
-    tipo: 'Futebol',
-    distancia: '2.1 km',
-    acesso: 'Privado',
-    emoji: '⚽',
-    lat: -23.5415,
-    lng: -46.3135,
-    cor: '#4CAF50',
-    imagem: 'https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=400',
-    descricao: 'Campo society coberto com aluguel por hora. Vestiário disponível.',
-  },
-  {
-    id: 4,
-    nome: 'Arena Tênis Clube',
-    tipo: 'Tênis',
-    distancia: '3.0 km',
-    acesso: 'Privado',
-    emoji: '🎾',
-    lat: -23.5468,
-    lng: -46.307,
-    cor: '#FFC107',
-    imagem: 'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=400',
-    descricao: 'Quadras de tênis em saibro e cimento. Aulas disponíveis.',
-  },
-  {
-    id: 5,
-    nome: 'Quadra Municipal',
-    tipo: 'Poliesportivo',
-    distancia: '1.8 km',
-    acesso: 'Público',
-    emoji: '🏟️',
-    lat: -23.543,
-    lng: -46.312,
-    cor: '#9C27B0',
-    imagem: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400',
-    descricao: 'Quadra poliesportiva municipal com marcações para vários esportes.',
-  },
-];
+import {
+  ACCESS_FILTERS,
+  BOTTOM_TABS,
+  PLACE_TYPE_FILTERS,
+  TAB_CONTENT,
+  toLegacyPlaces,
+  PLACES,
+} from '../domain/places';
 
-export const FILTROS_TIPO = ['Todos', 'Basquete', 'Skate', 'Futebol', 'Tênis', 'Poliesportivo'];
-export const FILTROS_ACESSO = ['Todos', 'Público', 'Privado', 'Temporário'];
+export const LOCAIS = toLegacyPlaces(PLACES).map((place) => ({
+  ...place,
+  acesso: place.acesso === 'Publico' ? 'Público' : place.acesso,
+  tipo: place.tipo === 'Tenis' ? 'Tênis' : place.tipo,
+}));
 
-export const ABAS = [
-  { id: 'mapa', rotulo: 'Mapa', icone: '🗺️' },
-  { id: 'favoritos', rotulo: 'Favoritos', icone: '⭐' },
-  { id: 'criar', rotulo: 'Criar', icone: '➕' },
-  { id: 'notificacao', rotulo: 'Noticação', icone: '🔔' },
-  { id: 'perfil', rotulo: 'Perfil', icone: '👤' },
-];
+export const FILTROS_TIPO = PLACE_TYPE_FILTERS.map((type) => (type === 'Tenis' ? 'Tênis' : type));
+export const FILTROS_ACESSO = ACCESS_FILTERS.map((access) =>
+  access === 'Publico' ? 'Público' : access,
+);
 
-export const CONTEUDO_ABAS = {
-  favoritos: { icone: '⭐', titulo: 'Favoritos', sub: 'Nenhum favorito ainda' },
-  perfil: { icone: '👤', titulo: 'Meu Perfil', sub: '' },
-  criar: { icone: '➕', titulo: 'Criar', sub: 'Em construção' },
-  notificacao: { icone: '🔔', titulo: 'Noticação', sub: 'Sem Notificações' },
-};
+export const ABAS = BOTTOM_TABS.map((tab) => ({ id: tab.id, rotulo: tab.label, icone: tab.icon }));
+
+export const CONTEUDO_ABAS = Object.fromEntries(
+  Object.entries(TAB_CONTENT).map(([tabId, content]) => [
+    tabId,
+    {
+      icone: content.icon,
+      titulo: content.title,
+      sub: content.subtitle,
+    },
+  ]),
+);

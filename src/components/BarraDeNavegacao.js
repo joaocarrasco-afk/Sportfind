@@ -1,17 +1,17 @@
 import { Text, TouchableOpacity, View } from 'react-native';
-import estilos from '../../styles';
-import { ABAS } from '../data/locais';
+import styles from '../../style';
+import { BOTTOM_TABS } from '../domain/places';
 
 export default function BarraDeNavegacao({ abaAtiva, mudarAba }) {
   return (
-    <View style={estilos.navBar}>
-      {ABAS.map((aba) => (
-        <TouchableOpacity key={aba.id} style={estilos.itemNav} onPress={() => mudarAba(aba.id)}>
-          <View style={[estilos.pastilhaNav, abaAtiva === aba.id && estilos.pastilhaNavAtiva]}>
-            <Text style={{ fontSize: 22 }}>{aba.icone}</Text>
+    <View style={styles.tabBar}>
+      {BOTTOM_TABS.map((tab) => (
+        <TouchableOpacity key={tab.id} style={styles.tabBarItem} onPress={() => mudarAba(tab.id)}>
+          <View style={[styles.tabPill, abaAtiva === tab.id && styles.tabPillActive]}>
+            <Text style={{ fontSize: 22 }}>{tab.icon}</Text>
           </View>
-          <Text style={[estilos.rotuloNav, { color: abaAtiva === aba.id ? '#625b71' : '#49454f' }]}>
-            {aba.rotulo}
+          <Text style={[styles.tabLabel, abaAtiva === tab.id && styles.tabLabelActive]}>
+            {tab.label}
           </Text>
         </TouchableOpacity>
       ))}
