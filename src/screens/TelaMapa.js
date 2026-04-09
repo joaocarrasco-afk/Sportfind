@@ -1,26 +1,25 @@
 import { Platform, Text, TouchableOpacity, View, Image, SafeAreaView } from 'react-native';
 import { WebView } from 'react-native-webview';
-import estilos from '../../styles';
-import BarraDeNavegacao from '../components/BarraDeNavegacao';
+import styles from '../../style';
 import ModalFiltros from '../components/ModalFiltros';
-import { LOCAIS } from '../data/locais';
 import { htmlMapa } from '../utils/htmlMapa';
+import { useAppState } from '../state/AppStateContext';
+import { parseMapMessage } from '../features/map/mapBridge';
 
-export default function TelaMapa({
-  abaAtiva,
-  setAbaAtiva,
-  locaisFiltrados,
-  setTela,
-  mostrarFiltro,
-  setMostrarFiltro,
-  filtroTipo,
-  filtroAcesso,
-  setFiltroTipo,
-  setFiltroAcesso,
-  localSelecionado,
-  setLocal,
-  abrirLocal,
-}) {
+export default function TelaMapa({ navigation }) {
+  const {
+    filteredPlaces,
+    setFilterVisible,
+    isFilterVisible,
+    typeFilter,
+    accessFilter,
+    setTypeFilter,
+    setAccessFilter,
+    resetFilters,
+    selectedPlace,
+    setSelectedPlaceId,
+  } = useAppState();
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       {Platform.OS === 'web' ? (
@@ -28,67 +27,73 @@ export default function TelaMapa({
           <iframe
             title="Mapa"
             style={{ border: 0, width: '100%', height: '100%' }}
-            srcDoc={htmlMapa(locaisFiltrados)}
+            srcDoc={htmlMapa(filteredPlaces)}
           />
         </View>
       ) : (
         <WebView
           style={{ flex: 1 }}
-          source={{ html: htmlMapa(locaisFiltrados) }}
-          onMessage={(e) => setLocal(LOCAIS.find((l) => l.id === Number(e.nativeEvent.data)) ?? null)}
+          source={{ html: htmlMapa(filteredPlaces) }}
+          onMessage={(event) => {
+            const placeId = parseMapMessage(event.nativeEvent.data);
+            if (Number.isFinite(placeId)) {
+              setSelectedPlaceId(placeId);
+            }
+          }}
           javaScriptEnabled
           originWhitelist={['*']}
         />
       )}
 
-      <TouchableOpacity style={estilos.botaoBusca} onPress={() => setTela('busca')}>
+      <TouchableOpacity style={styles.floatingButtonLeft} onPress={() => navigation.navigate('TelaBusca')}>
         <Text style={{ fontSize: 22 }}>🔍</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={estilos.botaoFiltro} onPress={() => setMostrarFiltro(true)}>
+      <TouchableOpacity style={styles.floatingButtonRight} onPress={() => setFilterVisible(true)}>
         <Text style={{ fontSize: 22 }}>⚙️</Text>
       </TouchableOpacity>
 
-      {(filtroTipo !== 'Todos' || filtroAcesso !== 'Todos') && (
+      {(typeFilter !== 'Todos' || accessFilter !== 'Todos') && (
         <TouchableOpacity
-          style={estilos.etiqueta}
-          onPress={() => {
-            setFiltroTipo('Todos');
-            setFiltroAcesso('Todos');
-          }}
+          style={styles.filterTag}
+          onPress={resetFilters}
         >
-          <Text style={estilos.textoEtiqueta}>
-            {[filtroTipo !== 'Todos' && filtroTipo, filtroAcesso !== 'Todos' && filtroAcesso].filter(Boolean).join(' · ')}  ×
+          <Text style={styles.filterTagText}>
+            {[typeFilter !== 'Todos' && typeFilter, accessFilter !== 'Todos' && accessFilter]
+              .filter(Boolean)
+              .join(' · ')}{' '}
+            ×
           </Text>
         </TouchableOpacity>
       )}
 
-      {localSelecionado && (
-        <TouchableOpacity style={estilos.cardLocal} onPress={() => abrirLocal(localSelecionado)}>
-          <Image source={{ uri: localSelecionado.imagem }} style={estilos.imagemLocal} />
+      {selectedPlace && (
+        <TouchableOpacity
+          style={styles.selectedPlaceCard}
+          onPress={() => navigation.navigate('TelaLocal')}
+        >
+          <Image source={{ uri: selectedPlace.image }} style={styles.selectedPlaceImage} />
           <View style={{ flex: 1, padding: 12 }}>
-            <Text style={estilos.nomeLocal}>{localSelecionado.nome}</Text>
-            <Text style={estilos.infoLocal}>
-              {localSelecionado.distancia}  •  {localSelecionado.acesso}
+            <Text style={styles.selectedPlaceTitle}>{selectedPlace.name}</Text>
+            <Text style={styles.selectedPlaceInfo}>
+              {selectedPlace.distance}  •  {selectedPlace.access}
             </Text>
             <Text style={{ fontSize: 11, color: '#6393F2', marginTop: 4 }}>Toque para ver mais →</Text>
           </View>
-          <TouchableOpacity onPress={() => setLocal(null)} style={{ padding: 12 }}>
+          <TouchableOpacity onPress={() => setSelectedPlaceId(null)} style={{ padding: 12 }}>
             <Text style={{ fontSize: 20, color: '#555' }}>×</Text>
           </TouchableOpacity>
         </TouchableOpacity>
       )}
 
       <ModalFiltros
-        visivel={mostrarFiltro}
-        fechar={() => setMostrarFiltro(false)}
-        filtroTipo={filtroTipo}
-        filtroAcesso={filtroAcesso}
-        setFiltroTipo={setFiltroTipo}
-        setFiltroAcesso={setFiltroAcesso}
+        visivel={isFilterVisible}
+        fechar={() => setFilterVisible(false)}
+        filtroTipo={typeFilter}
+        filtroAcesso={accessFilter}
+        setFiltroTipo={setTypeFilter}
+        setFiltroAcesso={setAccessFilter}
       />
-
-      <BarraDeNavegacao abaAtiva={abaAtiva} mudarAba={setAbaAtiva} />
     </SafeAreaView>
   );
 }

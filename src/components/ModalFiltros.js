@@ -1,6 +1,6 @@
 import { Modal, Text, TouchableOpacity, View } from 'react-native';
-import estilos from '../../styles';
-import { FILTROS_ACESSO, FILTROS_TIPO } from '../data/locais';
+import styles from '../../style';
+import { ACCESS_FILTERS, PLACE_TYPE_FILTERS } from '../domain/places';
 
 export default function ModalFiltros({
   visivel,
@@ -12,13 +12,13 @@ export default function ModalFiltros({
 }) {
   return (
     <Modal visible={visivel} transparent animationType="slide">
-      <TouchableOpacity style={estilos.fundo} onPress={fechar}>
-        <View style={estilos.painel}>
-          <View style={estilos.painelCabecalho}>
-            <TouchableOpacity style={estilos.botaoX} onPress={fechar}>
+      <TouchableOpacity style={styles.overlay} onPress={fechar}>
+        <View style={styles.panel}>
+          <View style={styles.panelHeader}>
+            <TouchableOpacity style={styles.closeButton} onPress={fechar}>
               <Text style={{ fontSize: 16, fontWeight: '600' }}>X</Text>
             </TouchableOpacity>
-            <Text style={estilos.tituloPainel}>Filtros</Text>
+            <Text style={styles.panelTitle}>Filtros</Text>
             <TouchableOpacity
               onPress={() => {
                 setFiltroTipo('Todos');
@@ -29,28 +29,32 @@ export default function ModalFiltros({
             </TouchableOpacity>
           </View>
 
-          <Text style={estilos.labelFiltro}>Esporte</Text>
+          <Text style={styles.filterLabel}>Esporte</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
-            {FILTROS_TIPO.map((f) => (
+            {PLACE_TYPE_FILTERS.map((f) => (
               <TouchableOpacity
                 key={f}
-                style={[estilos.opcao, filtroTipo === f && estilos.opcaoAtiva]}
+                style={[styles.optionChip, filtroTipo === f && styles.optionChipActive]}
                 onPress={() => setFiltroTipo(f)}
               >
-                <Text style={[estilos.textoOpcao, filtroTipo === f && { color: '#6393F2' }]}>{f}</Text>
+                <Text style={[styles.optionChipText, filtroTipo === f && { color: '#6393F2' }]}>
+                  {f}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
 
-          <Text style={estilos.labelFiltro}>Privacidade</Text>
+          <Text style={styles.filterLabel}>Privacidade</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            {FILTROS_ACESSO.map((f) => (
+            {ACCESS_FILTERS.map((f) => (
               <TouchableOpacity
                 key={f}
-                style={[estilos.opcao, filtroAcesso === f && estilos.opcaoAtiva]}
+                style={[styles.optionChip, filtroAcesso === f && styles.optionChipActive]}
                 onPress={() => setFiltroAcesso(f)}
               >
-                <Text style={[estilos.textoOpcao, filtroAcesso === f && { color: '#6393F2' }]}>{f}</Text>
+                <Text style={[styles.optionChipText, filtroAcesso === f && { color: '#6393F2' }]}>
+                  {f}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>

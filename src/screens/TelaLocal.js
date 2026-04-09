@@ -1,49 +1,66 @@
+import { useEffect } from 'react';
 import { Image, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import estilos from '../../styles';
+import styles from '../../style';
+import { useAppState } from '../state/AppStateContext';
 
-export default function TelaLocal({ localSelecionado, onVoltar }) {
+export default function TelaLocal({ navigation }) {
+  const { selectedPlace } = useAppState();
+
+  useEffect(() => {
+    if (!selectedPlace) {
+      navigation.goBack();
+    }
+  }, [navigation, selectedPlace]);
+
+  if (!selectedPlace) return null;
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       <ScrollView>
-        <View style={estilos.localImagem}>
-          <Image source={{ uri: localSelecionado.imagem }} style={estilos.localImagem} />
-          <TouchableOpacity style={estilos.botaoVoltar} onPress={onVoltar}>
+        <View style={styles.detailImage}>
+          <Image source={{ uri: selectedPlace.image }} style={styles.detailImage} />
+          <TouchableOpacity style={styles.backButtonOnDetail} onPress={() => navigation.goBack()}>
             <Text style={{ fontSize: 30, bottom: 7 }}>←</Text>
           </TouchableOpacity>
         </View>
 
-        <View style={estilos.localConteudo}>
+        <View style={styles.detailContent}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <Text style={{ fontSize: 32 }}>{localSelecionado.emoji}</Text>
-            <Text style={estilos.localNome}>{localSelecionado.nome}</Text>
+            <Text style={{ fontSize: 32 }}>{selectedPlace.emoji}</Text>
+            <Text style={styles.detailTitle}>{selectedPlace.name}</Text>
           </View>
           <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
-            <View style={[estilos.tag, { backgroundColor: `${localSelecionado.cor}22`, borderColor: localSelecionado.cor }]}>
-              <Text style={[estilos.tagTexto, { color: localSelecionado.cor }]}>{localSelecionado.tipo}</Text>
+            <View
+              style={[
+                styles.tag,
+                { backgroundColor: `${selectedPlace.color}22`, borderColor: selectedPlace.color },
+              ]}
+            >
+              <Text style={[styles.tagText, { color: selectedPlace.color }]}>{selectedPlace.type}</Text>
             </View>
             <View
               style={[
-                estilos.tag,
+                styles.tag,
                 {
-                  backgroundColor: localSelecionado.acesso === 'Público' ? '#e8f5e9' : '#fce4ec',
-                  borderColor: localSelecionado.acesso === 'Público' ? '#4CAF50' : '#e91e63',
+                  backgroundColor: selectedPlace.access === 'Publico' ? '#e8f5e9' : '#fce4ec',
+                  borderColor: selectedPlace.access === 'Publico' ? '#4CAF50' : '#e91e63',
                 },
               ]}
             >
               <Text
                 style={[
-                  estilos.tagTexto,
-                  { color: localSelecionado.acesso === 'Público' ? '#2e7d32' : '#c62828' },
+                  styles.tagText,
+                  { color: selectedPlace.access === 'Publico' ? '#2e7d32' : '#c62828' },
                 ]}
               >
-                {localSelecionado.acesso}
+                {selectedPlace.access}
               </Text>
             </View>
-            <View style={[estilos.tag, { backgroundColor: '#f3f3f3', borderColor: '#ccc' }]}>
-              <Text style={[estilos.tagTexto, { color: '#555' }]}>📍 {localSelecionado.distancia}</Text>
+            <View style={[styles.tag, { backgroundColor: '#f3f3f3', borderColor: '#ccc' }]}>
+              <Text style={[styles.tagText, { color: '#555' }]}>📍 {selectedPlace.distance}</Text>
             </View>
           </View>
-          <Text style={estilos.localDescricao}>{localSelecionado.descricao}</Text>
+          <Text style={styles.detailDescription}>{selectedPlace.description}</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

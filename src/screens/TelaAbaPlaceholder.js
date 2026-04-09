@@ -1,16 +1,14 @@
 import { SafeAreaView, Text } from 'react-native';
-import estilos from '../../styles';
-import BarraDeNavegacao from '../components/BarraDeNavegacao';
+import styles from '../../style';
 
-export default function TelaAbaPlaceholder({ abaAtiva, mudarAba, conteudo }) {
-  const { icone, titulo, sub } = conteudo;
+export default function TelaAbaPlaceholder({ conteudo }) {
+  const { icon, title, subtitle } = conteudo;
 
   return (
-    <SafeAreaView style={estilos.telaCentral}>
-      <Text style={{ fontSize: 48 }}>{icone}</Text>
-      <Text style={estilos.tituloTela}>{titulo}</Text>
-      {sub ? <Text style={estilos.subTituloTela}>{sub}</Text> : null}
-      <BarraDeNavegacao abaAtiva={abaAtiva} mudarAba={mudarAba} />
+    <SafeAreaView style={styles.centeredScreen}>
+      <Text style={{ fontSize: 48 }}>{icon}</Text>
+      <Text style={styles.screenTitle}>{title}</Text>
+      {subtitle ? <Text style={styles.screenSubtitle}>{subtitle}</Text> : null}
     </SafeAreaView>
   );
 }
