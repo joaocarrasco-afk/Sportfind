@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 import { mapStyles } from './features/mapStyles';
 import { searchStyles } from './features/searchStyles';
-import { colors } from './tokens';
+import { colors, spacing } from './tokens';
 
 const baseStyles = {
   card: {
@@ -134,6 +134,64 @@ const baseStyles = {
   tabIcon: { fontSize: 22 },
   tabLabel: { fontSize: 11, fontWeight: '500', color: '#49454f' },
   tabLabelActive: { color: '#625b71' },
+  authScreen: { flex: 1, backgroundColor: colors.white },
+  authCenter: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xl,
+  },
+  authCard: {
+    width: '100%',
+    maxWidth: 380,
+    backgroundColor: '#9756CA',
+    borderRadius: 18,
+    padding: 22,
+    paddingTop: 26,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 8 },
+  },
+  authTitle: {
+    fontSize: 26,
+    fontWeight: '800',
+    letterSpacing: 1,
+    color: '#1C052C',
+    marginBottom: 6,
+  },
+  authSubtitle: {
+    fontSize: 16,
+    letterSpacing: 2,
+    color: '#1C052C',
+    marginBottom: 18,
+  },
+  authInput: {
+    height: 48,
+    backgroundColor: colors.white,
+    borderRadius: 8,
+    paddingHorizontal: spacing.lg,
+    fontSize: 14,
+    color: '#1C052C',
+    marginBottom: spacing.md,
+  },
+  authButton: {
+    height: 50,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2A0648',
+    marginTop: 6,
+  },
+  authButtonText: { color: colors.white, fontSize: 16, fontWeight: '500' },
+  authLinks: { marginTop: 14, gap: 10 },
+  authLink: {
+    color: 'rgba(255,255,255,0.92)',
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
 };
 
 export default StyleSheet.create({

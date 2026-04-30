@@ -4,6 +4,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useEffect } from 'react';
 import TelaAbaPlaceholder from '../screens/TelaAbaPlaceholder';
 import TelaBusca from '../screens/TelaBusca';
+import TelaCadastro from '../screens/TelaCadastro';
+import TelaLogin from '../screens/TelaLogin';
 import TelaLocal from '../screens/TelaLocal';
 import TelaMapa from '../screens/TelaMapa';
 import { BOTTOM_TABS, TAB_CONTENT, TAB_IDS } from '../domain/places';
@@ -13,7 +15,8 @@ import { useAppState } from '../state/AppStateContext';
 import { parseMapMessage } from '../features/map/mapBridge';
 
 const Tab = createBottomTabNavigator();
-const Stack = createNativeStackNavigator();
+const MapStack = createNativeStackNavigator();
+const RootStack = createNativeStackNavigator();
 
 function AppTabBarLabel({ focused, label, icon }) {
   return (
@@ -33,11 +36,11 @@ function TabPlaceholderScreen({ route }) {
 
 function MapStackScreen() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="TelaMapa" component={TelaMapa} />
-      <Stack.Screen name="TelaBusca" component={TelaBusca} />
-      <Stack.Screen name="TelaLocal" component={TelaLocal} />
-    </Stack.Navigator>
+    <MapStack.Navigator screenOptions={{ headerShown: false }}>
+      <MapStack.Screen name="TelaMapa" component={TelaMapa} />
+      <MapStack.Screen name="TelaBusca" component={TelaBusca} />
+      <MapStack.Screen name="TelaLocal" component={TelaLocal} />
+    </MapStack.Navigator>
   );
 }
 
@@ -88,7 +91,11 @@ export default function AppNavigator() {
 
   return (
     <NavigationContainer>
-      <AppTabs />
+      <RootStack.Navigator initialRouteName="TelaLogin" screenOptions={{ headerShown: false }}>
+        <RootStack.Screen name="TelaLogin" component={TelaLogin} />
+        <RootStack.Screen name="TelaCadastro" component={TelaCadastro} />
+        <RootStack.Screen name="AppTabs" component={AppTabs} />
+      </RootStack.Navigator>
     </NavigationContainer>
   );
 }
