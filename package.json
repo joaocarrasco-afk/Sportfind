@@ -19,6 +19,7 @@
     "expo": "~54.0.34",
     "expo-status-bar": "~3.0.9",
     "express": "^5.2.1",
+    "firebase": "^12.12.1",
     "jest-expo": "~54.0.17",
     "react": "19.1.0",
     "react-dom": "19.1.0",

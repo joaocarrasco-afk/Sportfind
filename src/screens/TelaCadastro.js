@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { use, useState } from 'react';
 import { SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import styles from '../../style';
 
@@ -8,6 +8,66 @@ export default function TelaCadastro({ navigation }) {
   const [birthDate, setBirthDate] = useState('');
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
+  const [email,setEmail] = useState('');
+  const [phone,setPhone] = useState('');
+
+
+// Rota para acessar a API
+//Para funcionar tem que colocar ip da maquina 
+  const API_URL = 'http://192.168.xx.xx:3000';
+
+  // Função para adicionar um novo usuário
+  async function GravarUsuario() {
+    // Tenta enviar os dados no formato JSON
+    try {
+      // const verificarInt = parseInt(contact);
+      // if(Number.isInteger(verificarInt)){
+      //   setPhone(contact);
+      // }else{
+      //   setEmail(contact);
+      // }
+
+      // Envia a requisição usando o método POST
+      const res = await fetch(`${API_URL}/usuario/cadastro`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({          
+          nome: fullName,
+          username: username,
+          email: contact,
+          senha: password,
+          data_nascimento: birthDate 
+          
+         }),
+      });
+      //Arguarda a resposta em json para pode proseguir
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+      // Verifica a resposta do JSON
+      if (!res.ok) {
+        const errorMessage = data?.mensagem || '';
+        alert(errorMessage);
+        return;
+      }
+      // Verifica se o cadastro retornou um identificador válido
+      if (!data?.uid) {
+        alert('Resposta de cadastro inválido. Tente novamente.');
+        return;
+      }
+      alert('Usuário gravado com sucesso');
+      navigation.replace('AppTabs');
+      // Se ocorrer erro ao gravar o usuário
+    } catch (error) {
+      console.error('Erro ao gravar usuário:', error);
+      alert('Erro ao gravar usuário');
+  }
+}
 
   return (
     <SafeAreaView style={styles.authScreen}>
@@ -62,7 +122,7 @@ export default function TelaCadastro({ navigation }) {
               autoCorrect={false}
             />
 
-            <TouchableOpacity style={styles.authButton} onPress={() => navigation.replace('AppTabs')}>
+            <TouchableOpacity style={styles.authButton} onPress={GravarUsuario}>
               <Text style={styles.authButtonText}>Cadastrar</Text>
             </TouchableOpacity>
 
@@ -77,4 +137,5 @@ export default function TelaCadastro({ navigation }) {
     </SafeAreaView>
   );
 }
+// navigation.goBack()
 

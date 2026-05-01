@@ -83,3 +83,23 @@ npm install
 - Cobrir fluxo de navegação com testes de integração (screen-level).
 - Finalizar telas `Login` e `Cadastro` (atualmente vazias).
 - Adicionar CI para `lint` + `test` em pull requests.
+
+## Backend
+
+O projeto possui um backend Node.js + Express em `src/backend`.
+
+### Estrutura dos arquivos do backend
+
+- `src/api_backend/server.js`:inicializa o servidor Express
+- `src/api_backend/routes/UsuarioRoute.js`: define os endpoints da API de usuário
+- `src/api_backend/controllers/UsuarioController.js`: recebe `req` e `res` das rotas
+- `src/api_backend/services/UsuarioService.js`: camada intermediária entre controller e model
+- `src/api_backend/models/Usuario.js`: executa integração direta com Firebase
+
+### Fluxo de cadastro e login
+
+1. O app envia requisição para as rotas `/usuario` ou `/usuario/login`.
+2. A rota chama o método correspondente no `UsuarioController`.
+3. O controller delega para o `UsuarioService`.
+4. O serviço chama o `Usuario` model.
+5. O model integra com Firebase e devolve o resultado para resposta da API.

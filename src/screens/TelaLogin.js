@@ -2,9 +2,60 @@ import { useState } from 'react';
 import { Image, SafeAreaView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import styles from '../../style';
 
+// Rota para acessar a API
+//Para funcionar tem que colocar ip da maquina 
+const API_URL = 'http://192.168.xx.xx:3000';
+
 export default function TelaLogin({ navigation }) {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+
+  // Função para autenticar o usuário
+  async function Entrar() {
+    //Tenta enviar os dados no formato JSON
+    try{
+      // Envia a requisição usando o método POST
+      const res = await fetch(`${API_URL}/usuario/login`,{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: identifier,
+          senha: password
+        }),
+      });
+
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+
+      // Verifica se a API retornou erro de autenticação
+      if (!res.ok) {
+        const errorMessage = data?.mensagem || 'Email ou senha inválidos';
+        alert(errorMessage);
+        return;
+      }
+
+      // Verifica se o login retornou um identificador válido
+      if (!data?.uid) {
+        alert('Resposta de login inválida. Tente novamente.');
+        return;
+      }
+
+      alert('Bem-vindo');
+      navigation.replace('AppTabs');
+    }catch(error){
+      // Trata erros de rede ou falhas inesperadas na requisição
+      console.log('Erro ao entrar na conta:', error);
+      alert('Erro ao entrar na conta');
+    }
+
+    
+  }
 
   return (
     <SafeAreaView style={styles.authScreen}>
@@ -40,7 +91,7 @@ export default function TelaLogin({ navigation }) {
             textContentType="password"
           />
 
-          <TouchableOpacity style={styles.authButton} onPress={() => navigation.replace('AppTabs')}>
+          <TouchableOpacity style={styles.authButton} onPress={Entrar}>
             <Text style={styles.authButtonText}>Entrar</Text>
           </TouchableOpacity>
 
