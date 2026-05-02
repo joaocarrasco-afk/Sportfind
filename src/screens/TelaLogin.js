@@ -96,7 +96,7 @@ export default function TelaLogin({ navigation }) {
           </TouchableOpacity>
 
           <View style={styles.authLinks}>
-            <TouchableOpacity onPress={() => {}}>
+            <TouchableOpacity onPress={() => navigation.navigate ('TelaSenha')}>
               <Text style={styles.authLink}>Esqueceu a senha</Text>
             </TouchableOpacity>
 

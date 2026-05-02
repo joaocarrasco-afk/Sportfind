@@ -5,6 +5,8 @@ import { useEffect } from 'react';
 import TelaAbaPlaceholder from '../screens/TelaAbaPlaceholder';
 import TelaBusca from '../screens/TelaBusca';
 import TelaCadastro from '../screens/TelaCadastro';
+import TelaSenha from '../screens/TelaSenha';
+import TelaNovaSenha from '../screens/TelaNovaSenha';
 import TelaLogin from '../screens/TelaLogin';
 import TelaLocal from '../screens/TelaLocal';
 import TelaMapa from '../screens/TelaMapa';
@@ -94,6 +96,8 @@ export default function AppNavigator() {
       <RootStack.Navigator initialRouteName="TelaLogin" screenOptions={{ headerShown: false }}>
         <RootStack.Screen name="TelaLogin" component={TelaLogin} />
         <RootStack.Screen name="TelaCadastro" component={TelaCadastro} />
+        <RootStack.Screen name="TelaSenha" component={TelaSenha} />
+        <RootStack.Screen name="TelaNovaSenha" component={TelaNovaSenha} />
         <RootStack.Screen name="AppTabs" component={AppTabs} />
       </RootStack.Navigator>
     </NavigationContainer>

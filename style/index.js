@@ -189,7 +189,7 @@ const baseStyles = {
   authLink: {
     color: 'rgba(255,255,255,0.92)',
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '599',
     textAlign: 'center',
   },
 };
