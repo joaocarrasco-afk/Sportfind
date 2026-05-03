@@ -36,6 +36,23 @@ class UsuarioController{
             res.status(400).json({mensagem: 'Não foi possível enviar o link'});
         }
     }
+
+    async dadosPerfil(req, res){
+        try{
+            const {id} = req.params;
+          ;
+            
+            const dados = await Usuario.dadosPerfil(id);
+            if(!dados){
+                res.status(404).json({messagem: 'Perfil não encontrado'});
+                return;
+            }
+            res.status(200).json(dados);
+        }catch(error){
+            res.status(400).json({messagem: `Não foi possivel carregar o perfil: ${error} `});
+        }
+    }
+
 }
 
 module.exports = new UsuarioController();

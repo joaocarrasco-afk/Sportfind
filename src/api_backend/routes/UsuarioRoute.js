@@ -11,6 +11,8 @@ route.post('/usuario/login', UsuarioController.login);
 // Rota para enviar o link para redefinir a senha no e-mail
 route.post('/usuario/redefinirsenha', UsuarioController.linkRedefinirSenha);
 
+route.get('/usuario/perfil/:id', UsuarioController.dadosPerfil);
+
 module.exports = route;
 
 

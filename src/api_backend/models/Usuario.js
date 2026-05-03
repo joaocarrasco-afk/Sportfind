@@ -1,6 +1,7 @@
 const { db, auth } = require('../factory/config');
-const {setDoc, doc} = require('firebase/firestore');
+const {setDoc, doc, getDoc} = require('firebase/firestore');
 const {createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail} = require('firebase/auth');
+const { json } = require('express');
 
 class Usuario{
     // Cria o usuário no Firebase Auth e salva dados complementares no Firestore
@@ -17,14 +18,26 @@ class Usuario{
                 username: username,
                 data_nascimento: data_nascimento
             });
-            // Retorna os dados mínimos após o cadastro
-            return {
-                nome
-            };
+            return { uid, nome };
         } catch (error) {
             console.error(`Erro ao criar usuário: ${error.message}`);
         }
     }
+
+    
+    async dadosPerfil(id) {
+        try {
+            const snap = await getDoc(doc(db, 'usuario', id));
+            // if (!snap.exists) {
+            //     return null;
+            // }
+            return snap.data();
+        } catch (error) {
+            throw new Error(`Erro ao coletar os dados: ${error.message}`);
+        }
+    }
+    
+
 
     // Realiza autenticação do usuário com e-mail e senha
     async login(email, senha){
