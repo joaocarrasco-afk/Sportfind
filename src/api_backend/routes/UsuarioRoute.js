@@ -8,6 +8,8 @@ const route = express.Router()
 route.post('/usuario/cadastro', UsuarioController.criarUsuario);
 // Rota para autenticar usuário
 route.post('/usuario/login', UsuarioController.login);
+// Rota para enviar o link para redefinir a senha no e-mail
+route.post('/usuario/redefinirsenha', UsuarioController.linkRedefinirSenha);
 
 module.exports = route;
 

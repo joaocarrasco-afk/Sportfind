@@ -52,9 +52,7 @@ export default function TelaLogin({ navigation }) {
       // Trata erros de rede ou falhas inesperadas na requisição
       console.log('Erro ao entrar na conta:', error);
       alert('Erro ao entrar na conta');
-    }
-
-    
+    } 
   }
 
   return (

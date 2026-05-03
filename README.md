@@ -93,7 +93,6 @@ O projeto possui um backend Node.js + Express em `src/backend`.
 - `src/api_backend/server.js`:inicializa o servidor Express
 - `src/api_backend/routes/UsuarioRoute.js`: define os endpoints da API de usuário
 - `src/api_backend/controllers/UsuarioController.js`: recebe `req` e `res` das rotas
-- `src/api_backend/services/UsuarioService.js`: camada intermediária entre controller e model
 - `src/api_backend/models/Usuario.js`: executa integração direta com Firebase
 
 ### Fluxo de cadastro e login

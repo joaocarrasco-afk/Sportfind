@@ -1,6 +1,6 @@
 const { db, auth } = require('../factory/config');
 const {setDoc, doc} = require('firebase/firestore');
-const {createUserWithEmailAndPassword, signInWithEmailAndPassword, createUserWithPhoneNumber} = require('firebase/auth');
+const {createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail} = require('firebase/auth');
 
 class Usuario{
     // Cria o usuário no Firebase Auth e salva dados complementares no Firestore
@@ -22,7 +22,7 @@ class Usuario{
                 nome
             };
         } catch (error) {
-            console.error('Erro ao criar usuário:', error.message);
+            console.error(`Erro ao criar usuário: ${error.message}`);
         }
     }
 
@@ -34,10 +34,24 @@ class Usuario{
             return {
                 uid: userCredential.user.uid
             };
-        } catch (error) {
-            console.error('Erro ao fazer login:', error);
-            throw error;
+        } catch(error){
+            throw new Error(`Erro ao fazer login: ${error.message}`);
+        
         }
+    }
+
+    // Manda o link de redefinir a senha para o e-mail
+    async linkRedefinirSenha(email) {
+        try{
+            await sendPasswordResetEmail(auth, email);
+            return {
+                message: 'Link de redefinição de senha enviado'
+            }
+
+        }catch(error){
+            throw new Error(`Erro ao enviar o link de redefinição de senha: ${error.message}`);
+        }
+        
     }
 }
 

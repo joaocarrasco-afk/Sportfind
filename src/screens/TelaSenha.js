@@ -2,7 +2,38 @@ import { useState } from 'react';
 import { Image, SafeAreaView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import styles from '../../style';
 
+const API_URL = 'http://192.168.xx.xx:3000';
+
 export default function TelaSenha ({ navigation }) {
+
+  const [email, setEmail] = useState('');
+
+  //função para manda o link para redefinir a senha
+  async function linkRedefinirSenha() {
+    try{
+      // Envia a requisição usando o método POST
+      const res = await fetch(`${API_URL}/usuario/redefinirsenha`,{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          
+        }),
+        
+      });
+      alert('E-mail enviado com sucesso! Verifique o seu e-mail');
+      //Se ocorrer um erro ao enviar o email
+    }catch(error){
+      console.log('Erro ao enviar o link', error);
+      alert('Erro ao enviar o link')
+
+    }
+  }
+
+
+
 
 return (
     <SafeAreaView style={styles.authScreen}>
@@ -18,15 +49,17 @@ return (
 
           <TextInput
             style={styles.authInput}
-            placeholder="Email / usuário / telefone"
+            placeholder="Email / telefone"
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="default"
             textContentType="username"
+            value={email}
+            onChangeText={setEmail}
           />
 
           <Text style={styles.authSubtitle}>Enviaremos um código para seu email ou número de celular.</Text>
-          <TouchableOpacity style={styles.authButton} onPress={() => navigation.navigate('TelaNovaSenha')}>
+          <TouchableOpacity style={styles.authButton} onPress={linkRedefinirSenha}>
             <Text style={styles.authButtonText}>Continuar</Text>
           </TouchableOpacity>
 

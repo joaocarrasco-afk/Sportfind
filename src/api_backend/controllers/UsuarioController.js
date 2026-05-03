@@ -25,6 +25,17 @@ class UsuarioController{
             res.status(401).json({ mensagem: 'Credenciais inválidas.' });
         }
     }
+
+    // Recebe o email para manda o link
+    async linkRedefinirSenha(req, res){
+        try{
+            const {email} = req.body;
+            const usuario = await Usuario.linkRedefinirSenha(email);
+            res.status(200).json(usuario);
+        }catch(error){
+            res.status(400).json({mensagem: 'Não foi possível enviar o link'});
+        }
+    }
 }
 
 module.exports = new UsuarioController();
