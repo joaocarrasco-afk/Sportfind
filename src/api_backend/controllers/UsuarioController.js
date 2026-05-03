@@ -1,11 +1,11 @@
-const UsuarioService = require('../services/UsuarioService');
+const Usuario = require('../models/Usuario');
 
 class UsuarioController{
     // Recebe os dados da requisição e aciona o serviço de cadastro
     async criarUsuario(req, res){
         try {
             const { nome, email, senha, username, data_nascimento } = req.body;
-            const uid = await UsuarioService.criarUsuario(nome, email, senha, username, data_nascimento);
+            const uid = await Usuario.criarUsuario(nome, email, senha, username, data_nascimento);
             // Retorna sucesso na criação da conta
             res.status(201).json({ uid });
         } catch (error) {
@@ -17,7 +17,7 @@ class UsuarioController{
     async login(req, res){
         try {
             const { email, senha } = req.body;
-            const usuario = await UsuarioService.login(email, senha);
+            const usuario = await Usuario.login(email, senha);
             // Retorna os dados básicos do usuário autenticado
             res.status(200).json(usuario);
         } catch (error) {
