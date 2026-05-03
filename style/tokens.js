@@ -7,6 +7,7 @@ export const colors = {
   navBackground: '#f3edf7',
   navActivePill: '#e8def8',
   overlay: 'rgba(0,0,0,0.4)',
+  purple: '#9756CA',
 };
 
 export const spacing = {
