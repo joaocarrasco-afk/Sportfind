@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { mapStyles } from './features/mapStyles';
+import { perfilStyles } from './features/perfilStyles';
 import { searchStyles } from './features/searchStyles';
 import { colors, spacing } from './tokens';
 
@@ -144,7 +145,7 @@ const baseStyles = {
   authCard: {
     width: '100%',
     maxWidth: 380,
-    backgroundColor: '#9756CA',
+    backgroundColor: colors.purple,
     borderRadius: 18,
     padding: 22,
     paddingTop: 26,
@@ -198,4 +199,5 @@ export default StyleSheet.create({
   ...baseStyles,
   ...searchStyles,
   ...mapStyles,
+  ...perfilStyles,
 });

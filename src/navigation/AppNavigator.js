@@ -7,17 +7,24 @@ import TelaBusca from '../screens/TelaBusca';
 import TelaCadastro from '../screens/TelaCadastro';
 import TelaSenha from '../screens/TelaSenha';
 import TelaNovaSenha from '../screens/TelaNovaSenha';
+import TelaSplash from '../screens/TelaSplash';
 import TelaLogin from '../screens/TelaLogin';
+import TelaUsuario from '../screens/TelaUsuario';
+import TelaConta from '../screens/TelaConta';
+import TelaPreferencias from '../screens/TelaPreferencias';
+import TelaPrivacidade from '../screens/TelaPrivacidade';
 import TelaLocal from '../screens/TelaLocal';
 import TelaMapa from '../screens/TelaMapa';
 import { BOTTOM_TABS, TAB_CONTENT, TAB_IDS } from '../domain/places';
 import { Platform, Text, View } from 'react-native';
 import styles from '../../style';
+import { colors } from '../../style/tokens';
 import { useAppState } from '../state/AppStateContext';
 import { parseMapMessage } from '../features/map/mapBridge';
 
 const Tab = createBottomTabNavigator();
 const MapStack = createNativeStackNavigator();
+const PerfilStack = createNativeStackNavigator();
 const RootStack = createNativeStackNavigator();
 
 function AppTabBarLabel({ focused, label, icon }) {
@@ -46,6 +53,22 @@ function MapStackScreen() {
   );
 }
 
+function PerfilStackScreen() {
+  return (
+    <PerfilStack.Navigator
+      screenOptions={{
+        headerTintColor: colors.purple,
+        headerTitleStyle: { fontWeight: '700' },
+      }}
+    >
+      <PerfilStack.Screen name="PerfilPrincipal" component={TelaUsuario} options={{ headerShown: false }} />
+      <PerfilStack.Screen name="TelaConta" component={TelaConta} options={{ title: 'Conta' }} />
+      <PerfilStack.Screen name="TelaPreferencias" component={TelaPreferencias} options={{ title: 'Preferências' }} />
+      <PerfilStack.Screen name="TelaPrivacidade" component={TelaPrivacidade} options={{ title: 'Privacidade' }} />
+    </PerfilStack.Navigator>
+  );
+}
+
 function AppTabs() {
   return (
     <Tab.Navigator
@@ -63,11 +86,19 @@ function AppTabs() {
         };
       }}
     >
-      <Tab.Screen name={TAB_IDS.MAP} component={MapStackScreen} />
+      <Tab.Screen
+        name={TAB_IDS.MAP}
+        component={MapStackScreen}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            navigation.navigate(TAB_IDS.MAP, { screen: 'TelaMapa' });
+          },
+        })}
+      />
       <Tab.Screen name={TAB_IDS.FEED} component={TabPlaceholderScreen} />
       <Tab.Screen name={TAB_IDS.CREATE} component={TabPlaceholderScreen} />
       <Tab.Screen name={TAB_IDS.NOTIFICATION} component={TabPlaceholderScreen} />
-      <Tab.Screen name={TAB_IDS.PROFILE} component={TabPlaceholderScreen} />
+      <Tab.Screen name={TAB_IDS.PROFILE} component={PerfilStackScreen} />
     </Tab.Navigator>
   );
 }
@@ -93,7 +124,8 @@ export default function AppNavigator() {
 
   return (
     <NavigationContainer>
-      <RootStack.Navigator initialRouteName="TelaLogin" screenOptions={{ headerShown: false }}>
+      <RootStack.Navigator initialRouteName="TelaSplash" screenOptions={{ headerShown: false }}>
+        <RootStack.Screen name="TelaSplash" component={TelaSplash} />
         <RootStack.Screen name="TelaLogin" component={TelaLogin} />
         <RootStack.Screen name="TelaCadastro" component={TelaCadastro} />
         <RootStack.Screen name="TelaSenha" component={TelaSenha} />
