@@ -1,7 +1,8 @@
 import { useNavigation } from '@react-navigation/native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Modal, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import styles from '../../style';
+import { useAppState } from '../state/AppStateContext';
 
 const ABAS = [
   { id: 'pub', label: 'Publicações' },
@@ -9,10 +10,72 @@ const ABAS = [
   { id: 'liked', label: 'Curtidos' },
 ];
 
+const API_URL = 'http://192.168.15.85:3000';
+
+
+
+
+
 export default function TelaUsuario() {
   const navigation = useNavigation();
   const [aba, setAba] = useState('pub');
   const [cfgAberto, setCfgAberto] = useState(false);
+  const { authUid } = useAppState();
+  const [carregando, setCarregando] = useState(!!authUid);
+  const [username, setUsername] = useState();
+
+  useEffect(() => {
+    let cancelado = false;
+  
+    async function carregarPerfil() {
+      if (!authUid) {
+        setCarregando(false);
+        return;
+      }
+  
+      setCarregando(true);
+      try {
+        const res = await fetch(
+          `${API_URL}/usuario/perfil/${encodeURIComponent(authUid)}`,
+          { method: 'GET' },
+        );
+        let data = null;
+        try {
+          data = await res.json();
+          
+        } catch(error) {
+          data = null;
+          alert(error)
+        }
+        if (cancelado) return;
+  
+        if (!res.ok) {
+          Alert.alert('Perfil', data?.messagem || data?.mensagem || 'Não foi possível carregar o perfil.');
+          return;
+        }
+        
+        if (data?.username != null){ 
+          setUsername(data.username)
+        };
+        alert( 'teste');
+      } catch {
+        if (!cancelado) {
+          Alert.alert('Perfil', 'Erro de rede ao carregar o perfil.');
+        }
+      } finally {
+        if (!cancelado) setCarregando(false);
+      }
+    }
+  
+    carregarPerfil();
+    return () => {
+      cancelado = true;
+    };
+  }, [authUid]);
+
+
+
+
 
   function irConfig(rota) {
     setCfgAberto(false);
@@ -42,7 +105,7 @@ export default function TelaUsuario() {
           </View>
         </View>
 
-        <Text style={styles.usuarioName}>Username</Text>
+        <Text style={styles.usuarioName}>{username}</Text>
         <View style={styles.usuarioLocationRow}>
           <Text style={styles.usuarioLocationText}>📍 São Paulo, Brasil</Text>
         </View>

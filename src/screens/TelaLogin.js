@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Image, SafeAreaView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import styles from '../../style';
+import { useAppState } from '../state/AppStateContext';
 
 // Rota para acessar a API
 //Para funcionar tem que colocar ip da maquina 
-const API_URL = 'http://192.168.xx.xx:3000';
+const API_URL = 'http://192.168.15.85:3000';
 
 export default function TelaLogin({ navigation }) {
+  const { setAuthUid } = useAppState();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
 
@@ -46,6 +48,7 @@ export default function TelaLogin({ navigation }) {
         return;
       }
 
+      setAuthUid(data.uid);
       alert('Bem-vindo');
       navigation.replace('AppTabs');
     }catch(error){

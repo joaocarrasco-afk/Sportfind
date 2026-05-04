@@ -1,8 +1,10 @@
 import { use, useState } from 'react';
 import { SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import styles from '../../style';
+import { useAppState } from '../state/AppStateContext';
 
 export default function TelaCadastro({ navigation }) {
+  const { setAuthUid } = useAppState();
   const [contact, setContact] = useState('');
   const [password, setPassword] = useState('');
   const [birthDate, setBirthDate] = useState('');
@@ -14,7 +16,7 @@ export default function TelaCadastro({ navigation }) {
 
 // Rota para acessar a API
 //Para funcionar tem que colocar ip da maquina 
-const API_URL = 'http://192.168.xx.xx:3000';
+const API_URL = 'http://192.168.15.85:3000';
 
   // Função para adicionar um novo usuário
   async function GravarUsuario() {
@@ -60,6 +62,7 @@ const API_URL = 'http://192.168.xx.xx:3000';
         alert('Resposta de cadastro inválido. Tente novamente.');
         return;
       }
+      setAuthUid(data.uid);
       alert('Usuário gravado com sucesso');
       navigation.replace('AppTabs');
       // Se ocorrer erro ao gravar o usuário

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Alert, SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import styles from '../../style';
+import { useAppState } from '../state/AppStateContext';
 
 /** Dados de demonstração até integrar API */
 const inicial = {
@@ -10,17 +11,117 @@ const inicial = {
   telefone: '',
 };
 
+const API_URL = 'http://192.168.15.85:3000';
+
 export default function TelaConta() {
-  const [nome, setNome] = useState(inicial.nome);
-  const [email, setEmail] = useState(inicial.email);
-  const [username, setUsername] = useState(inicial.username);
-  const [telefone, setTelefone] = useState(inicial.telefone);
+  const { authUid } = useAppState();
+  const [carregando, setCarregando] = useState(!!authUid);
+  const [salvando, setSalvando] = useState(false)
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [telefone, setTelefone] = useState('');
   const [senhaAtual, setSenhaAtual] = useState('');
   const [senhaNova, setSenhaNova] = useState('');
   const [senhaConfirmar, setSenhaConfirmar] = useState('');
 
-  function salvarDados() {
-    Alert.alert('Dados atualizados', 'Alterações salvas localmente (sem servidor).');
+  useEffect(() => {
+    let cancelado = false;
+
+    async function carregarPerfil() {
+      if (!authUid) {
+        setCarregando(false);
+        return;
+      }
+
+      setCarregando(true);
+      try {
+        const res = await fetch(
+          `${API_URL}/usuario/perfil/${encodeURIComponent(authUid)}`,
+          { method: 'GET' },
+        );
+        let data = null;
+        try {
+          data = await res.json();
+        } catch {
+          data = null;
+        }
+        if (cancelado) return;
+
+        if (!res.ok) {
+          Alert.alert('Perfil', data?.messagem || data?.mensagem || 'Não foi possível carregar o perfil.');
+          return;
+        }
+
+        if (data?.username != null){ 
+          setUsername(data.username)
+        };
+        if (data?.nome != null){ 
+          setNome(data.nome)
+        };
+        if (data?.email != null){ 
+          setEmail(data.email)
+        };
+
+        
+      } catch {
+        if (!cancelado) {
+          Alert.alert('Perfil', 'Erro de rede ao carregar o perfil.');
+        }
+      } finally {
+        if (!cancelado) setCarregando(false);
+      }
+    }
+
+    carregarPerfil();
+    return () => {
+      cancelado = true;
+    };
+  }, [authUid]);
+
+  async function salvarDados() {
+    
+    
+    setSalvando(true);
+    try {
+      const res = await fetch(`${API_URL}/usuario/conta/${encodeURIComponent(authUid)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome: nome.trim(),
+          username: username.trim(),
+       
+          telefone: telefone.trim(),
+         
+        }),
+      });
+      let data = null;
+      try {
+        data = await res.json();
+        alert(data);
+      } catch {
+        data = null;
+      }
+      if (!res.ok) {
+        Alert.alert('Erro', data?.mensagem || data?.messagem || 'Não foi possível salvar.');
+        return;
+      }
+      if (data?.nome != null){
+         setNome(data.nome)
+        };
+      if (data?.username != null){
+         setUsername(data.username)
+        };
+      if (data?.telefone != null){
+         setTelefone(data.telefone)
+
+      };
+      Alert.alert('Conta', 'Dados atualizados com sucesso.');
+    } catch {
+      Alert.alert('Conta', 'Erro de rede ao salvar.');
+    } finally {
+      setSalvando(false);
+    }
   }
 
   function atualizarSenha() {

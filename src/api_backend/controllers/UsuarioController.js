@@ -5,9 +5,13 @@ class UsuarioController{
     async criarUsuario(req, res){
         try {
             const { nome, email, senha, username, data_nascimento } = req.body;
-            const uid = await Usuario.criarUsuario(nome, email, senha, username, data_nascimento);
-            // Retorna sucesso na criação da conta
-            res.status(201).json({ uid });
+            
+            const resultado = await Usuario.criarUsuario(nome, email, senha, username, data_nascimento);
+            if (!resultado?.uid) {
+                res.status(400).json({ mensagem: 'Não foi possível criar a conta.' });
+                return;
+            }
+            res.status(201).json(resultado);
         } catch (error) {
             // Retorna erro quando não for possível concluir o cadastro
             res.status(400).json({ mensagem: 'Não foi possível criar a conta.' });
@@ -39,9 +43,7 @@ class UsuarioController{
 
     async dadosPerfil(req, res){
         try{
-            const {id} = req.params;
-          ;
-            
+            const { id } = req.params;
             const dados = await Usuario.dadosPerfil(id);
             if(!dados){
                 res.status(404).json({messagem: 'Perfil não encontrado'});
@@ -50,6 +52,27 @@ class UsuarioController{
             res.status(200).json(dados);
         }catch(error){
             res.status(400).json({messagem: `Não foi possivel carregar o perfil: ${error} `});
+        }
+    }
+
+    async atualizarDados(req, res) {
+        try {
+            const { id } = req.params;
+            const { nome, username, telefone} = req.body;
+            const dados = await Usuario.atualizarDados(id, {
+                nome,
+                username,
+                telefone,
+            });
+            if (!dados) {
+                res.status(404).json({ mensagem: 'Perfil não encontrado.' });
+                return;
+            }
+            res.status(200).json(dados);
+        } catch (error) {
+            res.status(400).json({
+                mensagem: error.message || 'Não foi possível atualizar os dados.',
+            });
         }
     }
 

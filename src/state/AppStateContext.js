@@ -4,6 +4,8 @@ import { FILTER_ALL, filterPlaces, PLACES } from '../domain/places';
 const AppStateContext = createContext(null);
 
 export function AppStateProvider({ children }) {
+  /** UID do usuário após login/cadastro — usado em chamadas como GET /usuario/perfil/:id */
+  const [authUid, setAuthUid] = useState(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState(null);
   const [typeFilter, setTypeFilter] = useState(FILTER_ALL);
   const [accessFilter, setAccessFilter] = useState(FILTER_ALL);
@@ -32,6 +34,8 @@ export function AppStateProvider({ children }) {
   };
 
   const value = {
+    authUid,
+    setAuthUid,
     places: PLACES,
     filteredPlaces,
     selectedPlace,

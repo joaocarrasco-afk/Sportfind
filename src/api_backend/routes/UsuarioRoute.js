@@ -13,6 +13,8 @@ route.post('/usuario/redefinirsenha', UsuarioController.linkRedefinirSenha);
 
 route.get('/usuario/perfil/:id', UsuarioController.dadosPerfil);
 
+route.put('/usuario/conta/:id', UsuarioController.atualizarDados);
+
 module.exports = route;
 
 
