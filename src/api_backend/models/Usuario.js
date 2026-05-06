@@ -1,54 +1,93 @@
 const { db, auth } = require('../factory/config');
-const {setDoc, doc, getDoc, updateDoc} = require('firebase/firestore');
-const {createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail} = require('firebase/auth');
-const { json } = require('express');
+const {setDoc, doc, getDoc, updateDoc, where, query, collection, getDocs} = require('firebase/firestore');
+const {createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail} = require('firebase/auth'); 
 
 class Usuario{
-    // Cria o usuário no Firebase Auth e salva dados complementares no Firestore
-    async criarUsuario(nome, email, senha, username, data_nascimento){
-        try {
-         
-                // Cria credencial por e-mail e senha
-                const emailCredential = await createUserWithEmailAndPassword(auth, email, senha);
-                const uid = emailCredential.user.uid;
-                
-            
-            // Persiste os dados adicionais do usuário na coleção "usuario"
-            await setDoc(doc(db, 'usuario', uid), {
-                nome: nome,
-                username: username,
-                data_nascimento: data_nascimento
-            });
-            return { uid, nome };
-        } catch (error) {
-            console.error(`Erro ao criar usuário: ${error.message}`);
+
+    async consultarUsername(username){
+        try{
+        const ref =  query(collection(db, 'usuario'), where("username", "==", username));
+        const consulta = await getDocs(ref);
+        return consulta;
+        }catch(error){
+            console.error(`Erro ao buscar o usuário: ${error.message}`);
+            throw error;
         }
     }
 
-    
+    async criarUsuario(nome, email, senha, username, data_nascimento){
+        try {
+            const snap = await this.consultarUsername(username);
+
+            if(!snap.empty){
+                const doc = snap.docs[0];
+                const dados = doc.data();
+                return 'Já existe um usuário com esse username!';
+            }else{ 
+                const emailCredential = await createUserWithEmailAndPassword(auth, email, senha);
+                const uid = emailCredential.user.uid;
+                await setDoc(doc(db, 'usuario', uid), {
+                    nome: nome,
+                    username: username,
+                    data_nascimento: data_nascimento,
+                    altura:0.00,
+                    bio: "",
+                    trofeus_quantidades: 0,
+                    seguindo: 0,
+                    seguidores: 0,
+                    likes: 0,
+                    privacidade: Boolean([]),
+                    email: email
+                });
+                return { uid, nome };
+                
+            }       
+        } catch (error) {
+            switch(error.code){
+                case "auth/email-already-in-use":
+                    return "Esse e-mail já está em uso. Por favor, tente outro.";
+                case "auth/weak-password":
+                    return "Senha fraca. Use pelo menos 6 caracteres, incluindo letras, númerose um caracter maiusculo.";
+                case "auth/password-does-not-meet-requirements":
+                    return "Senha fraca. Use pelo menos 6 caracteres, incluindo letras, números e um caracter maiusculo.";
+                default:
+                    console.error(`Erro ao criar usuário: ${error.message}`);
+                    return 'não foi possível criar o usuário.';
+            }
+        }
+    }
+   
     async dadosPerfil(id) {
         try {
             const snap = await getDoc(doc(db, 'usuario', id));
             if (!snap.exists) {
-                 return null;
+                return null;
             }
-            
             return snap.data();
         } catch (error) {
             throw new Error(`Erro ao coletar os dados: ${error.message}`);
         }
     }
-    
 
-
-    // Realiza autenticação do usuário com e-mail e senha
     async login(email, senha){
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, senha);
-            // Retorna o identificador único do usuário autenticado
-            return {
-                uid: userCredential.user.uid
-            };
+            const username = email;
+            const snap = await this.consultarUsername(username);
+
+            if(!snap.empty){
+                const doc = snap.docs[0];
+                const dados = doc.data();
+                const userCredential = await signInWithEmailAndPassword(auth, dados.email, senha);
+                return {
+                    uid: userCredential.user.uid
+                };
+                   
+            }else{
+                const userCredential = await signInWithEmailAndPassword(auth, email, senha);
+                return {
+                    uid: userCredential.user.uid
+                };
+            }
         } catch(error){
             throw new Error(`Erro ao fazer login: ${error.message}`);
         

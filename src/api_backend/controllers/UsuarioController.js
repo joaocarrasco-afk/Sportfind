@@ -8,25 +8,26 @@ class UsuarioController{
             
             const resultado = await Usuario.criarUsuario(nome, email, senha, username, data_nascimento);
             if (!resultado?.uid) {
-                res.status(400).json({ mensagem: 'Não foi possível criar a conta.' });
+                res.status(400).json({ mensagem: 'Não foi possível criar a conta.', resultado });
                 return;
             }
             res.status(201).json(resultado);
         } catch (error) {
             // Retorna erro quando não for possível concluir o cadastro
-            res.status(400).json({ mensagem: 'Não foi possível criar a conta.' });
+            
+            res.status(400).json({ mensagem: 'Não foi possível criar a conta.', resultado});
         }
     }
     // Recebe credenciais e aciona o serviço de autenticação
     async login(req, res){
         try {
             const { email, senha } = req.body;
-            const usuario = await Usuario.login(email, senha);
+            const resultado = await Usuario.login(email, senha);
             // Retorna os dados básicos do usuário autenticado
-            res.status(200).json(usuario);
+            res.status(200).json(resultado);
         } catch (error) {
             // Retorna erro quando as credenciais forem inválidas
-            res.status(401).json({ mensagem: 'Credenciais inválidas.' });
+            res.status(401).json({ mensagem: 'Credenciais inválidas.'});
         }
     }
 

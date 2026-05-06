@@ -1,5 +1,5 @@
 import { use, useState } from 'react';
-import { SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
 import styles from '../../style';
 import { useAppState } from '../state/AppStateContext';
 
@@ -53,13 +53,13 @@ const API_URL = 'http://192.168.15.85:3000';
       }
       // Verifica a resposta do JSON
       if (!res.ok) {
-        const errorMessage = data?.mensagem || '';
-        alert(errorMessage);
+        const errorMessage = data?.resultado || '';
+        Alert.alert("", errorMessage);
         return;
       }
       // Verifica se o cadastro retornou um identificador válido
       if (!data?.uid) {
-        alert('Resposta de cadastro inválido. Tente novamente.');
+        alert('Resposta de cadastro inválidosenah. Tente novamente.');
         return;
       }
       setAuthUid(data.uid);
@@ -68,7 +68,7 @@ const API_URL = 'http://192.168.15.85:3000';
       // Se ocorrer erro ao gravar o usuário
     } catch (error) {
       console.error('Erro ao gravar usuário:', error);
-      alert('Erro ao gravar usuário');
+      alert('Erro ao gravar usuárioaaa');
   }
 }
 
