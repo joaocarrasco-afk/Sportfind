@@ -3,7 +3,7 @@ const {setDoc, doc, getDoc, updateDoc, where, query, collection, getDocs} = requ
 const {createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail} = require('firebase/auth'); 
 
 class Usuario{
-
+//ok
     async consultarUsername(username){
         try{
         const ref =  query(collection(db, 'usuario'), where("username", "==", username));
@@ -14,14 +14,12 @@ class Usuario{
             throw error;
         }
     }
-
+//ok
     async criarUsuario(nome, email, senha, username, data_nascimento){
         try {
             const snap = await this.consultarUsername(username);
 
             if(!snap.empty){
-                const doc = snap.docs[0];
-                const dados = doc.data();
                 return 'Já existe um usuário com esse username!';
             }else{ 
                 const emailCredential = await createUserWithEmailAndPassword(auth, email, senha);
@@ -39,11 +37,13 @@ class Usuario{
                     privacidade: Boolean([]),
                     email: email
                 });
-                return { uid, nome };
+                return {uid};
                 
             }       
         } catch (error) {
             switch(error.code){
+                case "auth/invalid-email":
+                    return "E-mail inválido";
                 case "auth/email-already-in-use":
                     return "Esse e-mail já está em uso. Por favor, tente outro.";
                 case "auth/weak-password":
@@ -52,11 +52,11 @@ class Usuario{
                     return "Senha fraca. Use pelo menos 6 caracteres, incluindo letras, números e um caracter maiusculo.";
                 default:
                     console.error(`Erro ao criar usuário: ${error.message}`);
-                    return 'não foi possível criar o usuário.';
+                    return 'Não foi possível criar o usuário.';
             }
         }
     }
-   
+   //okk por enquanto
     async dadosPerfil(id) {
         try {
             const snap = await getDoc(doc(db, 'usuario', id));
@@ -68,12 +68,11 @@ class Usuario{
             throw new Error(`Erro ao coletar os dados: ${error.message}`);
         }
     }
-
+//okk
     async login(email, senha){
         try {
             const username = email;
             const snap = await this.consultarUsername(username);
-
             if(!snap.empty){
                 const doc = snap.docs[0];
                 const dados = doc.data();
@@ -81,7 +80,6 @@ class Usuario{
                 return {
                     uid: userCredential.user.uid
                 };
-                   
             }else{
                 const userCredential = await signInWithEmailAndPassword(auth, email, senha);
                 return {
@@ -89,8 +87,7 @@ class Usuario{
                 };
             }
         } catch(error){
-            throw new Error(`Erro ao fazer login: ${error.message}`);
-        
+            throw new Error(`Erro ao fazer login: ${error.message}`);     
         }
     }
 
@@ -103,15 +100,15 @@ class Usuario{
             }
 
         }catch(error){
+            if(error.code == auth/invalid-email){
+                return "E-mail inválido";
+            }
             throw new Error(`Erro ao enviar o link de redefinição de senha: ${error.message}`);
         }
         
     }
 
-    /**
-     * Atualiza campos do documento `usuario/{id}` no Firestore.
-     * Senha não é alterada aqui (exige fluxo próprio no Firebase Auth).
-     */
+   
     async atualizarDados(id, campos) {
         const ref = doc(db, 'usuario', id);
         const snap = await getDoc(ref);
@@ -145,6 +142,13 @@ class Usuario{
         const atualizado = await getDoc(ref);
         return atualizado.data();
     }
+
+
+
+
+
+
+
 }
 
 module.exports = new Usuario();
