@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useEffect } from 'react';
 import TelaAbaPlaceholder from '../screens/TelaAbaPlaceholder';
+import TelaFeed from '../screens/TelaFeed';
 import TelaBusca from '../screens/TelaBusca';
 import TelaCadastro from '../screens/TelaCadastro';
 import TelaSenha from '../screens/TelaSenha';
@@ -95,7 +96,7 @@ function AppTabs() {
           },
         })}
       />
-      <Tab.Screen name={TAB_IDS.FEED} component={TabPlaceholderScreen} />
+      <Tab.Screen name={TAB_IDS.FEED} component={TelaFeed} />
       <Tab.Screen name={TAB_IDS.CREATE} component={TabPlaceholderScreen} />
       <Tab.Screen name={TAB_IDS.NOTIFICATION} component={TabPlaceholderScreen} />
       <Tab.Screen name={TAB_IDS.PROFILE} component={PerfilStackScreen} />
@@ -124,7 +125,7 @@ export default function AppNavigator() {
 
   return (
     <NavigationContainer>
-      <RootStack.Navigator initialRouteName="TelaSplash" screenOptions={{ headerShown: false }}>
+      <RootStack.Navigator initialRouteName="AppTabs" screenOptions={{ headerShown: true }}>
         <RootStack.Screen name="TelaSplash" component={TelaSplash} />
         <RootStack.Screen name="TelaLogin" component={TelaLogin} />
         <RootStack.Screen name="TelaCadastro" component={TelaCadastro} />

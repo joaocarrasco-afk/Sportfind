@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { feedStyles } from './features/feedStyles';
 import { mapStyles } from './features/mapStyles';
 import { perfilStyles } from './features/perfilStyles';
 import { searchStyles } from './features/searchStyles';
@@ -200,4 +201,5 @@ export default StyleSheet.create({
   ...searchStyles,
   ...mapStyles,
   ...perfilStyles,
+  ...feedStyles,
 });

@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { useState, useEffect } from 'react';
-import { Modal, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Modal, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import styles from '../../style';
 import { useAppState } from '../state/AppStateContext';
 

@@ -62,7 +62,7 @@ export const PLACES = [
     lat: -23.543,
     lng: -46.312,
     color: '#9C27B0',
-    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400',
+    image: 'https://images.unsplash.com/photo-1556300673-04df21735615?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     description: 'Quadra poliesportiva municipal com marcacoes para varios esportes.',
   },
 ];
