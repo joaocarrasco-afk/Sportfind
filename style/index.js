@@ -3,6 +3,7 @@ import { feedStyles } from './features/feedStyles';
 import { mapStyles } from './features/mapStyles';
 import { perfilStyles } from './features/perfilStyles';
 import { searchStyles } from './features/searchStyles';
+import { notificationStyles } from './features/notificationStyles';
 import { colors, spacing } from './tokens';
 
 const baseStyles = {
@@ -202,4 +203,5 @@ export default StyleSheet.create({
   ...mapStyles,
   ...perfilStyles,
   ...feedStyles,
+  ...notificationStyles,
 });

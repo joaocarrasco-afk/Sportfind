@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { FlatList, Image, ScrollView, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import styles from '../../style';
-import { FILTER_ALL, PLACE_TYPE_FILTERS, PLACES } from '../domain/places';
+import { spacing } from '../../style/tokens';
+import { PLACES } from '../domain/places';
 
 const AUTORES = [
   { nome: 'Marina', emoji: '🧗' },
@@ -22,65 +22,59 @@ function rotuloAcesso(acesso) {
 }
 
 function montarPublicacoes() {
-  return PLACES.map((place, indice) => ({
-    id: String(place.id),
+
+  const postsLocais = PLACES.map((place, indice) => ({
+    id: `local-${place.id}`,
+    kind: 'local',
     local: place,
     autor: AUTORES[indice % AUTORES.length],
     tempo: TEMPOS[indice % TEMPOS.length],
     curtidas: 12 + ((place.id * 7) % 80),
     comentarios: 1 + ((place.id * 3) % 12),
   }));
+
+  const imagemDemo = [
+    'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=800&auto=format&fit=crop&q=80',
+  ];
+
+  const postsImagem = [
+    {
+      id: 'img-1',
+      kind: 'imagem',
+      image: imagemDemo[0],
+      autor: AUTORES[0],
+      tempo: TEMPOS[2],
+      curtidas: 48,
+      comentarios: 7,
+    },
+    {
+      id: 'img-2',
+      kind: 'imagem',
+      image: imagemDemo[1],
+      autor: AUTORES[2],
+      tempo: TEMPOS[4],
+      curtidas: 21,
+      comentarios: 2,
+    },
+  ];
+
+  return [...postsLocais, ...postsImagem];
 }
 
 const PUBLICACOES = montarPublicacoes();
 
 export default function TelaFeed() {
-  const [filtroTipo, setFiltroTipo] = useState(FILTER_ALL);
-
-  const publicacoes =
-    filtroTipo === FILTER_ALL
-      ? PUBLICACOES
-      : PUBLICACOES.filter((p) => p.local.type === filtroTipo);
-
-  const tituloSecao = filtroTipo === FILTER_ALL ? 'Para você' : rotuloTipo(filtroTipo);
-
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.feedHeaderRow}>
-        <View style={styles.feedHeaderText}>
-          <Text style={styles.feedTitle}>Feed</Text>
-          <Text style={styles.feedSubtitle}>Locais em destaque perto de você e da comunidade</Text>
-        </View>
         <TouchableOpacity style={styles.feedHeaderIconBtn} activeOpacity={0.75} onPress={() => {}}>
-          <Text style={styles.feedHeaderIcon}>🔔</Text>
+          <Text style={styles.feedHeaderIcon}>🔍</Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.feedChipsScroll}
-        contentContainerStyle={styles.feedChipsContent}
-      >
-        {PLACE_TYPE_FILTERS.map((tipo) => {
-          const ativo = filtroTipo === tipo;
-          return (
-            <TouchableOpacity
-              key={tipo}
-              style={[styles.optionChip, ativo && styles.optionChipActive]}
-              onPress={() => setFiltroTipo(tipo)}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.optionChipText, ativo && styles.feedChipLabelActive]}>{rotuloTipo(tipo)}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
-
-      <Text style={styles.sectionLabel}>{tituloSecao}</Text>
-
       <FlatList
-        data={publicacoes}
+        data={PUBLICACOES}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.feedList}
         showsVerticalScrollIndicator={false}
@@ -97,19 +91,35 @@ export default function TelaFeed() {
               <Text style={styles.feedCardMenu}>⋯</Text>
             </View>
 
+            <View style={{ paddingHorizontal: spacing.md, paddingBottom: spacing.sm }}>
+              <Text style={styles.feedCardCaptionPlaceholderText}>Melhor jogo do mês!</Text>
+            </View>
+
+            {item.kind === 'local' ? (
             <Image source={{ uri: item.local.image }} style={styles.feedCardImage} resizeMode="cover" />
+            ) : (
+              <Image source={{ uri: item.image }} style={styles.feedCardImage} resizeMode="cover" />
+            )}
 
             <View style={styles.feedCardBody}>
-              <View style={styles.feedCardPlaceRow}>
-                <Text style={styles.feedCardPlaceEmoji}>{item.local.emoji}</Text>
-                <Text style={styles.feedCardPlaceName}>{item.local.name}</Text>
-              </View>
-              <Text style={styles.feedCardBodyText}>
-                {rotuloTipo(item.local.type)}  •  {item.local.distance}  •  {rotuloAcesso(item.local.access)}
-              </Text>
-              <Text style={styles.feedCardBodyText} numberOfLines={3}>
-                {item.local.description}
-              </Text>
+              {item.kind === 'local' ? (
+                <>
+                  <View style={styles.feedCardPlaceRow}>
+                    <Text style={styles.feedCardPlaceEmoji}>{item.local.emoji}</Text>
+                    <Text style={styles.feedCardPlaceName}>{item.local.name}</Text>
+                  </View>
+                  <Text style={styles.feedCardBodyText}>
+                    {rotuloTipo(item.local.type)}  •  {item.local.distance}  •  {rotuloAcesso(item.local.access)}
+                  </Text>
+                  <Text style={styles.feedCardBodyText} numberOfLines={3}>
+                    {item.local.description}
+                  </Text>
+                </>
+              ) : (
+                <>
+
+                </>
+              )}
             </View>
 
             <View style={styles.feedCardActions}>

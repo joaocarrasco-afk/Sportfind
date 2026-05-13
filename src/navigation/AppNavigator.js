@@ -16,6 +16,7 @@ import TelaPreferencias from '../screens/TelaPreferencias';
 import TelaPrivacidade from '../screens/TelaPrivacidade';
 import TelaLocal from '../screens/TelaLocal';
 import TelaMapa from '../screens/TelaMapa';
+import TelaNotificacao from '../screens/TelaNotificacao';
 import { BOTTOM_TABS, TAB_CONTENT, TAB_IDS } from '../domain/places';
 import { Platform, Text, View } from 'react-native';
 import styles from '../../style';
@@ -98,7 +99,7 @@ function AppTabs() {
       />
       <Tab.Screen name={TAB_IDS.FEED} component={TelaFeed} />
       <Tab.Screen name={TAB_IDS.CREATE} component={TabPlaceholderScreen} />
-      <Tab.Screen name={TAB_IDS.NOTIFICATION} component={TabPlaceholderScreen} />
+        <Tab.Screen name={TAB_IDS.NOTIFICATION} component={TelaNotificacao} />
       <Tab.Screen name={TAB_IDS.PROFILE} component={PerfilStackScreen} />
     </Tab.Navigator>
   );

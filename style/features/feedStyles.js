@@ -146,6 +146,18 @@ export const feedStyles = {
     marginTop: spacing.sm,
   },
 
+  feedCardCaptionLabel: {
+    color: meta,
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: spacing.md,
+  },
+  feedCardCaptionPlaceholderText: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: spacing.xs,
+  },
   feedCardActions: {
     alignItems: 'center',
     flexDirection: 'row',
