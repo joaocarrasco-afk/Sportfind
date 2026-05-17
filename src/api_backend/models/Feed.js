@@ -1,6 +1,5 @@
-const {db, auth, realdb} = require('../factory/config');
+const {db} = require('../factory/config');
 const {addDoc, doc, getDoc, collection, query, getDocs, where, updateDoc, deleteDoc} = require('firebase/firestore');
-const {ref, set, onValue, push, get, update, remove} = require('firebase/database');
 const cloudinary = require('../factory/cloudinary');
 const CloudinaryMedia = require('./cloudinaryMedia');
 class Feed{
@@ -113,6 +112,34 @@ class Feed{
         }
     }
         
+    async likePost(postId) {
+        try {
+            const postRef = doc(db, 'feed', postId);
+            const postDoc = await getDoc(postRef);
+            if (!postDoc.exists()) return { error: 'Post não encontrado' };
+            const quantidadeLikes = postDoc.data().likes;
+            await updateDoc(postRef, { likes: quantidadeLikes + 1 });
+            return { message: 'Post curtido com sucesso' };
+        } catch (error) {
+            console.error('Não foi possível curtir o post:', error);
+        }
+    }
+
+    async tirarLikePost(postId) {
+        try {
+            const postRef = doc(db, 'feed', postId);
+            const postDoc = await getDoc(postRef);
+            if (!postDoc.exists()) return { error: 'Post não encontrado' };
+            const quantidadeLikes = postDoc.data().likes;
+            if (quantidadeLikes > 0) {
+                await updateDoc(postRef, { likes: quantidadeLikes - 1 });
+                return { message: 'Like removido com sucesso' };
+            }
+            return { message: 'Post já não possui likes' };
+        } catch (error) {
+            console.error('Não foi possível remover o like do post:', error);
+        }
+    }
     
 
 }
