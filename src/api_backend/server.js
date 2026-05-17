@@ -2,6 +2,7 @@ const express = require('express');
 const UsuarioRoute = require('./routes/UsuarioRoute');
 const ChatRoute = require('./routes/ChatRoute');
 const MensagemRoute = require('./routes/MensagemRoute');
+const FeedRoute = require('./routes/FeedRoute');
 
 // Inicializa a aplicação Express
 const app = express();
@@ -15,6 +16,8 @@ app.use(UsuarioRoute);
 app.use(ChatRoute);
 
 app.use(MensagemRoute);
+
+app.use(FeedRoute);
 
 // Inicia o servidor HTTP na porta definida
 app.listen(PORT, () => {
