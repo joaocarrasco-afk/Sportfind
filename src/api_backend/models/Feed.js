@@ -4,11 +4,11 @@ const cloudinary = require('../factory/cloudinary');
 const CloudinaryMedia = require('./cloudinaryMedia');
 class Feed{
 
-    async criarPost({id, descricao = '', fileBuffer, tipo}) {
+    async criarPost({userId, descricao = '', fileBuffer, tipo}) {
         try {
             const media = await CloudinaryMedia.salvarMedia(fileBuffer, tipo);
             const docRef = await addDoc(collection(db, 'feed'), {
-                id,
+                user: userId,
                 url:media.url,
                 publicId: media.publicId,
                 type: media.type,      
@@ -17,7 +17,7 @@ class Feed{
                 likes: 0,
                 comentarios: 0
             });
-            return { id: docRef.id, url: media.url, type: media.type, descricao };
+            return { id: docRef.id, url: media.url, type: media.type, descricao, userId };
         } catch (error) {
             console.error('Não foi possível criar o post:', error);
         }
@@ -32,15 +32,15 @@ class Feed{
             const feedSnapshot = await getDocs(feedRef);
             const feed = feedSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             const sortedFeed = feed.sort((a, b) => b.dataCriacao.toDate() - a.dataCriacao.toDate());
-            const feedWithFormattedDates = sortedFeed.map(post => ({
+            const feedWithFormattedDates = sortedFeed.map(post => ({              
                 ...post,
                 dataCriacao: post.dataCriacao.toDate().toISOString()
             }));
             const feedWithUsernames = await Promise.all(feedWithFormattedDates.map(async post => {
-                const userRef = doc(db, 'usuario', post.id);
+                const userRef = doc(db, 'usuario', post.user);
                 const userDoc = await getDoc(userRef);
                 const username = userDoc.exists() ? userDoc.data().username : 'Usuário Desconecido';
-                return { ...post, username };
+                return {...post, username };
             }));
             return feedWithUsernames;
         }catch(error){
@@ -50,7 +50,7 @@ class Feed{
 
     async mostrarPostUsuario(userId) {
         try {
-            const postRef = query(collection(db, 'feed'), where('id', '==', userId));
+            const postRef = query(collection(db, 'feed'), where('user', '==', userId));
             const postSnapshot = await getDocs(postRef);
             const mostrarPost = postSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             const sortedPosts = mostrarPost.sort((a, b) => b.dataCriacao.toDate() - a.dataCriacao.toDate());
@@ -72,7 +72,7 @@ class Feed{
             const postDoc = await getDoc(postRef);
             if (!postDoc.exists()) return { error: 'Post não encontrado' };
             const postData = postDoc.data();
-            const userRef = doc(db, 'usuario', postData.id);
+            const userRef = doc(db, 'usuario', postData.user);
             const userDoc = await getDoc(userRef);
             const username = userDoc.exists() ? userDoc.data().username : 'Usuário Desconecido';
             return { ...postData, username };
@@ -87,7 +87,7 @@ class Feed{
             const postDoc = await getDoc(postRef);
             if (!postDoc.exists()) return { error: 'Post não encontrado' };
             const data = postDoc.data();
-            if (data.id !== userId) return { error: 'Ação não autorizada' };
+            if (data.user !== userId) return { error: 'Ação não autorizada' };
             if (data.type === 'video'){
                 await cloudinary.uploader.destroy(data.publicId, { resource_type: 'video' });
             }
@@ -104,7 +104,7 @@ class Feed{
             const postRef = doc(db, 'feed', postId);
             const postDoc = await getDoc(postRef);
             if (!postDoc.exists()) return { error: 'Post não encontrado' };
-            if (postDoc.data().id !== userId) return { error: 'Ação não autorizada' };
+            if (postDoc.data().user !== userId) return { error: 'Ação não autorizada' };
             await updateDoc(postRef, { descricao });
             return { message: 'Post editado com sucesso' };
         } catch (error) {

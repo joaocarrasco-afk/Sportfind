@@ -5,7 +5,7 @@ class FeedController{
     async criarPost(req, res) {
         try {
             const { descricao } = req.body;
-            const id = req.params.id; 
+            const {userId} = req.params; 
             const file = req.file;
             if (!file) return res.status(400).json({ error: 'Nenhum arquivo enviado' });
             const tipo = file.mimetype.startsWith('image/') ? 'image' : (file.mimetype.startsWith('video/') ? 'video' : 'media');
@@ -14,7 +14,7 @@ class FeedController{
             
             const message = await Feed.criarPost({
             descricao,
-            id,
+            userId,
             fileBuffer: file.buffer,
             tipo 
             });

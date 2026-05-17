@@ -1,4 +1,6 @@
 import { FlatList, Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { useAppState } from '../state/AppStateContext';
 import styles from '../../style';
 import { spacing } from '../../style/tokens';
 import { PLACES } from '../domain/places';
@@ -62,9 +64,55 @@ function montarPublicacoes() {
   return [...postsLocais, ...postsImagem];
 }
 
+const API_URL = 'http://192.168.15.85:3000';
 const PUBLICACOES = montarPublicacoes();
 
 export default function TelaFeed() {
+  const [publicacoes, setPublicacoes] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const { authUid } = useAppState();
+
+  useEffect(() => {
+    let cancelado = false;
+
+    async function carregarPublicacoes() {
+      setCarregando(true);
+      try {
+        const res = await fetch(`${API_URL}/feed`, { method: 'GET' });
+        const data = await res.json();
+        const publicacoesFormatadas = data.map(feed => ({
+          id: feed.id,
+          type: feed.type,
+          url: feed.url,
+          username: feed.username,
+          dataCriacao: feed.dataCriacao,
+          likes: feed.likes,
+          comentarios: feed.comentarios,
+          descricao: feed.descricao,
+          dataCriacao: feed.dataCriacao,
+        }));
+        if (cancelado) return;
+        setPublicacoes(publicacoesFormatadas);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setCarregando(false);
+      }
+    }
+
+    carregarPublicacoes();
+
+    return () => {
+      cancelado = true;
+    };
+  }, [authUid]);
+  
+
+
+
+
+
+
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.feedHeaderRow}>
@@ -74,7 +122,7 @@ export default function TelaFeed() {
       </View>
 
       <FlatList
-        data={PUBLICACOES}
+        data={publicacoes}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.feedList}
         showsVerticalScrollIndicator={false}
@@ -82,11 +130,11 @@ export default function TelaFeed() {
           <View style={styles.feedCard}>
             <View style={styles.feedCardHeader}>
               <View style={styles.feedCardAvatar}>
-                <Text style={styles.feedCardAvatarEmoji}>{item.autor.emoji}</Text>
+                <Text style={styles.feedCardAvatarEmoji}>👤</Text>
               </View>
               <View style={styles.feedCardHeaderMain}>
-                <Text style={styles.feedCardAuthor}>{item.autor.nome}</Text>
-                <Text style={styles.feedCardTime}>{item.tempo}</Text>
+                <Text style={styles.feedCardAuthor}>{item.username}</Text>
+                <Text style={styles.feedCardTime}>{item.dataCriacao}</Text>
               </View>
               <Text style={styles.feedCardMenu}>⋯</Text>
             </View>
@@ -98,7 +146,7 @@ export default function TelaFeed() {
             {item.kind === 'local' ? (
             <Image source={{ uri: item.local.image }} style={styles.feedCardImage} resizeMode="cover" />
             ) : (
-              <Image source={{ uri: item.image }} style={styles.feedCardImage} resizeMode="cover" />
+              <Image source={{ uri: item.url }} style={styles.feedCardImage} resizeMode="cover" />
             )}
 
             <View style={styles.feedCardBody}>
@@ -112,7 +160,7 @@ export default function TelaFeed() {
                     {rotuloTipo(item.local.type)}  •  {item.local.distance}  •  {rotuloAcesso(item.local.access)}
                   </Text>
                   <Text style={styles.feedCardBodyText} numberOfLines={3}>
-                    {item.local.description}
+                    {item.descricao}
                   </Text>
                 </>
               ) : (
@@ -125,7 +173,7 @@ export default function TelaFeed() {
             <View style={styles.feedCardActions}>
               <TouchableOpacity style={styles.feedActionBtn} activeOpacity={0.7}>
                 <Text style={styles.feedActionIcon}>♡</Text>
-                <Text style={styles.feedActionLabel}>{item.curtidas}</Text>
+                <Text style={styles.feedActionLabel}>{item.likes}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.feedActionBtn} activeOpacity={0.7}>
                 <Text style={styles.feedActionIcon}>💬</Text>

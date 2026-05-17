@@ -6,7 +6,7 @@ class Comentario{
     async criarComentario(userId, postId, texto){
         try{
             const comentarioRef = await addDoc(collection(db, 'comentarios'), {
-                id: userId,
+                user: userId,
                 postId: postId,
                 texto: texto,
                 tipo: 'comentario',
@@ -24,10 +24,10 @@ class Comentario{
             const comentariosSnapshot = await getDocs(comentariosRef);
             const comentarios = await Promise.all(comentariosSnapshot.docs.map(async d => {
                 const comentarioData = d.data();
-                const userRef = doc(db, 'usuario', comentarioData.id);
+                const userRef = doc(db, 'usuario', comentarioData.user);
                 const userDoc = await getDoc(userRef);
                 const username = userDoc.exists() ? userDoc.data().username : 'Usuário Desconecido';
-                return { id: d.id, ...comentarioData, username, dataCriacao: comentarioData.dataCriacao.toDate().toISOString() };
+                return { ...comentarioData, username, dataCriacao: comentarioData.dataCriacao.toDate().toISOString() };
             }));
             
             return comentarios;
@@ -42,10 +42,10 @@ class Comentario{
             const respostasSnapshot = await getDocs(respostasRef);
             const respostas = await Promise.all(respostasSnapshot.docs.map(async d => {
                 const respostaData = d.data();
-                const userRef = doc(db, 'usuario', respostaData.id);
+                const userRef = doc(db, 'usuario', respostaData.user);
                 const userDoc = await getDoc(userRef);
                 const username = userDoc.exists() ? userDoc.data().username : 'Usuário Desconecido';
-                return { id: doc.id, ...respostaData, username, dataCriacao: respostaData.dataCriacao.toDate().toISOString() };
+                return {...respostaData, username, dataCriacao: respostaData.dataCriacao.toDate().toISOString() };
             }));
             
             return respostas;
@@ -59,7 +59,7 @@ class Comentario{
             const comentarioRef = doc(db, 'comentarios', comentarioId);
             const comentarioDoc = await getDoc(comentarioRef);
             if(!comentarioDoc.exists()) return { error: 'Comentário não encontrado' };
-            if(comentarioDoc.data().id !== userId) return { error: 'Usuário não autorizado a deletar este comentário' };
+            if(comentarioDoc.data().user !== userId) return { error: 'Usuário não autorizado a deletar este comentário' };
             await deleteDoc(comentarioRef);
             return { message: 'Comentário deletado com sucesso' };
         }catch(error){
@@ -72,7 +72,7 @@ class Comentario{
             const comentarioRef = doc(db, 'comentarios', comentarioId);
             const comentarioDoc = await getDoc(comentarioRef);
             if(!comentarioDoc.exists()) return { error: 'Comentário não encontrado' };
-            if(comentarioDoc.data().id !== userId) return { error: 'Usuário não autorizado a editar este comentário' };
+            if(comentarioDoc.data().user !== userId) return { error: 'Usuário não autorizado a editar este comentário' };
             await updateDoc(comentarioRef, { texto: novoTexto });
             return { message: 'Comentário editado com sucesso' };
         }catch(error){
@@ -83,7 +83,7 @@ class Comentario{
     async responderComentario(userId, postId, texto, comentarioPaiId){
         try{
             const respostaRef = await addDoc(collection(db, 'comentarios'), {
-                id: userId,
+                user: userId,
                 postId: postId,
                 texto: texto,
                 comentarioPaiId: comentarioPaiId,
