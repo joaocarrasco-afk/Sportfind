@@ -5,7 +5,7 @@ export const searchStyles = {
   searchBar: { flexDirection: 'row', margin: spacing.lg, marginTop: spacing.sm, height: 48 },
   backButton: {
     width: 48,
-    backgroundColor: '#ebebeb',
+    backgroundColor: colors.purpleMuted,
     borderTopLeftRadius: spacing.sm,
     borderBottomLeftRadius: spacing.sm,
     alignItems: 'center',
@@ -13,13 +13,13 @@ export const searchStyles = {
   },
   searchInput: {
     flex: 1,
-    backgroundColor: '#ebebeb',
+    backgroundColor: colors.purpleMuted,
     paddingHorizontal: spacing.md,
     fontSize: 16,
   },
   filterButton: {
     width: 48,
-    backgroundColor: '#ebebeb',
+    backgroundColor: colors.purpleMuted,
     borderTopRightRadius: spacing.sm,
     borderBottomRightRadius: spacing.sm,
     alignItems: 'center',

@@ -1,23 +1,23 @@
 export const MAP_WEB_MESSAGE_TYPE = 'sportfind:place:selected';
 
 export const parseMapMessage = (rawData) => {
-  if (rawData == null) {
+  if (rawData == null || rawData === '') {
     return null;
   }
 
-  const asText = String(rawData);
-  const numericId = Number(asText);
-  if (Number.isFinite(numericId)) {
-    return numericId;
-  }
+  const asText = String(rawData).trim();
 
   try {
     const parsed = JSON.parse(asText);
-    if (parsed?.type === MAP_WEB_MESSAGE_TYPE && Number.isFinite(Number(parsed.placeId))) {
+    if (
+      parsed?.type === MAP_WEB_MESSAGE_TYPE &&
+      Number.isInteger(Number(parsed.placeId)) &&
+      Number(parsed.placeId) > 0
+    ) {
       return Number(parsed.placeId);
     }
-  } catch (error) {
-    return null;
+  } catch {
+    /* mensagem não é JSON válido */
   }
 
   return null;

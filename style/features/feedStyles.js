@@ -1,12 +1,11 @@
-import { colors, spacing } from '../tokens';
+import { StyleSheet } from 'react-native';
+import { colors, spacing, radii } from '../tokens';
 
-const hairline = '#ddd';
-const cardBorder = '#ececec';
-const meta = '#999';
-const action = '#555';
-const menu = '#bbb';
-const avatarBg = '#f3edf7';
-const imageBg = '#f5f5f5';
+const cardBorder = '#E8E8E8';
+const meta = '#666666';
+const menu = '#999999';
+const avatarBg = '#F3EDF7';
+const imageBg = '#F5F5F5';
 
 const cardShadow = {
   elevation: 2,
@@ -44,9 +43,9 @@ export const feedStyles = {
   feedHeaderIconBtn: {
     alignItems: 'center',
     backgroundColor: colors.white,
-    borderColor: hairline,
+    borderColor: colors.purple,
     borderRadius: 20,
-    borderWidth: 1,
+    borderWidth: 1.5,
     height: 40,
     justifyContent: 'center',
     width: 40,
@@ -174,13 +173,146 @@ export const feedStyles = {
     fontSize: 16,
   },
   feedActionLabel: {
-    color: action,
+    color: meta,
     fontSize: 13,
     fontWeight: '500',
   },
 
+  feedChip: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: radii.pill,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    backgroundColor: colors.white,
+  },
+  feedChipActive: {
+    borderColor: colors.purple,
+    backgroundColor: colors.purpleLight,
+  },
+  feedChipLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: colors.textSecondary,
+  },
   feedChipLabelActive: {
     color: colors.purple,
     fontWeight: '700',
+  },
+  feedActionLabelActive: {
+    color: colors.purple,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  feedEmpty: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl * 2,
+    gap: spacing.sm,
+  },
+  feedEmptyText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+
+  feedModalRoot: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  feedModalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: colors.overlay,
+  },
+  feedModalSheet: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '75%',
+    paddingBottom: spacing.xl,
+  },
+  feedModalHandle: {
+    alignSelf: 'center',
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.border,
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  feedModalTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.purple,
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  feedCommentList: {
+    paddingHorizontal: spacing.lg,
+    maxHeight: 280,
+  },
+  feedCommentItem: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  feedCommentAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: avatarBg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  feedCommentAuthor: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  feedCommentText: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    lineHeight: 18,
+    marginTop: 2,
+  },
+  feedCommentInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  feedCommentInput: {
+    flex: 1,
+    height: 44,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.md,
+    fontSize: 14,
+    color: colors.textPrimary,
+    backgroundColor: colors.purpleMuted,
+  },
+  feedCommentSendBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.purple,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  feedMenuOption: {
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  feedMenuOptionText: {
+    fontSize: 15,
+    color: colors.textPrimary,
+  },
+  feedMenuOptionDanger: {
+    color: '#c62828',
   },
 };

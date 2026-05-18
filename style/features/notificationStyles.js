@@ -1,8 +1,7 @@
 import { colors, spacing } from '../tokens';
 
-const hairline = '#ddd';
-const cardBorder = '#ececec';
-const meta = '#999';
+const cardBorder = '#E8E8E8';
+const meta = '#666666';
 
 const cardShadow = {
   elevation: 2,
@@ -33,6 +32,7 @@ export const notificationStyles = {
   notificationEmptyText: { fontSize: 13, color: meta },
 
   notificationCard: {
+    flexDirection: 'row',
     backgroundColor: colors.white,
     borderColor: cardBorder,
     borderRadius: 16,
@@ -55,5 +55,13 @@ export const notificationStyles = {
   notificationTextBlock: { flex: 1 },
   notificationTextTitle: { fontSize: 14, fontWeight: '800', color: colors.textPrimary },
   notificationTextSubtitle: { fontSize: 12, color: meta, marginTop: 4, lineHeight: 16 },
+  notificationBadge: {
+    width: 4,
+    alignSelf: 'stretch',
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 16,
+  },
+  notificationBadgeLate: { backgroundColor: colors.purple },
+  notificationBadgeNear: { backgroundColor: colors.purpleLight },
 };
 

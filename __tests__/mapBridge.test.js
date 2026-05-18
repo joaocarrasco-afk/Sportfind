@@ -5,8 +5,8 @@ import {
 } from '../src/features/map/mapBridge';
 
 describe('mapBridge', () => {
-  it('parses plain numeric payload', () => {
-    expect(parseMapMessage('4')).toBe(4);
+  it('ignores plain numeric payload (only typed JSON)', () => {
+    expect(parseMapMessage('4')).toBeNull();
   });
 
   it('parses json payload', () => {

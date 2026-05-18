@@ -4,13 +4,22 @@ const normalize = (value) => value.trim().toLowerCase();
 
 export const filterPlaces = ({
   places,
-  typeFilter = FILTER_ALL,
+  sportFilters = [],
+  typeFilter,
   accessFilter = FILTER_ALL,
   search = '',
-}) =>
-  places.filter(
+}) => {
+  const sports =
+    sportFilters?.length > 0
+      ? sportFilters
+      : typeFilter && typeFilter !== FILTER_ALL
+        ? [typeFilter]
+        : [];
+
+  return places.filter(
     (place) =>
-      (typeFilter === FILTER_ALL || place.type === typeFilter) &&
+      (sports.length === 0 || sports.includes(place.type)) &&
       (accessFilter === FILTER_ALL || place.access === accessFilter) &&
       normalize(place.name).includes(normalize(search)),
   );
+};

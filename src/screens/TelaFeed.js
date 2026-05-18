@@ -1,8 +1,10 @@
-import { FlatList, Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
-import { useEffect, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { FlatList, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import FeedPostCard from '../components/FeedPostCard';
 import { useAppState } from '../state/AppStateContext';
 import styles from '../../style';
-import { spacing } from '../../style/tokens';
+import { colors } from '../../style/tokens';
 import { PLACES } from '../domain/places';
 
 const AUTORES = [
@@ -15,24 +17,22 @@ const AUTORES = [
 
 const TEMPOS = ['Há 2 h', 'Ontem', 'Há 3 h', 'Há 1 dia', 'Há 5 h'];
 
-function rotuloTipo(tipo) {
-  return tipo === 'Tenis' ? 'Tênis' : tipo;
-}
+const CHIPS = [
+  { id: 'todos', label: 'Todos' },
+  { id: 'locais', label: 'Locais' },
+  { id: 'fotos', label: 'Fotos' },
+];
 
-function rotuloAcesso(acesso) {
-  return acesso === 'Publico' ? 'Público' : acesso;
-}
-
-function montarPublicacoes() {
-
+function montarPublicacoesDemo() {
   const postsLocais = PLACES.map((place, indice) => ({
     id: `local-${place.id}`,
     kind: 'local',
     local: place,
-    autor: AUTORES[indice % AUTORES.length],
-    tempo: TEMPOS[indice % TEMPOS.length],
-    curtidas: 12 + ((place.id * 7) % 80),
+    username: AUTORES[indice % AUTORES.length].nome,
+    dataCriacao: TEMPOS[indice % TEMPOS.length],
+    likes: 12 + ((place.id * 7) % 80),
     comentarios: 1 + ((place.id * 3) % 12),
+    descricao: place.description,
   }));
 
   const imagemDemo = [
@@ -44,20 +44,22 @@ function montarPublicacoes() {
     {
       id: 'img-1',
       kind: 'imagem',
-      image: imagemDemo[0],
-      autor: AUTORES[0],
-      tempo: TEMPOS[2],
-      curtidas: 48,
+      url: imagemDemo[0],
+      username: AUTORES[0].nome,
+      dataCriacao: TEMPOS[2],
+      likes: 48,
       comentarios: 7,
+      descricao: 'Melhor jogo do mês!',
     },
     {
       id: 'img-2',
       kind: 'imagem',
-      image: imagemDemo[1],
-      autor: AUTORES[2],
-      tempo: TEMPOS[4],
-      curtidas: 21,
+      url: imagemDemo[1],
+      username: AUTORES[2].nome,
+      dataCriacao: TEMPOS[4],
+      likes: 21,
       comentarios: 2,
+      descricao: 'Pelada no fim de semana.',
     },
   ];
 
@@ -65,11 +67,30 @@ function montarPublicacoes() {
 }
 
 const API_URL = 'http://192.168.15.85:3000';
-const PUBLICACOES = montarPublicacoes();
+
+function normalizarPostsApi(data) {
+  const lista = Array.isArray(data) ? data : (data?.feeds ?? data?.data ?? []);
+  if (!Array.isArray(lista)) return [];
+
+  return lista
+    .map((feed, index) => ({
+      id: feed.id ?? feed._id ?? `api-${index}`,
+      kind: feed.type === 'local' ? 'local' : 'imagem',
+      url: feed.url,
+      username: feed.username ?? 'Usuário',
+      dataCriacao: feed.dataCriacao ?? '',
+      likes: feed.likes ?? 0,
+      comentarios: feed.comentarios ?? 0,
+      descricao: feed.descricao ?? '',
+    }))
+    .filter((post) => post.id != null);
+}
 
 export default function TelaFeed() {
-  const [publicacoes, setPublicacoes] = useState([]);
+  const [publicacoes, setPublicacoes] = useState(() => montarPublicacoesDemo());
+  const [ocultos, setOcultos] = useState(() => new Set());
   const [carregando, setCarregando] = useState(true);
+  const [chipAtivo, setChipAtivo] = useState('todos');
   const { authUid } = useAppState();
 
   useEffect(() => {
@@ -77,26 +98,17 @@ export default function TelaFeed() {
 
     async function carregarPublicacoes() {
       setCarregando(true);
+      const demo = montarPublicacoesDemo();
       try {
         const res = await fetch(`${API_URL}/feed`, { method: 'GET' });
         const data = await res.json();
-        const publicacoesFormatadas = data.map(feed => ({
-          id: feed.id,
-          type: feed.type,
-          url: feed.url,
-          username: feed.username,
-          dataCriacao: feed.dataCriacao,
-          likes: feed.likes,
-          comentarios: feed.comentarios,
-          descricao: feed.descricao,
-          dataCriacao: feed.dataCriacao,
-        }));
+        const daApi = normalizarPostsApi(data);
         if (cancelado) return;
-        setPublicacoes(publicacoesFormatadas);
-      } catch (error) {
-        console.error(error);
+        setPublicacoes(daApi.length > 0 ? daApi : demo);
+      } catch {
+        if (!cancelado) setPublicacoes(demo);
       } finally {
-        setCarregando(false);
+        if (!cancelado) setCarregando(false);
       }
     }
 
@@ -106,86 +118,85 @@ export default function TelaFeed() {
       cancelado = true;
     };
   }, [authUid]);
-  
 
+  const publicacoesFiltradas = useMemo(() => {
+    let lista = publicacoes.filter((p) => !ocultos.has(p.id));
+    if (chipAtivo === 'locais') lista = lista.filter((p) => p.kind === 'local');
+    if (chipAtivo === 'fotos') lista = lista.filter((p) => p.kind === 'imagem');
+    return lista;
+  }, [publicacoes, chipAtivo, ocultos]);
 
+  function ocultarPost(id) {
+    setOcultos((prev) => new Set([...prev, id]));
+  }
 
+  function restaurarFeed() {
+    setOcultos(new Set());
+  }
 
-
-
-  return (
-    <SafeAreaView style={styles.screen}>
+  const ListHeader = (
+    <>
       <View style={styles.feedHeaderRow}>
+        <View style={styles.feedHeaderText}>
+          <Text style={styles.feedTitle}>Feed</Text>
+          <Text style={styles.feedSubtitle}>Atividade da comunidade Sportfind</Text>
+        </View>
         <TouchableOpacity style={styles.feedHeaderIconBtn} activeOpacity={0.75} onPress={() => {}}>
-          <Text style={styles.feedHeaderIcon}>🔍</Text>
+          <Ionicons name="search" size={20} color={colors.purple} />
         </TouchableOpacity>
       </View>
 
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.feedChipsScroll}
+        contentContainerStyle={styles.feedChipsContent}
+      >
+        {CHIPS.map((chip) => {
+          const ativo = chipAtivo === chip.id;
+          return (
+            <TouchableOpacity
+              key={chip.id}
+              style={[styles.feedChip, ativo && styles.feedChipActive]}
+              onPress={() => setChipAtivo(chip.id)}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.feedChipLabel, ativo && styles.feedChipLabelActive]}>
+                {chip.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </>
+  );
+
+  return (
+    <SafeAreaView style={styles.screen}>
       <FlatList
-        data={publicacoes}
-        keyExtractor={(item) => item.id}
+        data={publicacoesFiltradas}
+        keyExtractor={(item) => String(item.id)}
+        ListHeaderComponent={ListHeader}
         contentContainerStyle={styles.feedList}
         showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <View style={styles.feedCard}>
-            <View style={styles.feedCardHeader}>
-              <View style={styles.feedCardAvatar}>
-                <Text style={styles.feedCardAvatarEmoji}>👤</Text>
-              </View>
-              <View style={styles.feedCardHeaderMain}>
-                <Text style={styles.feedCardAuthor}>{item.username}</Text>
-                <Text style={styles.feedCardTime}>{item.dataCriacao}</Text>
-              </View>
-              <Text style={styles.feedCardMenu}>⋯</Text>
+        ListEmptyComponent={
+          !carregando ? (
+            <View style={styles.feedEmpty}>
+              <Ionicons name="newspaper-outline" size={40} color={colors.purpleLight} />
+              <Text style={styles.feedEmptyText}>
+                {ocultos.size > 0
+                  ? 'Você ocultou todas as publicações.'
+                  : 'Nenhuma publicação ainda.'}
+              </Text>
+              {ocultos.size > 0 ? (
+                <TouchableOpacity onPress={restaurarFeed} style={{ marginTop: 12 }}>
+                  <Text style={{ color: colors.purple, fontWeight: '700' }}>Mostrar novamente</Text>
+                </TouchableOpacity>
+              ) : null}
             </View>
-
-            <View style={{ paddingHorizontal: spacing.md, paddingBottom: spacing.sm }}>
-              <Text style={styles.feedCardCaptionPlaceholderText}>Melhor jogo do mês!</Text>
-            </View>
-
-            {item.kind === 'local' ? (
-            <Image source={{ uri: item.local.image }} style={styles.feedCardImage} resizeMode="cover" />
-            ) : (
-              <Image source={{ uri: item.url }} style={styles.feedCardImage} resizeMode="cover" />
-            )}
-
-            <View style={styles.feedCardBody}>
-              {item.kind === 'local' ? (
-                <>
-                  <View style={styles.feedCardPlaceRow}>
-                    <Text style={styles.feedCardPlaceEmoji}>{item.local.emoji}</Text>
-                    <Text style={styles.feedCardPlaceName}>{item.local.name}</Text>
-                  </View>
-                  <Text style={styles.feedCardBodyText}>
-                    {rotuloTipo(item.local.type)}  •  {item.local.distance}  •  {rotuloAcesso(item.local.access)}
-                  </Text>
-                  <Text style={styles.feedCardBodyText} numberOfLines={3}>
-                    {item.descricao}
-                  </Text>
-                </>
-              ) : (
-                <>
-
-                </>
-              )}
-            </View>
-
-            <View style={styles.feedCardActions}>
-              <TouchableOpacity style={styles.feedActionBtn} activeOpacity={0.7}>
-                <Text style={styles.feedActionIcon}>♡</Text>
-                <Text style={styles.feedActionLabel}>{item.likes}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.feedActionBtn} activeOpacity={0.7}>
-                <Text style={styles.feedActionIcon}>💬</Text>
-                <Text style={styles.feedActionLabel}>{item.comentarios}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.feedActionBtn} activeOpacity={0.7}>
-                <Text style={styles.feedActionIcon}>↗</Text>
-                <Text style={styles.feedActionLabel}>Compartilhar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
+          ) : null
+        }
+        renderItem={({ item }) => <FeedPostCard item={item} onOcultar={ocultarPost} />}
       />
     </SafeAreaView>
   );

@@ -1,13 +1,12 @@
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { FILTER_ALL, filterPlaces, PLACES } from '../domain/places';
 
 const AppStateContext = createContext(null);
 
 export function AppStateProvider({ children }) {
-  /** UID do usuário após login/cadastro — usado em chamadas como GET /usuario/perfil/:id */
   const [authUid, setAuthUid] = useState(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState(null);
-  const [typeFilter, setTypeFilter] = useState(FILTER_ALL);
+  const [sportFilters, setSportFilters] = useState([]);
   const [accessFilter, setAccessFilter] = useState(FILTER_ALL);
   const [isFilterVisible, setFilterVisible] = useState(false);
   const [search, setSearch] = useState('');
@@ -16,20 +15,46 @@ export function AppStateProvider({ children }) {
     () =>
       filterPlaces({
         places: PLACES,
-        typeFilter,
+        sportFilters,
         accessFilter,
         search,
       }),
-    [typeFilter, accessFilter, search],
+    [sportFilters, accessFilter, search],
   );
 
-  const selectedPlace = useMemo(
-    () => PLACES.find((place) => place.id === selectedPlaceId) ?? null,
-    [selectedPlaceId],
-  );
+  const selectedPlace = useMemo(() => {
+    if (!Number.isInteger(selectedPlaceId) || selectedPlaceId <= 0) return null;
+    return PLACES.find((place) => place.id === selectedPlaceId) ?? null;
+  }, [selectedPlaceId]);
+
+  const selectedPlaceVisible = useMemo(() => {
+    if (!selectedPlace?.name) return null;
+    if (!filteredPlaces.some((p) => p.id === selectedPlace.id)) return null;
+    return selectedPlace;
+  }, [selectedPlace, filteredPlaces]);
+
+  useEffect(() => {
+    if (
+      selectedPlaceId != null &&
+      !filteredPlaces.some((place) => place.id === selectedPlaceId)
+    ) {
+      setSelectedPlaceId(null);
+    }
+  }, [filteredPlaces, selectedPlaceId]);
+
+  const toggleSportFilter = (sport) => {
+    setSportFilters((prev) =>
+      prev.includes(sport) ? prev.filter((s) => s !== sport) : [...prev, sport],
+    );
+  };
+
+  const applyFilters = (sports, access) => {
+    setSportFilters(sports);
+    setAccessFilter(access);
+  };
 
   const resetFilters = () => {
-    setTypeFilter(FILTER_ALL);
+    setSportFilters([]);
     setAccessFilter(FILTER_ALL);
   };
 
@@ -38,11 +63,12 @@ export function AppStateProvider({ children }) {
     setAuthUid,
     places: PLACES,
     filteredPlaces,
-    selectedPlace,
+    selectedPlace: selectedPlaceVisible,
     selectedPlaceId,
     setSelectedPlaceId,
-    typeFilter,
-    setTypeFilter,
+    sportFilters,
+    toggleSportFilter,
+    applyFilters,
     accessFilter,
     setAccessFilter,
     isFilterVisible,

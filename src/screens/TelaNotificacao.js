@@ -1,5 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
 import { FlatList, Image, SafeAreaView, Text, View } from 'react-native';
 import styles from '../../style';
+import { colors } from '../../style/tokens';
 import { PLACES } from '../domain/places';
 
 const pAtrasado = PLACES.find((p) => p.id === 2) ?? PLACES[0];
@@ -27,31 +29,58 @@ const NOTIFICACOES_DEMO = [
   },
 ];
 
+function NotificationHeader() {
+  return (
+    <View style={styles.notificationHeader}>
+      <Text style={styles.notificationTitle}>Notificações</Text>
+      <Text style={styles.notificationSubtitle}>
+        Alertas de partidas, locais e atividades perto de você
+      </Text>
+    </View>
+  );
+}
+
 export default function TelaNotificacao() {
   const notificacoes = NOTIFICACOES_DEMO;
 
   return (
     <SafeAreaView style={styles.notificationScreen}>
       {notificacoes.length === 0 ? (
-        <View style={styles.notificationEmpty}>
-          <Text style={styles.notificationEmptyText}>Sem notificações.</Text>
-        </View>
+        <>
+          <NotificationHeader />
+          <View style={styles.notificationEmpty}>
+            <Ionicons name="notifications-off-outline" size={48} color={colors.purpleLight} />
+            <Text style={styles.notificationEmptyText}>Sem notificações no momento.</Text>
+          </View>
+        </>
       ) : (
         <FlatList
           data={notificacoes}
           keyExtractor={(n) => n.id}
+          ListHeaderComponent={NotificationHeader}
           contentContainerStyle={styles.notificationList}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => {
-            const title = item.type === 'atrasado' ? 'Atrasado para o local' : 'Partida perto de você';
+            const title =
+              item.type === 'atrasado' ? 'Atrasado para o local' : 'Partida perto de você';
+            const badgeStyle =
+              item.type === 'atrasado'
+                ? styles.notificationBadgeLate
+                : styles.notificationBadgeNear;
             return (
               <View style={styles.notificationCard}>
+                <View style={[styles.notificationBadge, badgeStyle]} />
                 <View style={styles.notificationCardInner}>
-                  <Image source={{ uri: item.place.image }} style={styles.notificationThumb} resizeMode="cover" />
+                  <Image
+                    source={{ uri: item.place.image }}
+                    style={styles.notificationThumb}
+                    resizeMode="cover"
+                  />
                   <View style={styles.notificationTextBlock}>
                     <Text style={styles.notificationTextTitle}>{title}</Text>
                     <Text style={styles.notificationTextSubtitle}>{item.message}</Text>
                   </View>
+                  <Ionicons name="chevron-forward" size={18} color={colors.purple} />
                 </View>
               </View>
             );
@@ -61,4 +90,3 @@ export default function TelaNotificacao() {
     </SafeAreaView>
   );
 }
-

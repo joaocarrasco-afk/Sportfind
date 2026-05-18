@@ -11,10 +11,10 @@ export default function TelaBusca({ navigation }) {
     setSelectedPlaceId,
     isFilterVisible,
     setFilterVisible,
-    typeFilter,
+    sportFilters,
     accessFilter,
-    setTypeFilter,
-    setAccessFilter,
+    applyFilters,
+    resetFilters,
   } = useAppState();
 
   return (
@@ -55,7 +55,7 @@ export default function TelaBusca({ navigation }) {
             <View style={styles.cardText}>
               <Text style={styles.cardTitle}>{item.name}</Text>
               <Text style={styles.cardInfo}>
-                {item.distance}  •  {item.access}
+                {item.distance} • {item.access}
               </Text>
             </View>
           </TouchableOpacity>
@@ -65,10 +65,10 @@ export default function TelaBusca({ navigation }) {
       <ModalFiltros
         visivel={isFilterVisible}
         fechar={() => setFilterVisible(false)}
-        filtroTipo={typeFilter}
+        sportFilters={sportFilters}
         filtroAcesso={accessFilter}
-        setFiltroTipo={setTypeFilter}
-        setFiltroAcesso={setAccessFilter}
+        onAplicar={applyFilters}
+        onLimparTodos={resetFilters}
       />
     </SafeAreaView>
   );

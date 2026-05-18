@@ -1,7 +1,9 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useState, useEffect } from 'react';
 import { Alert, Modal, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import styles from '../../style';
+import { colors } from '../../style/tokens';
 import { useAppState } from '../state/AppStateContext';
 
 const ABAS = [
@@ -12,52 +14,47 @@ const ABAS = [
 
 const API_URL = 'http://192.168.15.85:3000';
 
-
-
-
-
 export default function TelaUsuario() {
   const navigation = useNavigation();
   const [aba, setAba] = useState('pub');
   const [cfgAberto, setCfgAberto] = useState(false);
   const { authUid } = useAppState();
   const [carregando, setCarregando] = useState(!!authUid);
-  const [username, setUsername] = useState();
+  const [username, setUsername] = useState('Explorador Sportfind');
 
   useEffect(() => {
     let cancelado = false;
-  
+
     async function carregarPerfil() {
       if (!authUid) {
         setCarregando(false);
         return;
       }
-  
+
       setCarregando(true);
       try {
-        const res = await fetch(
-          `${API_URL}/usuario/perfil/${encodeURIComponent(authUid)}`,
-          { method: 'GET' },
-        );
+        const res = await fetch(`${API_URL}/usuario/perfil/${encodeURIComponent(authUid)}`, {
+          method: 'GET',
+        });
         let data = null;
         try {
           data = await res.json();
-          
-        } catch(error) {
+        } catch {
           data = null;
-          alert(error)
         }
         if (cancelado) return;
-  
+
         if (!res.ok) {
-          Alert.alert('Perfil', data?.messagem || data?.mensagem || 'Não foi possível carregar o perfil.');
+          Alert.alert(
+            'Perfil',
+            data?.messagem || data?.mensagem || 'Não foi possível carregar o perfil.',
+          );
           return;
         }
-        
-        if (data?.username != null){ 
-          setUsername(data.username)
-        };
-        alert( 'teste');
+
+        if (data?.username != null) {
+          setUsername(data.username);
+        }
       } catch {
         if (!cancelado) {
           Alert.alert('Perfil', 'Erro de rede ao carregar o perfil.');
@@ -66,16 +63,12 @@ export default function TelaUsuario() {
         if (!cancelado) setCarregando(false);
       }
     }
-  
+
     carregarPerfil();
     return () => {
       cancelado = true;
     };
   }, [authUid]);
-
-
-
-
 
   function irConfig(rota) {
     setCfgAberto(false);
@@ -87,27 +80,30 @@ export default function TelaUsuario() {
       <ScrollView>
         <View style={styles.usuarioTopRow}>
           <TouchableOpacity style={styles.usuarioIconBtn} onPress={() => {}}>
-            <Text style={styles.usuarioIconBtnTextPlus}>+</Text>
+            <Ionicons name="add" size={24} color={colors.purple} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.usuarioIconBtn} onPress={() => setCfgAberto(true)}>
-            <Text style={styles.usuarioIconBtnTextMenu}>☰</Text>
+            <Ionicons name="menu" size={24} color={colors.purple} />
           </TouchableOpacity>
         </View>
 
         <View style={styles.usuarioAvatarWrap}>
           <View>
             <View style={styles.usuarioAvatar}>
-              <Text style={styles.usuarioAvatarEmoji}>👤</Text>
+              <Ionicons name="paw" size={52} color={colors.purple} />
             </View>
             <TouchableOpacity style={styles.usuarioEditBadge} onPress={() => {}}>
-              <Text style={styles.usuarioEditIcon}>✎</Text>
+              <Ionicons name="pencil" size={16} color={colors.purple} />
             </TouchableOpacity>
           </View>
         </View>
 
-        <Text style={styles.usuarioName}>{username}</Text>
+        <Text style={styles.usuarioName}>{carregando ? 'Carregando...' : username}</Text>
         <View style={styles.usuarioLocationRow}>
-          <Text style={styles.usuarioLocationText}>📍 São Paulo, Brasil</Text>
+          <Ionicons name="location-outline" size={14} color={colors.textSecondary} />
+          <Text style={[styles.usuarioLocationText, { marginLeft: 4 }]}>
+            São Paulo, Brasil
+          </Text>
         </View>
 
         <View style={styles.usuarioTagsRow}>
@@ -130,8 +126,8 @@ export default function TelaUsuario() {
         </View>
 
         <View style={styles.usuarioTrophyBox}>
-          <Text style={styles.usuarioTrophyEmoji}>🏆</Text>
-          <Text style={styles.usuarioTrophyLabel}>Troféu</Text>
+          <Ionicons name="trophy" size={40} color={colors.purple} />
+          <Text style={styles.usuarioTrophyLabel}>Troféus Sportfind</Text>
         </View>
 
         <View style={styles.usuarioTabBar}>
@@ -141,7 +137,9 @@ export default function TelaUsuario() {
               style={[styles.usuarioTabBtn, aba === t.id && styles.usuarioTabBtnActive]}
               onPress={() => setAba(t.id)}
             >
-              <Text style={[styles.usuarioTabText, aba === t.id && styles.usuarioTabTextActive]}>{t.label}</Text>
+              <Text style={[styles.usuarioTabText, aba === t.id && styles.usuarioTabTextActive]}>
+                {t.label}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -152,7 +150,7 @@ export default function TelaUsuario() {
               <View style={styles.usuarioFeedGrid}>
                 {[0, 1, 2, 3, 4, 5].map((i) => (
                   <View key={i} style={styles.usuarioFeedCell}>
-                    <Text style={styles.usuarioFeedCellX}>✕</Text>
+                    <Ionicons name="image-outline" size={24} color={colors.purpleLight} />
                   </View>
                 ))}
               </View>
@@ -160,6 +158,11 @@ export default function TelaUsuario() {
             </>
           ) : (
             <View style={styles.usuarioEmptyTab}>
+              <Ionicons
+                name={aba === 'trophy' ? 'trophy-outline' : 'heart-outline'}
+                size={36}
+                color={colors.purpleLight}
+              />
               <Text style={styles.usuarioEmptyTabText}>
                 {aba === 'trophy' ? 'Troféus aparecerão aqui.' : 'Posts curtidos aparecerão aqui.'}
               </Text>

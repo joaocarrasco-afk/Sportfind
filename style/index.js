@@ -4,7 +4,8 @@ import { mapStyles } from './features/mapStyles';
 import { perfilStyles } from './features/perfilStyles';
 import { searchStyles } from './features/searchStyles';
 import { notificationStyles } from './features/notificationStyles';
-import { colors, spacing } from './tokens';
+import { createStyles } from './features/createStyles';
+import { colors, spacing, radii } from './tokens';
 
 const baseStyles = {
   card: {
@@ -17,23 +18,7 @@ const baseStyles = {
   cardText: { flex: 1, padding: 12, justifyContent: 'center' },
   cardTitle: { fontSize: 15, fontWeight: '600', color: colors.black },
   cardInfo: { fontSize: 12, color: colors.textSecondary, marginTop: 4 },
-  filterTag: {
-    position: 'absolute',
-    top: 74,
-    alignSelf: 'center',
-    left: '25%',
-    backgroundColor: colors.primary,
-    borderRadius: 20,
-    paddingVertical: 4,
-    paddingHorizontal: 16,
-    elevation: 4,
-  },
-  filterTagText: { color: colors.white, fontSize: 13, fontWeight: '500' },
   selectedPlaceCard: {
-    position: 'absolute',
-    bottom: 72,
-    left: 12,
-    right: 12,
     backgroundColor: colors.white,
     borderRadius: 16,
     flexDirection: 'row',
@@ -81,9 +66,11 @@ const baseStyles = {
   },
   panel: {
     backgroundColor: colors.white,
-    borderRadius: 16,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     padding: 20,
     paddingBottom: 36,
+    maxHeight: '80%',
   },
   panelHeader: {
     flexDirection: 'row',
@@ -113,8 +100,11 @@ const baseStyles = {
     borderWidth: 1.5,
     borderColor: '#ccc',
   },
-  optionChipActive: { borderColor: colors.primary, backgroundColor: '#e8eeff' },
-  optionChipText: { fontSize: 13, fontWeight: '500', color: '#333' },
+  optionChipActive: { borderColor: colors.purple, backgroundColor: colors.purpleLight },
+  optionChipText: { fontSize: 13, fontWeight: '500', color: colors.textPrimary },
+  optionChipTextActive: { color: colors.purple, fontWeight: '600' },
+  panelTitlePurple: { fontSize: 18, fontWeight: '700', color: colors.purple },
+  panelClearText: { fontSize: 13, color: colors.purple, fontWeight: '600' },
   centeredScreen: {
     flex: 1,
     backgroundColor: colors.white,
@@ -122,21 +112,40 @@ const baseStyles = {
     justifyContent: 'center',
     gap: 8,
   },
-  screenTitle: { fontSize: 16, fontWeight: '500', color: '#625b71' },
-  screenSubtitle: { fontSize: 13, color: '#999' },
-  tabBar: { height: 64, backgroundColor: colors.navBackground },
-  tabBarItem: { alignItems: 'center', justifyContent: 'center', gap: 2 },
+  screenTitle: { fontSize: 18, fontWeight: '700', color: colors.purple },
+  screenSubtitle: { fontSize: 13, color: colors.textSecondary, marginTop: spacing.xs },
+  tabBar: {
+    height: 72,
+    backgroundColor: colors.navBackground,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingBottom: 4,
+  },
+  tabBarItem: { alignItems: 'center', justifyContent: 'center', gap: 2, minWidth: 56 },
   tabPill: {
-    width: 56,
-    height: 30,
-    borderRadius: 15,
+    width: 48,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
   tabPillActive: { backgroundColor: colors.navActivePill },
-  tabIcon: { fontSize: 22 },
-  tabLabel: { fontSize: 11, fontWeight: '500', color: '#49454f' },
-  tabLabelActive: { color: '#625b71' },
+  tabPillCreate: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: colors.purple,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -20,
+    elevation: 6,
+    shadowColor: colors.purple,
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  tabLabel: { fontSize: 11, fontWeight: '500', color: colors.textSecondary },
+  tabLabelActive: { color: colors.purple, fontWeight: '700' },
   authScreen: { flex: 1, backgroundColor: colors.white },
   authCenter: {
     flex: 1,
@@ -204,4 +213,5 @@ export default StyleSheet.create({
   ...perfilStyles,
   ...feedStyles,
   ...notificationStyles,
+  ...createStyles,
 });

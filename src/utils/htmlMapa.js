@@ -6,7 +6,7 @@ export const htmlMapa = (locais) =>
       id: local.id,
       lat: local.lat,
       lng: local.lng,
-      color: local.cor,
+      color: local.color ?? local.cor,
       emoji: local.emoji,
     })),
   );
