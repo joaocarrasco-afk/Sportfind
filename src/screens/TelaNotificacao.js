@@ -76,7 +76,7 @@ export default function TelaNotificacao() {
                     style={styles.notificationThumb}
                     resizeMode="cover"
                   />
-                  <View style={styles.notificationTextBlock}>
+                  <View>
                     <Text style={styles.notificationTextTitle}>{title}</Text>
                     <Text style={styles.notificationTextSubtitle}>{item.message}</Text>
                   </View>

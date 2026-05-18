@@ -66,7 +66,7 @@ function montarPublicacoesDemo() {
   return [...postsLocais, ...postsImagem];
 }
 
-const API_URL = 'http://192.168.15.85:3000';
+const API_URL = 'http://10.100.1.177:3000';
 
 function normalizarPostsApi(data) {
   const lista = Array.isArray(data) ? data : (data?.feeds ?? data?.data ?? []);

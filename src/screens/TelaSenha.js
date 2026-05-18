@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Image, SafeAreaView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import styles from '../../style';
 
-const API_URL = 'http://192.168.xx.xx:3000';
+const API_URL = 'http://10.100.1.177:3000';
 
 export default function TelaSenha ({ navigation }) {
 

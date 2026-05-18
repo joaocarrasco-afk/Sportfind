@@ -16,7 +16,7 @@ export default function TelaCadastro({ navigation }) {
 
 // Rota para acessar a API
 //Para funcionar tem que colocar ip da maquina 
-const API_URL = 'http://192.168.15.85:3000';
+const API_URL = 'http://10.100.1.177:3000';
 
   // Função para adicionar um novo usuário
   async function GravarUsuario() {

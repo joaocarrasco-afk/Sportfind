@@ -12,7 +12,7 @@ const ABAS = [
   { id: 'liked', label: 'Curtidos' },
 ];
 
-const API_URL = 'http://192.168.15.85:3000';
+const API_URL = 'http://10.100.1.177:3000';
 
 export default function TelaUsuario() {
   const navigation = useNavigation();
