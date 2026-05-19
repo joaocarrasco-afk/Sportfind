@@ -29,17 +29,6 @@ const NOTIFICACOES_DEMO = [
   },
 ];
 
-function NotificationHeader() {
-  return (
-    <View style={styles.notificationHeader}>
-      <Text style={styles.notificationTitle}>Notificações</Text>
-      <Text style={styles.notificationSubtitle}>
-        Alertas de partidas, locais e atividades perto de você
-      </Text>
-    </View>
-  );
-}
-
 export default function TelaNotificacao() {
   const notificacoes = NOTIFICACOES_DEMO;
 
@@ -47,7 +36,6 @@ export default function TelaNotificacao() {
     <SafeAreaView style={styles.notificationScreen}>
       {notificacoes.length === 0 ? (
         <>
-          <NotificationHeader />
           <View style={styles.notificationEmpty}>
             <Ionicons name="notifications-off-outline" size={48} color={colors.purpleLight} />
             <Text style={styles.notificationEmptyText}>Sem notificações no momento.</Text>
@@ -57,7 +45,6 @@ export default function TelaNotificacao() {
         <FlatList
           data={notificacoes}
           keyExtractor={(n) => n.id}
-          ListHeaderComponent={NotificationHeader}
           contentContainerStyle={styles.notificationList}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => {

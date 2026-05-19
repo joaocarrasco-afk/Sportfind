@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { FlatList, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import FeedPostCard from '../components/FeedPostCard';
 import { useAppState } from '../state/AppStateContext';
 import styles from '../../style';
@@ -87,37 +88,36 @@ function normalizarPostsApi(data) {
 }
 
 export default function TelaFeed() {
+  const navigation = useNavigation();
   const [publicacoes, setPublicacoes] = useState(() => montarPublicacoesDemo());
   const [ocultos, setOcultos] = useState(() => new Set());
   const [carregando, setCarregando] = useState(true);
   const [chipAtivo, setChipAtivo] = useState('todos');
   const { authUid } = useAppState();
 
-  useEffect(() => {
-    let cancelado = false;
-
-    async function carregarPublicacoes() {
-      setCarregando(true);
-      const demo = montarPublicacoesDemo();
-      try {
-        const res = await fetch(`${API_URL}/feed`, { method: 'GET' });
-        const data = await res.json();
-        const daApi = normalizarPostsApi(data);
-        if (cancelado) return;
-        setPublicacoes(daApi.length > 0 ? daApi : demo);
-      } catch {
-        if (!cancelado) setPublicacoes(demo);
-      } finally {
-        if (!cancelado) setCarregando(false);
-      }
+  const carregarPublicacoes = useCallback(async () => {
+    setCarregando(true);
+    const demo = montarPublicacoesDemo();
+    try {
+      const res = await fetch(`${API_URL}/feed`, {
+        method: 'GET',
+        headers: authUid ? { 'X-User-Id': String(authUid) } : undefined,
+      });
+      const data = await res.json();
+      const daApi = normalizarPostsApi(data);
+      setPublicacoes(daApi.length > 0 ? daApi : demo);
+    } catch {
+      setPublicacoes(demo);
+    } finally {
+      setCarregando(false);
     }
-
-    carregarPublicacoes();
-
-    return () => {
-      cancelado = true;
-    };
   }, [authUid]);
+
+  useFocusEffect(
+    useCallback(() => {
+      carregarPublicacoes();
+    }, [carregarPublicacoes]),
+  );
 
   const publicacoesFiltradas = useMemo(() => {
     let lista = publicacoes.filter((p) => !ocultos.has(p.id));
@@ -135,40 +135,50 @@ export default function TelaFeed() {
   }
 
   const ListHeader = (
-    <>
-      <View style={styles.feedHeaderRow}>
-        <View style={styles.feedHeaderText}>
-          <Text style={styles.feedTitle}>Feed</Text>
-          <Text style={styles.feedSubtitle}>Atividade da comunidade Sportfind</Text>
-        </View>
-        <TouchableOpacity style={styles.feedHeaderIconBtn} activeOpacity={0.75} onPress={() => {}}>
+    <View style={styles.feedHeaderWrap}>
+      <View style={styles.feedToolbarTop}>
+        <TouchableOpacity
+          style={styles.feedHeaderIconBtn}
+          activeOpacity={0.75}
+          onPress={() => navigation.navigate('TelaBusca')}
+        >
           <Ionicons name="search" size={20} color={colors.purple} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.feedHeaderIconBtn}
+          activeOpacity={0.75}
+          onPress={() => navigation.navigate('TelaMensagens')}
+        >
+          <Ionicons name="chatbubble-outline" size={20} color={colors.purple} />
         </TouchableOpacity>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.feedChipsScroll}
-        contentContainerStyle={styles.feedChipsContent}
-      >
-        {CHIPS.map((chip) => {
-          const ativo = chipAtivo === chip.id;
-          return (
-            <TouchableOpacity
-              key={chip.id}
-              style={[styles.feedChip, ativo && styles.feedChipActive]}
-              onPress={() => setChipAtivo(chip.id)}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.feedChipLabel, ativo && styles.feedChipLabelActive]}>
-                {chip.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
-    </>
+      <View style={styles.feedFiltersRow}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.feedChipsScroll}
+          contentContainerStyle={styles.feedChipsContent}
+        >
+          {CHIPS.map((chip) => {
+            const ativo = chipAtivo === chip.id;
+            return (
+              <TouchableOpacity
+                key={chip.id}
+                style={[styles.feedChip, ativo && styles.feedChipActive]}
+                onPress={() => setChipAtivo(chip.id)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.feedChipLabel, ativo && styles.feedChipLabelActive]}>
+                  {chip.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+    </View>
   );
 
   return (
@@ -198,6 +208,14 @@ export default function TelaFeed() {
         }
         renderItem={({ item }) => <FeedPostCard item={item} onOcultar={ocultarPost} />}
       />
+
+      <TouchableOpacity
+        style={styles.feedFab}
+        activeOpacity={0.9}
+        onPress={() => navigation.navigate('TelaCriarPost')}
+      >
+        <Ionicons name="add" size={28} color={colors.textOnPurple} />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }

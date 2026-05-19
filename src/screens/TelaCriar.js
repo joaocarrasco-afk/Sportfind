@@ -16,12 +16,6 @@ const OPCOES = [
     title: 'Abrir partida',
     hint: 'Organize peladas e campeonatos abertos.',
   },
-  {
-    id: 'post',
-    icon: 'camera',
-    title: 'Publicar no feed',
-    hint: 'Compartilhe fotos e momentos esportivos.',
-  },
 ];
 
 export default function TelaCriar() {

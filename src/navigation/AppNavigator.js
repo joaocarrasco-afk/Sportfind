@@ -3,6 +3,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import TelaFeed from '../screens/TelaFeed';
+import TelaCriarPost from '../screens/TelaCriarPost';
+import TelaMensagens from '../screens/TelaMensagens';
 import TelaBusca from '../screens/TelaBusca';
 import TelaCadastro from '../screens/TelaCadastro';
 import TelaSenha from '../screens/TelaSenha';
@@ -24,6 +26,7 @@ import { colors } from '../../style/tokens';
 
 const Tab = createBottomTabNavigator();
 const MapStack = createNativeStackNavigator();
+const FeedStack = createNativeStackNavigator();
 const PerfilStack = createNativeStackNavigator();
 const RootStack = createNativeStackNavigator();
 
@@ -59,6 +62,17 @@ function MapStackScreen() {
       <MapStack.Screen name="TelaBusca" component={TelaBusca} />
       <MapStack.Screen name="TelaLocal" component={TelaLocal} />
     </MapStack.Navigator>
+  );
+}
+
+function FeedStackScreen() {
+  return (
+    <FeedStack.Navigator screenOptions={{ headerShown: false }}>
+      <FeedStack.Screen name="TelaFeed" component={TelaFeed} />
+      <FeedStack.Screen name="TelaBusca" component={TelaBusca} />
+      <FeedStack.Screen name="TelaCriarPost" component={TelaCriarPost} />
+      <FeedStack.Screen name="TelaMensagens" component={TelaMensagens} />
+    </FeedStack.Navigator>
   );
 }
 
@@ -110,7 +124,7 @@ function AppTabs() {
           },
         })}
       />
-      <Tab.Screen name={TAB_IDS.FEED} component={TelaFeed} />
+      <Tab.Screen name={TAB_IDS.FEED} component={FeedStackScreen} />
       <Tab.Screen name={TAB_IDS.CREATE} component={TelaCriar} />
       <Tab.Screen name={TAB_IDS.NOTIFICATION} component={TelaNotificacao} />
       <Tab.Screen name={TAB_IDS.PROFILE} component={PerfilStackScreen} />
@@ -127,7 +141,7 @@ export default function AppNavigator() {
         <RootStack.Screen name="TelaCadastro" component={TelaCadastro} />
         <RootStack.Screen name="TelaSenha" component={TelaSenha} />
         <RootStack.Screen name="TelaNovaSenha" component={TelaNovaSenha} />
-        <RootStack.Screen name="AppTabs" component={AppTabs} options={{ headerShown: false }} />
+        <RootStack.Screen name="AppTabs" component={AppTabs} options={{ headerShown: true }} />
       </RootStack.Navigator>
     </NavigationContainer>
   );

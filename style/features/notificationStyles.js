@@ -20,7 +20,12 @@ export const notificationStyles = {
   },
   notificationTitle: { fontSize: 20, fontWeight: '800', color: colors.purple, letterSpacing: -0.2 },
   notificationSubtitle: { fontSize: 12, color: meta, marginTop: 4, lineHeight: 16 },
-  notificationList: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xl * 2, gap: spacing.md },
+  notificationList: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xl * 2,
+    gap: spacing.md,
+  },
 
   notificationEmpty: {
     flex: 1,

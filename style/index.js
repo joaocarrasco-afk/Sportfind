@@ -5,6 +5,7 @@ import { perfilStyles } from './features/perfilStyles';
 import { searchStyles } from './features/searchStyles';
 import { notificationStyles } from './features/notificationStyles';
 import { createStyles } from './features/createStyles';
+import { messageStyles } from './features/messageStyles';
 import { colors, spacing, radii } from './tokens';
 
 const baseStyles = {
@@ -214,4 +215,5 @@ export default StyleSheet.create({
   ...feedStyles,
   ...notificationStyles,
   ...createStyles,
+  ...messageStyles,
 });

@@ -16,29 +16,16 @@ const cardShadow = {
 };
 
 export const feedStyles = {
-  feedHeaderRow: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingBottom: spacing.sm,
+  feedHeaderWrap: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
+    marginBottom: spacing.sm,
+    gap: spacing.md,
   },
-  feedHeaderText: {
-    flex: 1,
-    paddingRight: spacing.md,
-  },
-  feedTitle: {
-    color: colors.textPrimary,
-    fontSize: 22,
-    fontWeight: '800',
-    letterSpacing: -0.3,
-  },
-  feedSubtitle: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    lineHeight: 18,
-    marginTop: spacing.xs,
+  feedToolbarTop: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   feedHeaderIconBtn: {
     alignItems: 'center',
@@ -50,18 +37,160 @@ export const feedStyles = {
     justifyContent: 'center',
     width: 40,
   },
-  feedHeaderIcon: {
-    fontSize: 18,
-  },
-
-  feedChipsScroll: {
-    marginBottom: spacing.sm,
+  feedFiltersRow: {
+    alignItems: 'center',
+    justifyContent: 'center',
     maxHeight: 40,
+  },
+  feedChipsScroll: {
+    flexGrow: 0,
+    maxHeight: 40,
+    width: '100%',
   },
   feedChipsContent: {
     alignItems: 'center',
+    flexGrow: 1,
     gap: spacing.sm,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.sm,
+  },
+
+  feedFab: {
+    position: 'absolute',
+    right: spacing.lg,
+    bottom: spacing.xl,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.purple,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,
+    shadowColor: colors.purple,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+  },
+
+  createPostScreen: {
+    flex: 1,
+    backgroundColor: colors.white,
+  },
+  createPostFlex: {
+    flex: 1,
+  },
+  createPostHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  createPostBackBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: colors.purple,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  createPostHeaderTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.purple,
+  },
+  createPostHeaderSpacer: {
+    width: 40,
+  },
+  createPostScroll: {
+    padding: spacing.lg,
+    paddingBottom: spacing.xl,
+  },
+  createPostImageBox: {
+    width: '100%',
+    aspectRatio: 4 / 3,
+    borderRadius: radii.lg,
+    overflow: 'hidden',
+    backgroundColor: colors.purpleMuted,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderStyle: 'dashed',
+  },
+  createPostImagePreview: {
+    width: '100%',
+    height: '100%',
+  },
+  createPostImagePlaceholder: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+  },
+  createPostImageHint: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  createPostImageEditBadge: {
+    position: 'absolute',
+    bottom: spacing.md,
+    right: spacing.md,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.purple,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  createPostFieldLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
+  },
+  createPostInput: {
+    minHeight: 120,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    fontSize: 15,
+    color: colors.textPrimary,
+    backgroundColor: colors.purpleMuted,
+    lineHeight: 22,
+  },
+  createPostCharCount: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    textAlign: 'right',
+    marginTop: spacing.xs,
+  },
+  createPostFooter: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  createPostPublishBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    height: 52,
+    borderRadius: radii.pill,
+    backgroundColor: colors.purple,
+  },
+  createPostPublishBtnDisabled: {
+    opacity: 0.45,
+  },
+  createPostPublishText: {
+    color: colors.textOnPurple,
+    fontSize: 16,
+    fontWeight: '700',
   },
 
   feedList: {
