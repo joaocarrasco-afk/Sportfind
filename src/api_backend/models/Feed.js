@@ -6,7 +6,8 @@ class Feed{
 
     async criarPost({userId, descricao = '', fileBuffer, tipo}) {
         try {
-            const media = await CloudinaryMedia.salvarMedia(fileBuffer, tipo);
+            const pasta = 'feed';
+            const media = await CloudinaryMedia.salvarMedia(fileBuffer, tipo, pasta);
             const docRef = await addDoc(collection(db, 'feed'), {
                 user: userId,
                 url:media.url,

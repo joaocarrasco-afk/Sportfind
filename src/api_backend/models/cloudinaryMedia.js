@@ -3,11 +3,11 @@ const {Readable} = require('stream');
 
 class CloudinaryMedia {
 
-    async salvarMedia(fileBuffer, tipo) {
+    async salvarMedia(fileBuffer, tipo, pasta) {
             return new Promise((resolve, reject) => {
                 const uploadStream = cloudinary.uploader.upload_stream(
                     {
-                        folder: `feed/${tipo}`,
+                        folder: `${pasta}/${tipo}`,
                         resource_type: 'auto',
                        
                     },

@@ -24,7 +24,7 @@ class Usuario{
             }else{ 
                 const emailCredential = await createUserWithEmailAndPassword(auth, email, senha);
                 const uid = emailCredential.user.uid;
-                await setDoc(doc(db, 'usuario', uid), {
+                await setDoc(doc(db, 'usuario',  uid), {
                     nome: nome,
                     username: username,
                     data_nascimento: data_nascimento,
