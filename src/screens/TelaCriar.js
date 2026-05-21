@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Alert, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import styles from '../../style';
 import { colors } from '../../style/tokens';
 
@@ -19,7 +20,17 @@ const OPCOES = [
 ];
 
 export default function TelaCriar() {
+  const navigation = useNavigation();
+
   function aoEscolher(opcao) {
+    if (opcao.id === 'local') {
+      navigation.navigate('TelaCriarLocal');
+      return;
+    }
+    if (opcao.id === 'partida') {
+      navigation.navigate('TelaCriarPartida');
+      return;
+    }
     Alert.alert('Em breve', `${opcao.title} estará disponível na próxima versão.`);
   }
 

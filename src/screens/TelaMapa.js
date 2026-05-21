@@ -1,8 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useMemo } from 'react';
-import { Platform, Text, TouchableOpacity, View, Image, SafeAreaView } from 'react-native';
+import {
+  Platform,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  View,
+  Image,
+  SafeAreaView,
+} from 'react-native';
 import { WebView } from 'react-native-webview';
-import { useFocusEffect } from '@react-navigation/native';
 import styles from '../../style';
 import ModalFiltros from '../components/ModalFiltros';
 import { htmlMapa } from '../utils/htmlMapa';
@@ -46,17 +53,24 @@ export default function TelaMapa({ navigation }) {
     [setSelectedPlaceId],
   );
 
-  useFocusEffect(
-    useCallback(() => {
-      return () => setSelectedPlaceId(null);
-    }, [setSelectedPlaceId]),
-  );
+  const abrirDetalheLocal = useCallback(() => {
+    if (!selectedPlace?.id) return;
+    setSelectedPlaceId(selectedPlace.id);
+    navigation.navigate('TelaLocal', { placeId: selectedPlace.id });
+  }, [navigation, selectedPlace, setSelectedPlaceId]);
 
   useEffect(() => {
     if (Platform.OS !== 'web') return undefined;
 
     const handler = (event) => {
-      if (event?.data != null) handleMapMessage(event.data);
+      if (event?.data == null) return;
+      const raw =
+        typeof event.data === 'string'
+          ? event.data
+          : typeof event.data === 'object'
+            ? JSON.stringify(event.data)
+            : String(event.data);
+      handleMapMessage(raw);
     };
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
@@ -87,7 +101,7 @@ export default function TelaMapa({ navigation }) {
         )}
       </View>
 
-      <SafeAreaView style={styles.mapOverlaySafe} pointerEvents="box-none">
+      <SafeAreaView style={styles.mapTopOverlayAbsolute} pointerEvents="box-none">
         <View style={styles.mapTopOverlay} pointerEvents="box-none">
           <View style={styles.mapSearchRow} pointerEvents="box-none">
             <TouchableOpacity
@@ -134,13 +148,18 @@ export default function TelaMapa({ navigation }) {
             </View>
           ) : null}
         </View>
+      </SafeAreaView>
 
-        {mostrarCard ? (
+      {mostrarCard ? (
+        <SafeAreaView style={styles.mapBottomCardOverlay}>
           <View style={styles.selectedPlaceCardWrap}>
-            <TouchableOpacity
-              style={styles.selectedPlaceCard}
-              activeOpacity={0.95}
-              onPress={() => navigation.navigate('TelaLocal')}
+            <Pressable
+              style={({ pressed }) => [
+                styles.selectedPlaceCard,
+                pressed && { opacity: 0.92 },
+              ]}
+              onPress={abrirDetalheLocal}
+              android_ripple={{ color: colors.purpleLight }}
             >
               <Image source={{ uri: selectedPlace.image }} style={styles.selectedPlaceImage} />
               <View style={styles.selectedPlaceCardBody}>
@@ -152,17 +171,18 @@ export default function TelaMapa({ navigation }) {
                 </Text>
                 <Text style={styles.selectedPlaceCta}>Toque para ver mais →</Text>
               </View>
-              <TouchableOpacity
-                onPress={() => setSelectedPlaceId(null)}
-                style={styles.selectedPlaceCloseBtn}
-                hitSlop={12}
-              >
-                <Ionicons name="close" size={22} color={colors.textSecondary} />
-              </TouchableOpacity>
+            </Pressable>
+            <TouchableOpacity
+              onPress={() => setSelectedPlaceId(null)}
+              style={styles.selectedPlaceCloseBtnFloating}
+              hitSlop={12}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="close-circle" size={28} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
-        ) : null}
-      </SafeAreaView>
+        </SafeAreaView>
+      ) : null}
 
       <ModalFiltros
         visivel={isFilterVisible}

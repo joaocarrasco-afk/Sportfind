@@ -19,6 +19,8 @@ import TelaLocal from '../screens/TelaLocal';
 import TelaMapa from '../screens/TelaMapa';
 import TelaNotificacao from '../screens/TelaNotificacao';
 import TelaCriar from '../screens/TelaCriar';
+import TelaCriarLocal from '../screens/TelaCriarLocal';
+import TelaCriarPartida from '../screens/TelaCriarPartida';
 import { BOTTOM_TABS, TAB_IDS } from '../domain/places';
 import { Text, View } from 'react-native';
 import styles from '../../style';
@@ -27,6 +29,7 @@ import { colors } from '../../style/tokens';
 const Tab = createBottomTabNavigator();
 const MapStack = createNativeStackNavigator();
 const FeedStack = createNativeStackNavigator();
+const CreateStack = createNativeStackNavigator();
 const PerfilStack = createNativeStackNavigator();
 const RootStack = createNativeStackNavigator();
 
@@ -73,6 +76,16 @@ function FeedStackScreen() {
       <FeedStack.Screen name="TelaCriarPost" component={TelaCriarPost} />
       <FeedStack.Screen name="TelaMensagens" component={TelaMensagens} />
     </FeedStack.Navigator>
+  );
+}
+
+function CreateStackScreen() {
+  return (
+    <CreateStack.Navigator screenOptions={{ headerShown: false }}>
+      <CreateStack.Screen name="TelaCriar" component={TelaCriar} />
+      <CreateStack.Screen name="TelaCriarLocal" component={TelaCriarLocal} />
+      <CreateStack.Screen name="TelaCriarPartida" component={TelaCriarPartida} />
+    </CreateStack.Navigator>
   );
 }
 
@@ -125,7 +138,7 @@ function AppTabs() {
         })}
       />
       <Tab.Screen name={TAB_IDS.FEED} component={FeedStackScreen} />
-      <Tab.Screen name={TAB_IDS.CREATE} component={TelaCriar} />
+      <Tab.Screen name={TAB_IDS.CREATE} component={CreateStackScreen} />
       <Tab.Screen name={TAB_IDS.NOTIFICATION} component={TelaNotificacao} />
       <Tab.Screen name={TAB_IDS.PROFILE} component={PerfilStackScreen} />
     </Tab.Navigator>

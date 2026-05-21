@@ -78,8 +78,11 @@ export const createMapHtml = (places) => {
           className: 'sportfind-pin',
         });
 
-        const marker = L.marker([place.lat, place.lng], { icon: icon });
-        marker.on('click', function () {
+        const marker = L.marker([place.lat, place.lng], { icon: icon, interactive: true });
+        marker.on('click', function (e) {
+          if (e && e.originalEvent) {
+            L.DomEvent.stopPropagation(e);
+          }
           sendToApp(place.id);
         });
         marker.addTo(mapa);

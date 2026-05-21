@@ -16,10 +16,18 @@ export const filterPlaces = ({
         ? [typeFilter]
         : [];
 
+  function combinaEsporte(place) {
+    if (sports.length === 0) return true;
+    if (sports.includes(place.type)) return true;
+    if (Array.isArray(place.sports) && place.sports.some((s) => sports.includes(s))) return true;
+    return false;
+  }
+
   return places.filter(
     (place) =>
-      (sports.length === 0 || sports.includes(place.type)) &&
+      combinaEsporte(place) &&
       (accessFilter === FILTER_ALL || place.access === accessFilter) &&
-      normalize(place.name).includes(normalize(search)),
+      (normalize(place.name).includes(normalize(search)) ||
+        normalize(place.address ?? '').includes(normalize(search))),
   );
 };

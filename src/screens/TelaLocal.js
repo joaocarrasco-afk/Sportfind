@@ -1,25 +1,42 @@
-import { useEffect } from 'react';
+import { useMemo } from 'react';
 import { Image, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useRoute } from '@react-navigation/native';
 import styles from '../../style';
+import { spacing } from '../../style/tokens';
 import { useAppState } from '../state/AppStateContext';
 
 export default function TelaLocal({ navigation }) {
-  const { selectedPlace } = useAppState();
+  const route = useRoute();
+  const { places, setSelectedPlaceId } = useAppState();
+  const placeIdParam = route.params?.placeId;
 
-  useEffect(() => {
-    if (!selectedPlace) {
-      navigation.goBack();
-    }
-  }, [navigation, selectedPlace]);
+  const selectedPlace = useMemo(() => {
+    const id = Number(placeIdParam);
+    if (!Number.isInteger(id) || id <= 0) return null;
+    return places.find((place) => place.id === id) ?? null;
+  }, [places, placeIdParam]);
 
-  if (!selectedPlace) return null;
+  function voltar() {
+    setSelectedPlaceId(null);
+    navigation.goBack();
+  }
+
+  if (!selectedPlace) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center' }}>
+        <TouchableOpacity onPress={voltar} style={{ alignSelf: 'center', padding: 16 }}>
+          <Text style={{ color: '#9756CA', fontWeight: '700' }}>Voltar</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       <ScrollView>
         <View style={styles.detailImage}>
           <Image source={{ uri: selectedPlace.image }} style={styles.detailImage} />
-          <TouchableOpacity style={styles.backButtonOnDetail} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.backButtonOnDetail} onPress={voltar}>
             <Text style={{ fontSize: 30, bottom: 7 }}>←</Text>
           </TouchableOpacity>
         </View>
@@ -60,6 +77,11 @@ export default function TelaLocal({ navigation }) {
               <Text style={[styles.tagText, { color: '#555' }]}>📍 {selectedPlace.distance}</Text>
             </View>
           </View>
+          {selectedPlace.address ? (
+            <Text style={[styles.detailDescription, { marginBottom: spacing.sm }]}>
+              📍 {selectedPlace.address}
+            </Text>
+          ) : null}
           <Text style={styles.detailDescription}>{selectedPlace.description}</Text>
         </View>
       </ScrollView>

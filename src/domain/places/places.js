@@ -1,8 +1,9 @@
-export const PLACES = [
+export const INITIAL_PLACES = [
   {
     id: 1,
     name: 'Basquete Max Feffer',
     type: 'Basquete',
+    sports: ['Basquete'],
     distance: '0.3 km',
     access: 'Publico',
     emoji: '🏀',
@@ -17,6 +18,7 @@ export const PLACES = [
     id: 2,
     name: 'Suzano Skatepark',
     type: 'Skate',
+    sports: ['Skate'],
     distance: '1.4 km',
     access: 'Publico',
     emoji: '🛹',
@@ -30,6 +32,7 @@ export const PLACES = [
     id: 3,
     name: 'Campo Society',
     type: 'Futebol',
+    sports: ['Futebol'],
     distance: '2.1 km',
     access: 'Privado',
     emoji: '⚽',
@@ -43,6 +46,7 @@ export const PLACES = [
     id: 4,
     name: 'Arena Tenis Clube',
     type: 'Tenis',
+    sports: ['Tenis'],
     distance: '3.0 km',
     access: 'Privado',
     emoji: '🎾',
@@ -56,6 +60,7 @@ export const PLACES = [
     id: 5,
     name: 'Quadra Municipal',
     type: 'Poliesportivo',
+    sports: ['Basquete', 'Futebol', 'Tenis'],
     distance: '1.8 km',
     access: 'Publico',
     emoji: '🏟️',
@@ -66,3 +71,6 @@ export const PLACES = [
     description: 'Quadra poliesportiva municipal com marcacoes para varios esportes.',
   },
 ];
+
+/** @deprecated use INITIAL_PLACES ou estado em AppStateContext */
+export const PLACES = INITIAL_PLACES;

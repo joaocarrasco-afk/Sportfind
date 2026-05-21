@@ -2,14 +2,26 @@ import { StyleSheet } from 'react-native';
 import { colors, spacing, radii } from '../tokens';
 
 export const mapStyles = {
-  mapOverlaySafe: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'space-between',
+  mapTopOverlayAbsolute: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     zIndex: 10,
-  },
-  mapTopOverlay: {
     paddingTop: spacing.sm,
     paddingHorizontal: spacing.lg,
+    gap: spacing.sm,
+  },
+  mapBottomCardOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.sm,
+  },
+  mapTopOverlay: {
     gap: spacing.sm,
   },
   mapSearchRow: {
@@ -72,8 +84,10 @@ export const mapStyles = {
     fontWeight: '700',
   },
   selectedPlaceCardWrap: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.sm,
+    position: 'relative',
+  },
+  selectedPlaceCardPressable: {
+    flex: 1,
   },
   selectedPlaceCardBody: {
     flex: 1,
@@ -83,6 +97,14 @@ export const mapStyles = {
   selectedPlaceCloseBtn: {
     padding: spacing.md,
     alignSelf: 'center',
+  },
+  selectedPlaceCloseBtnFloating: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: colors.white,
+    borderRadius: 14,
+    zIndex: 2,
   },
   mapFilterButton: {
     width: 40,
