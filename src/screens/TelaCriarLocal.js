@@ -34,7 +34,12 @@ function rotuloAcesso(acesso) {
   return acesso;
 }
 
+
+
 export default function TelaCriarLocal() {
+
+  
+
   const navigation = useNavigation();
   const { addPlace } = useAppState();
 
@@ -72,6 +77,44 @@ export default function TelaCriarLocal() {
       prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id],
     );
   }
+
+  //backend
+
+  async function criarLocal() {
+    const formData = new FormData();
+    formData.append('name', nome);
+    formData.append('rua', "rua");
+    formData.append('bairro', "bairro");
+    formData.append('cidade', "cidade");
+    formData.append('estado', "estado");
+    formData.append('cep', "cep");
+    formData.append('numero', "numero" || 0);
+    formData.append('lat', -23.55052); // Exemplo de latitude
+    formData.append('lng', -46.633308); // Exemplo de longitude
+    formData.append('color', "color");
+    formData.append('infraestrutura', "infraestrutura");
+    formData.append('emoji', previewMeta.emoji);
+    formData.append('description', descricao);
+    formData.append('type', JSON.stringify(esportes));
+    formData.append('access', acesso);
+    formData.append('image', {
+      uri: fotoUri,
+      type: 'image/jpeg',
+      name: 'post.jpg',
+    });
+
+      try {
+        const response = await fetch(`${API_URL}/localizacao`, {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await response.json();
+        console.log(data);
+      } catch (error) {
+        console.error(error);
+      }
+  }
+
 
   function salvar() {
     if (!nome.trim()) {
@@ -269,7 +312,7 @@ export default function TelaCriarLocal() {
         <View style={styles.createLocalFooter}>
           <TouchableOpacity
             style={[styles.createPrimaryBtn, !podeSalvar && { opacity: 0.45 }]}
-            onPress={salvar}
+            onPress={criarLocal}
             disabled={!podeSalvar}
             activeOpacity={0.9}
           >

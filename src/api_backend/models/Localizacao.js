@@ -2,6 +2,7 @@ const { add } = require('firebase/firestore/pipelines');
 const { db } = require('../factory/config');
 const {setDoc, doc, getDoc, updateDoc, where, query, collection, getDocs, addDoc} = require('firebase/firestore');
 const CloudinaryMedia = require('./cloudinaryMedia');
+const e = require('express');
 
 class Localizacao{
 // id: 1,
@@ -18,7 +19,8 @@ class Localizacao{
 //       'Quadra de basquete publica no Parque Max Feffer. Aberta todos os dias das 6h as 22h.',
 
 
-    async criarLocalizacao({name, type, access, emoji, lat, lng, color, description, infraestrutura, fileBuffer}){
+    async criarLocalizacao({name, type, access, emoji, lat, lng, color, description, infraestrutura, fileBuffer, endereco: {rua, numero, bairro, cidade, estado, cep}}){
+     
         try{
             const pasta = 'localizacao';
             const tipo = 'image';
@@ -38,6 +40,14 @@ class Localizacao{
                 createdAt: new Date(),
                 permission: Boolean([false]),
                 infraestrutura: [...infraestrutura],
+                endereco: {
+                    rua: rua,
+                    numero: numero,
+                    bairro: bairro,
+                    cidade: cidade,
+                    estado: estado,
+                    cep: cep
+                }
                 
             });
             return { mensagem:"Criada com sucesso", localizacaoId: localizacao.id };
