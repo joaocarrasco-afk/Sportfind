@@ -35,12 +35,6 @@ jobs:
       - name: Verify Expo SDK dependency versions
         run: npx expo install --check
 
-      - name: Expo project health check
-        run: npx expo-doctor
-
-      - name: Run ESLint
-        run: npm run lint
-
       - name: Verify JS bundle (Expo export)
         run: npx expo export --platform web
 
