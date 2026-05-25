@@ -21,11 +21,14 @@ import {
   ACCESS_FILTERS,
   CREATABLE_SPORTS,
   FILTER_ALL,
+  INFRASTRUCTURE_OPTIONS,
   resolvePlaceSportMeta,
+  rotulosInfraestrutura,
   TAB_IDS,
 } from '../domain/places';
 import { useAppState } from '../state/AppStateContext';
 
+const API_URL = 'http://10.100.1.177:3000';
 const OPCOES_ACESSO = ACCESS_FILTERS.filter((a) => a !== FILTER_ALL);
 
 function rotuloAcesso(acesso) {
@@ -34,24 +37,34 @@ function rotuloAcesso(acesso) {
   return acesso;
 }
 
-
-
 export default function TelaCriarLocal() {
-
-  
-
   const navigation = useNavigation();
   const { addPlace } = useAppState();
 
   const [nome, setNome] = useState('');
-  const [endereco, setEndereco] = useState('');
+  const [rua, setRua] = useState('');
+  const [numero, setNumero] = useState('');
+  const [bairro, setBairro] = useState('');
+  const [cidade, setCidade] = useState('');
+  const [estado, setEstado] = useState('');
+  const [cep, setCep] = useState('');
   const [descricao, setDescricao] = useState('');
+  const [infraestrutura, setInfraestrutura] = useState([]);
   const [esportes, setEsportes] = useState([]);
   const [acesso, setAcesso] = useState('Publico');
   const [fotoUri, setFotoUri] = useState(null);
   const [salvando, setSalvando] = useState(false);
 
   const previewMeta = useMemo(() => resolvePlaceSportMeta(esportes), [esportes]);
+  const enderecoResumo = useMemo(() => {
+    const partes = [
+      [rua, numero].filter(Boolean).join(', '),
+      bairro,
+      [cidade, estado].filter(Boolean).join(' - '),
+      cep,
+    ].filter(Boolean);
+    return partes.join(' • ');
+  }, [rua, numero, bairro, cidade, estado, cep]);
 
   async function selecionarFoto() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -78,51 +91,50 @@ export default function TelaCriarLocal() {
     );
   }
 
-  //backend
+  function alternarInfra(id) {
+    setInfraestrutura((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
+  }
 
-  async function criarLocal() {
+  async function enviarParaApi(endereco) {
+    if (!fotoUri) return;
     const formData = new FormData();
-    formData.append('name', nome);
-    formData.append('rua', "rua");
-    formData.append('bairro', "bairro");
-    formData.append('cidade', "cidade");
-    formData.append('estado', "estado");
-    formData.append('cep', "cep");
-    formData.append('numero', "numero" || 0);
-    formData.append('lat', -23.55052); // Exemplo de latitude
-    formData.append('lng', -46.633308); // Exemplo de longitude
-    formData.append('color', "color");
-    formData.append('infraestrutura', "infraestrutura");
+    formData.append('name', nome.trim());
+    formData.append('rua', endereco.rua);
+    formData.append('bairro', endereco.bairro);
+    formData.append('cidade', endereco.cidade);
+    formData.append('estado', endereco.estado);
+    formData.append('cep', endereco.cep);
+    formData.append('numero', endereco.numero || '0');
+    formData.append('lat', -23.55052);
+    formData.append('lng', -46.633308);
+    formData.append('color', '#9756CA');
+    formData.append('infraestrutura', JSON.stringify(infraestrutura));
     formData.append('emoji', previewMeta.emoji);
-    formData.append('description', descricao);
+    formData.append('description', descricao.trim());
     formData.append('type', JSON.stringify(esportes));
     formData.append('access', acesso);
     formData.append('image', {
       uri: fotoUri,
       type: 'image/jpeg',
-      name: 'post.jpg',
+      name: 'local.jpg',
     });
 
-      try {
-        const response = await fetch(`${API_URL}/localizacao`, {
-          method: 'POST',
-          body: formData,
-        });
-        const data = await response.json();
-        console.log(data);
-      } catch (error) {
-        console.error(error);
-      }
+    try {
+      await fetch(`${API_URL}/localizacao`, { method: 'POST', body: formData });
+    } catch {
+      /* mapa local segue funcionando mesmo se a API falhar */
+    }
   }
 
-
-  function salvar() {
+  async function salvar() {
     if (!nome.trim()) {
       Alert.alert('Nome obrigatório', 'Informe o nome do local.');
       return;
     }
-    if (!endereco.trim()) {
-      Alert.alert('Endereço obrigatório', 'Informe o endereço do local.');
+    if (!rua.trim() || !cidade.trim()) {
+      Alert.alert('Endereço obrigatório', 'Informe pelo menos rua e cidade.');
       return;
     }
     if (esportes.length === 0) {
@@ -130,16 +142,31 @@ export default function TelaCriarLocal() {
       return;
     }
 
+    const endereco = {
+      rua: rua.trim(),
+      numero: numero.trim() || 'S/N',
+      bairro: bairro.trim(),
+      cidade: cidade.trim(),
+      estado: estado.trim(),
+      cep: cep.trim(),
+    };
+
     setSalvando(true);
     try {
       addPlace({
         name: nome,
-        address: endereco,
+        address: enderecoResumo,
+        endereco,
         description: descricao,
         sports: esportes,
         access: acesso,
         image: fotoUri ?? undefined,
+        infraestrutura,
       });
+
+      if (fotoUri) {
+        await enviarParaApi(endereco);
+      }
 
       Alert.alert('Local cadastrado!', 'O local já aparece no mapa com o ícone correspondente.', [
         {
@@ -153,7 +180,8 @@ export default function TelaCriarLocal() {
     }
   }
 
-  const podeSalvar = nome.trim() && endereco.trim() && esportes.length > 0 && !salvando;
+  const podeSalvar =
+    nome.trim() && rua.trim() && cidade.trim() && esportes.length > 0 && !salvando;
 
   return (
     <SafeAreaView style={styles.createLocalScreen}>
@@ -220,18 +248,104 @@ export default function TelaCriarLocal() {
             <Text style={styles.createLocalFieldLabel}>Endereço</Text>
             <TextInput
               style={styles.createLocalInput}
-              placeholder="Rua, número, bairro, cidade"
+              placeholder="Rua / Avenida"
               placeholderTextColor={colors.textSecondary}
-              value={endereco}
-              onChangeText={setEndereco}
+              value={rua}
+              onChangeText={setRua}
             />
+            <View style={[styles.createLocalAddressGrid, { marginTop: spacing.sm }]}>
+              <View style={styles.createLocalAddressHalf}>
+                <TextInput
+                  style={styles.createLocalInput}
+                  placeholder="Número"
+                  placeholderTextColor={colors.textSecondary}
+                  value={numero}
+                  onChangeText={setNumero}
+                  keyboardType="numeric"
+                />
+              </View>
+              <View style={styles.createLocalAddressHalf}>
+                <TextInput
+                  style={styles.createLocalInput}
+                  placeholder="CEP"
+                  placeholderTextColor={colors.textSecondary}
+                  value={cep}
+                  onChangeText={setCep}
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+            <TextInput
+              style={[styles.createLocalInput, { marginTop: spacing.sm }]}
+              placeholder="Bairro"
+              placeholderTextColor={colors.textSecondary}
+              value={bairro}
+              onChangeText={setBairro}
+            />
+            <View style={[styles.createLocalAddressGrid, { marginTop: spacing.sm }]}>
+              <View style={styles.createLocalAddressHalf}>
+                <TextInput
+                  style={styles.createLocalInput}
+                  placeholder="Cidade"
+                  placeholderTextColor={colors.textSecondary}
+                  value={cidade}
+                  onChangeText={setCidade}
+                />
+              </View>
+              <View style={styles.createLocalAddressHalf}>
+                <TextInput
+                  style={styles.createLocalInput}
+                  placeholder="Estado (UF)"
+                  placeholderTextColor={colors.textSecondary}
+                  value={estado}
+                  onChangeText={setEstado}
+                  maxLength={2}
+                  autoCapitalize="characters"
+                />
+              </View>
+            </View>
+          </View>
+
+          <View>
+            <Text style={styles.createLocalFieldLabel}>Infraestrutura</Text>
+            <Text style={{ fontSize: 12, color: colors.textSecondary, marginBottom: spacing.sm }}>
+              Selecione o que o local oferece (iluminação, bebedouros, etc.).
+            </Text>
+            <View style={styles.createLocalChipRow}>
+              {INFRASTRUCTURE_OPTIONS.map((item) => {
+                const ativo = infraestrutura.includes(item.id);
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[styles.createLocalChip, ativo && styles.createLocalChipActive]}
+                    onPress={() => alternarInfra(item.id)}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={{ fontSize: 16 }}>{item.emoji}</Text>
+                    <Text
+                      style={[
+                        styles.createLocalChipLabel,
+                        ativo && styles.createLocalChipLabelActive,
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            {infraestrutura.length > 0 ? (
+              <Text style={{ fontSize: 12, color: colors.purple, marginTop: spacing.xs }}>
+                {rotulosInfraestrutura(infraestrutura).join(' • ')}
+              </Text>
+            ) : null}
           </View>
 
           <View>
             <Text style={styles.createLocalFieldLabel}>Descrição (opcional)</Text>
             <TextInput
               style={[styles.createLocalInput, styles.createLocalInputMultiline]}
-              placeholder="Horários, estrutura, observações..."
+              placeholder="Horários, regras de uso, observações..."
               placeholderTextColor={colors.textSecondary}
               value={descricao}
               onChangeText={setDescricao}
@@ -312,7 +426,7 @@ export default function TelaCriarLocal() {
         <View style={styles.createLocalFooter}>
           <TouchableOpacity
             style={[styles.createPrimaryBtn, !podeSalvar && { opacity: 0.45 }]}
-            onPress={criarLocal}
+            onPress={salvar}
             disabled={!podeSalvar}
             activeOpacity={0.9}
           >

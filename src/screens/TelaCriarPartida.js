@@ -22,7 +22,7 @@ import { useAppState } from '../state/AppStateContext';
 
 export default function TelaCriarPartida() {
   const navigation = useNavigation();
-  const { places, addPartida } = useAppState();
+  const { places, addPartida, username } = useAppState();
 
   const [esporte, setEsporte] = useState('');
   const [nomePartida, setNomePartida] = useState('');
@@ -36,6 +36,8 @@ export default function TelaCriarPartida() {
   const [pickerAndroid, setPickerAndroid] = useState(null);
   const [buscaLocal, setBuscaLocal] = useState('');
   const [localSelecionadoId, setLocalSelecionadoId] = useState(null);
+  const [maxParticipantes, setMaxParticipantes] = useState(10);
+  const [limiteParticipantes, setLimiteParticipantes] = useState(true);
   const [salvando, setSalvando] = useState(false);
 
   const dadosPreenchidos = Boolean(esporte && nomePartida.trim() && dataPartida);
@@ -124,6 +126,8 @@ export default function TelaCriarPartida() {
         esporte,
         data: dataPartida,
         placeId: localSelecionadoId,
+        maxParticipantes: limiteParticipantes ? maxParticipantes : null,
+        autorUsername: username,
       });
 
       if (!criada) {
@@ -131,9 +135,11 @@ export default function TelaCriarPartida() {
         return;
       }
 
-      Alert.alert('Partida criada!', 'A partida foi salva com sucesso.', [
-        { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
+      Alert.alert(
+        'Partida criada!',
+        'A partida foi publicada no feed. Outros usuários podem participar pelo botão Participar.',
+        [{ text: 'OK', onPress: () => navigation.goBack() }],
+      );
     } finally {
       setSalvando(false);
     }
@@ -204,6 +210,39 @@ export default function TelaCriarPartida() {
               value={nomePartida}
               onChangeText={setNomePartida}
             />
+          </View>
+
+          <View>
+            <Text style={styles.createLocalFieldLabel}>Limite de participantes</Text>
+            <TouchableOpacity
+              style={styles.createLocalChip}
+              onPress={() => setLimiteParticipantes((v) => !v)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.createLocalChipLabel}>
+                {limiteParticipantes ? 'Com limite de vagas' : 'Sem limite de vagas'}
+              </Text>
+            </TouchableOpacity>
+            {limiteParticipantes ? (
+              <View style={styles.createPartidaLimiteRow}>
+                <TouchableOpacity
+                  style={styles.createPartidaLimiteBtn}
+                  onPress={() => setMaxParticipantes((n) => Math.max(2, n - 1))}
+                >
+                  <Ionicons name="remove" size={22} color={colors.purple} />
+                </TouchableOpacity>
+                <Text style={styles.createPartidaLimiteValor}>{maxParticipantes}</Text>
+                <TouchableOpacity
+                  style={styles.createPartidaLimiteBtn}
+                  onPress={() => setMaxParticipantes((n) => Math.min(99, n + 1))}
+                >
+                  <Ionicons name="add" size={22} color={colors.purple} />
+                </TouchableOpacity>
+                <Text style={{ fontSize: 13, color: colors.textSecondary, flex: 1 }}>
+                  pessoas no máximo
+                </Text>
+              </View>
+            ) : null}
           </View>
 
           <View>

@@ -1,5 +1,6 @@
 import { FlatList, Image, SafeAreaView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import styles from '../../style';
+import InfraestruturaChips from '../components/InfraestruturaChips';
 import ModalFiltros from '../components/ModalFiltros';
 import { useAppState } from '../state/AppStateContext';
 
@@ -12,6 +13,7 @@ export default function TelaBusca({ navigation }) {
     isFilterVisible,
     setFilterVisible,
     sportFilters,
+    infraFilters,
     accessFilter,
     applyFilters,
     resetFilters,
@@ -48,7 +50,7 @@ export default function TelaBusca({ navigation }) {
             style={styles.card}
             onPress={() => {
               setSelectedPlaceId(item.id);
-              navigation.navigate('TelaLocal');
+              navigation.navigate('TelaLocal', { placeId: item.id });
             }}
           >
             <Image source={{ uri: item.image }} style={styles.cardImage} />
@@ -57,6 +59,7 @@ export default function TelaBusca({ navigation }) {
               <Text style={styles.cardInfo}>
                 {item.distance} • {item.access}
               </Text>
+              <InfraestruturaChips ids={item.infraestrutura} compact maxItens={2} />
             </View>
           </TouchableOpacity>
         )}
@@ -66,6 +69,7 @@ export default function TelaBusca({ navigation }) {
         visivel={isFilterVisible}
         fechar={() => setFilterVisible(false)}
         sportFilters={sportFilters}
+        infraFilters={infraFilters}
         filtroAcesso={accessFilter}
         onAplicar={applyFilters}
         onLimparTodos={resetFilters}

@@ -3,7 +3,14 @@ import { Image, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'r
 import { useRoute } from '@react-navigation/native';
 import styles from '../../style';
 import { spacing } from '../../style/tokens';
+import InfraestruturaChips from '../components/InfraestruturaChips';
 import { useAppState } from '../state/AppStateContext';
+
+function rotuloAcesso(acesso) {
+  if (acesso === 'Publico') return 'Público';
+  if (acesso === 'Temporario') return 'Temporário';
+  return acesso;
+}
 
 export default function TelaLocal({ navigation }) {
   const route = useRoute();
@@ -46,7 +53,7 @@ export default function TelaLocal({ navigation }) {
             <Text style={{ fontSize: 32 }}>{selectedPlace.emoji}</Text>
             <Text style={styles.detailTitle}>{selectedPlace.name}</Text>
           </View>
-          <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
+          <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
             <View
               style={[
                 styles.tag,
@@ -70,18 +77,24 @@ export default function TelaLocal({ navigation }) {
                   { color: selectedPlace.access === 'Publico' ? '#2e7d32' : '#c62828' },
                 ]}
               >
-                {selectedPlace.access}
+                {rotuloAcesso(selectedPlace.access)}
               </Text>
             </View>
             <View style={[styles.tag, { backgroundColor: '#f3f3f3', borderColor: '#ccc' }]}>
               <Text style={[styles.tagText, { color: '#555' }]}>📍 {selectedPlace.distance}</Text>
             </View>
           </View>
+
           {selectedPlace.address ? (
             <Text style={[styles.detailDescription, { marginBottom: spacing.sm }]}>
               📍 {selectedPlace.address}
             </Text>
           ) : null}
+
+          <Text style={styles.detailInfraTitle}>Infraestrutura</Text>
+          <InfraestruturaChips ids={selectedPlace.infraestrutura} />
+
+          <Text style={[styles.detailInfraTitle, { marginTop: spacing.lg }]}>Sobre o local</Text>
           <Text style={styles.detailDescription}>{selectedPlace.description}</Text>
         </View>
       </ScrollView>

@@ -8,7 +8,7 @@ import { useAppState } from '../state/AppStateContext';
 const API_URL = 'http://10.100.1.177:3000';
 
 export default function TelaLogin({ navigation }) {
-  const { setAuthUid } = useAppState();
+  const { setAuthUid, setUsername } = useAppState();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
 
@@ -49,6 +49,7 @@ export default function TelaLogin({ navigation }) {
       }
 
       setAuthUid(data.uid);
+      if (data.username) setUsername(data.username);
       navigation.replace('AppTabs');
     }catch(error){
       // Trata erros de rede ou falhas inesperadas na requisição

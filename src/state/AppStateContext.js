@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import {
   FILTER_ALL,
   filterPlaces,
@@ -6,6 +6,7 @@ import {
   INITIAL_PLACES,
   resolvePlaceSportMeta,
 } from '../domain/places';
+import { partidaParaFeedPost } from '../domain/feed/posts';
 
 const AppStateContext = createContext(null);
 
@@ -15,13 +16,17 @@ const MAP_CENTER = { lat: -23.5445, lng: -46.3106 };
 
 export function AppStateProvider({ children }) {
   const [authUid, setAuthUid] = useState(null);
+  const [username, setUsername] = useState('Você');
   const [places, setPlaces] = useState(INITIAL_PLACES);
   const [selectedPlaceId, setSelectedPlaceId] = useState(null);
   const [sportFilters, setSportFilters] = useState([]);
+  const [infraFilters, setInfraFilters] = useState([]);
   const [accessFilter, setAccessFilter] = useState(FILTER_ALL);
   const [isFilterVisible, setFilterVisible] = useState(false);
   const [search, setSearch] = useState('');
   const [partidas, setPartidas] = useState([]);
+  const [seguindo, setSeguindo] = useState(() => new Set());
+  const [postsPerfil, setPostsPerfil] = useState([]);
 
   useEffect(() => {
     setPlaces((prev) => {
@@ -29,17 +34,18 @@ export function AppStateProvider({ children }) {
       const extras = prev.filter((p) => !seedIds.has(p.id));
       return [...INITIAL_PLACES, ...extras];
     });
-  }, [INITIAL_PLACES]);
+  }, []);
 
   const filteredPlaces = useMemo(
     () =>
       filterPlaces({
         places,
         sportFilters,
+        infraFilters,
         accessFilter,
         search,
       }),
-    [places, sportFilters, accessFilter, search],
+    [places, sportFilters, infraFilters, accessFilter, search],
   );
 
   const selectedPlace = useMemo(() => {
@@ -47,16 +53,33 @@ export function AppStateProvider({ children }) {
     return places.find((place) => place.id === selectedPlaceId) ?? null;
   }, [selectedPlaceId, places]);
 
+  function montarEnderecoCompleto(endereco) {
+    if (!endereco) return '';
+    const { rua, numero, bairro, cidade, estado, cep } = endereco;
+    const partes = [
+      [rua, numero].filter(Boolean).join(', '),
+      bairro,
+      [cidade, estado].filter(Boolean).join(' - '),
+      cep ? `CEP ${cep}` : '',
+    ].filter(Boolean);
+    return partes.join(' • ');
+  }
+
   function addPlace(dados) {
     const esportes = dados.sports ?? [];
     const meta = resolvePlaceSportMeta(esportes);
     const maxId = places.reduce((max, p) => Math.max(max, p.id), 0);
     const offset = (maxId % 10) * 0.0008;
+    const enderecoTexto =
+      dados.address?.trim() ||
+      montarEnderecoCompleto(dados.endereco) ||
+      'Endereço não informado';
 
     const novo = {
       id: maxId + 1,
       name: dados.name.trim(),
-      address: dados.address.trim(),
+      address: enderecoTexto,
+      endereco: dados.endereco,
       type: meta.type,
       emoji: meta.emoji,
       sports: meta.sports,
@@ -66,19 +89,21 @@ export function AppStateProvider({ children }) {
       color: '#9756CA',
       image: dados.image ?? DEFAULT_PLACE_IMAGE,
       distance: '—',
-      description: dados.description?.trim() || dados.address.trim(),
+      description: dados.description?.trim() || enderecoTexto,
+      infraestrutura: dados.infraestrutura ?? [],
     };
 
     setPlaces((prev) => [...prev, novo]);
     return novo;
   }
 
-  function addPartida({ nome, esporte, data, placeId }) {
+  function addPartida({ nome, esporte, data, placeId, maxParticipantes, autorUsername }) {
     const place = places.find((p) => p.id === placeId);
     if (!place) return null;
 
     const id = `partida-${Date.now()}`;
     const dataLabel = formatPartidaData(data);
+    const autor = autorUsername ?? username ?? 'Você';
     const partida = {
       id,
       nome: nome.trim(),
@@ -87,10 +112,81 @@ export function AppStateProvider({ children }) {
       dataLabel,
       placeId,
       place,
+      maxParticipantes: maxParticipantes > 0 ? maxParticipantes : null,
+      participantes: [],
+      criadoEm: 'Agora',
+      autorUsername: autor,
+      likes: 0,
+      comentarios: 0,
     };
 
     setPartidas((prev) => [partida, ...prev]);
     return partida;
+  }
+
+  const postsPartidasFeed = useMemo(
+    () => partidas.map((p) => partidaParaFeedPost(p, p.autorUsername)),
+    [partidas],
+  );
+
+  const participarPartida = useCallback((partidaId) => {
+    setPartidas((prev) =>
+      prev.map((p) => {
+        if (p.id !== partidaId) return p;
+        if (p.participantes.includes('voce')) return p;
+        if (p.maxParticipantes != null && p.participantes.length >= p.maxParticipantes) {
+          return p;
+        }
+        return { ...p, participantes: [...p.participantes, 'voce'] };
+      }),
+    );
+  }, []);
+
+  const desistirPartida = useCallback((partidaId) => {
+    setPartidas((prev) =>
+      prev.map((p) => {
+        if (p.id !== partidaId) return p;
+        return { ...p, participantes: p.participantes.filter((x) => x !== 'voce') };
+      }),
+    );
+  }, []);
+
+  const alternarSeguir = useCallback((autor) => {
+    if (!autor) return;
+    setSeguindo((prev) => {
+      const next = new Set(prev);
+      if (next.has(autor)) next.delete(autor);
+      else next.add(autor);
+      return next;
+    });
+  }, []);
+
+  function addPostPerfil(post) {
+    const novo = {
+      id: `perfil-${Date.now()}`,
+      tipo: post.tipo ?? 'imagem',
+      url: post.url,
+      descricao: post.descricao?.trim() ?? '',
+      dataCriacao: 'Agora',
+      ...post,
+    };
+    setPostsPerfil((prev) => [novo, ...prev]);
+    return novo;
+  }
+
+  function atualizarPostPerfil(id, dados) {
+    setPostsPerfil((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, ...dados, descricao: dados.descricao?.trim() ?? p.descricao } : p)),
+    );
+  }
+
+  function removerPostPerfil(id) {
+    setPostsPerfil((prev) => prev.filter((p) => p.id !== id));
+  }
+
+  function logout() {
+    setAuthUid(null);
+    setUsername('Você');
   }
 
   const selectedPlaceForDetail = useMemo(() => {
@@ -113,29 +209,51 @@ export function AppStateProvider({ children }) {
     );
   };
 
-  const applyFilters = (sports, access) => {
+  const applyFilters = (sports, access, infra = []) => {
     setSportFilters(sports);
     setAccessFilter(access);
+    setInfraFilters(infra);
   };
 
   const resetFilters = () => {
     setSportFilters([]);
+    setInfraFilters([]);
     setAccessFilter(FILTER_ALL);
+  };
+
+  const toggleInfraFilter = (infraId) => {
+    setInfraFilters((prev) =>
+      prev.includes(infraId) ? prev.filter((id) => id !== infraId) : [...prev, infraId],
+    );
   };
 
   const value = {
     authUid,
     setAuthUid,
+    username,
+    setUsername,
     places,
     filteredPlaces,
     addPlace,
     partidas,
+    postsPartidasFeed,
     addPartida,
+    participarPartida,
+    desistirPartida,
+    seguindo,
+    alternarSeguir,
+    postsPerfil,
+    addPostPerfil,
+    atualizarPostPerfil,
+    removerPostPerfil,
+    logout,
     selectedPlace: selectedPlaceForDetail,
     selectedPlaceId,
     setSelectedPlaceId,
     sportFilters,
+    infraFilters,
     toggleSportFilter,
+    toggleInfraFilter,
     applyFilters,
     accessFilter,
     setAccessFilter,

@@ -11,12 +11,13 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import styles from '../../style';
+import InfraestruturaChips from '../components/InfraestruturaChips';
 import ModalFiltros from '../components/ModalFiltros';
 import { htmlMapa } from '../utils/htmlMapa';
 import { useAppState } from '../state/AppStateContext';
 import { parseMapMessage } from '../features/map/mapBridge';
 import { colors } from '../../style/tokens';
-import { FILTER_ALL } from '../domain/places';
+import { FILTER_ALL, rotuloInfraestrutura } from '../domain/places';
 
 function rotuloAcesso(acesso) {
   if (acesso === FILTER_ALL) return null;
@@ -29,7 +30,9 @@ export default function TelaMapa({ navigation }) {
     setFilterVisible,
     isFilterVisible,
     sportFilters,
+    infraFilters,
     toggleSportFilter,
+    toggleInfraFilter,
     applyFilters,
     accessFilter,
     setAccessFilter,
@@ -38,7 +41,8 @@ export default function TelaMapa({ navigation }) {
     setSelectedPlaceId,
   } = useAppState();
 
-  const temFiltros = sportFilters.length > 0 || accessFilter !== FILTER_ALL;
+  const temFiltros =
+    sportFilters.length > 0 || infraFilters.length > 0 || accessFilter !== FILTER_ALL;
   const acessoLabel = rotuloAcesso(accessFilter);
 
   const mapHtml = useMemo(() => htmlMapa(filteredPlaces), [filteredPlaces]);
@@ -136,6 +140,18 @@ export default function TelaMapa({ navigation }) {
                   <Ionicons name="close-circle" size={16} color={colors.textOnPurple} />
                 </TouchableOpacity>
               ))}
+              {infraFilters.map((infraId) => (
+                <TouchableOpacity
+                  key={infraId}
+                  style={styles.mapActiveFilterChip}
+                  onPress={() => toggleInfraFilter(infraId)}
+                >
+                  <Text style={styles.mapActiveFilterChipText}>
+                    {rotuloInfraestrutura(infraId)}
+                  </Text>
+                  <Ionicons name="close-circle" size={16} color={colors.textOnPurple} />
+                </TouchableOpacity>
+              ))}
               {acessoLabel ? (
                 <TouchableOpacity
                   style={styles.mapActiveFilterChip}
@@ -169,6 +185,11 @@ export default function TelaMapa({ navigation }) {
                 <Text style={styles.selectedPlaceInfo} numberOfLines={1}>
                   {selectedPlace.distance} • {selectedPlace.access}
                 </Text>
+                <InfraestruturaChips
+                  ids={selectedPlace.infraestrutura}
+                  compact
+                  maxItens={3}
+                />
                 <Text style={styles.selectedPlaceCta}>Toque para ver mais →</Text>
               </View>
             </Pressable>
@@ -188,6 +209,7 @@ export default function TelaMapa({ navigation }) {
         visivel={isFilterVisible}
         fechar={() => setFilterVisible(false)}
         sportFilters={sportFilters}
+        infraFilters={infraFilters}
         filtroAcesso={accessFilter}
         onAplicar={applyFilters}
         onLimparTodos={resetFilters}

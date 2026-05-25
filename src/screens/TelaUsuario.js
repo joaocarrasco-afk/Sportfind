@@ -1,9 +1,22 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { useState, useEffect } from 'react';
-import { Alert, Modal, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { CommonActions, useNavigation } from '@react-navigation/native';
+import { useState, useEffect, useMemo } from 'react';
+import {
+  Alert,
+  Image,
+  Modal,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import styles from '../../style';
-import { colors } from '../../style/tokens';
+import { colors, spacing } from '../../style/tokens';
+import PerfilPostAcoesSheet from '../components/PerfilPostAcoesSheet';
+import PerfilPostModal from '../components/PerfilPostModal';
 import { useAppState } from '../state/AppStateContext';
 
 const ABAS = [
@@ -14,13 +27,79 @@ const ABAS = [
 
 const API_URL = 'http://10.100.1.177:3000';
 
+const IMAGENS_DEMO = [
+  'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=400&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=400&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=400&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1551958219-ac0fb825e0f7?w=400&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1529900748604-07564a03e7a9?w=400&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&auto=format&fit=crop&q=80',
+];
+
+const DEMO_PUBLICACOES = [
+  ...IMAGENS_DEMO.slice(0, 6).map((url, i) => ({
+    id: `demo-pub-${i + 1}`,
+    tipo: 'imagem',
+    url,
+    descricao: ['Treino na quadra', 'Pelada de sábado', 'Corrida no parque', 'Basquete com a galera', 'Skate no fim de tarde', 'Futebol no campinho'][i],
+    dataCriacao: `Há ${i + 1} dia${i > 0 ? 's' : ''}`,
+    editavel: false,
+  })),
+  {
+    id: 'demo-pub-7',
+    tipo: 'partida',
+    url: IMAGENS_DEMO[6],
+    nomePartida: 'Pelada do bairro',
+    esporte: 'Futebol',
+    horario: 'Sáb., 10:00',
+    descricao: 'Partida aberta — venha jogar!',
+    dataCriacao: 'Há 1 semana',
+    editavel: false,
+  },
+  {
+    id: 'demo-pub-8',
+    tipo: 'imagem',
+    url: IMAGENS_DEMO[7],
+    descricao: 'Melhor jogo da semana!',
+    dataCriacao: 'Há 2 semanas',
+    editavel: false,
+  },
+  {
+    id: 'demo-pub-9',
+    tipo: 'partida',
+    nomePartida: 'Treino de tênis',
+    esporte: 'Tenis',
+    horario: 'Dom., 08:00',
+    descricao: 'Vagas limitadas',
+    dataCriacao: 'Há 3 semanas',
+    editavel: false,
+  },
+];
+
 export default function TelaUsuario() {
   const navigation = useNavigation();
   const [aba, setAba] = useState('pub');
   const [cfgAberto, setCfgAberto] = useState(false);
-  const { authUid } = useAppState();
+  const [editandoPost, setEditandoPost] = useState(null);
+  const [postSelecionado, setPostSelecionado] = useState(null);
+  const [postAcoes, setPostAcoes] = useState(null);
+  const [textoEdicao, setTextoEdicao] = useState('');
+  const {
+    authUid,
+    setAuthUid,
+    logout,
+    username: usernameCtx,
+    setUsername,
+    postsPerfil,
+    atualizarPostPerfil,
+    removerPostPerfil,
+  } = useAppState();
   const [carregando, setCarregando] = useState(!!authUid);
-  const [username, setUsername] = useState('Explorador Sportfind');
+  const [username, setUsernameLocal] = useState('Explorador Sportfind');
+
+  const nomeExibido = usernameCtx !== 'Você' ? usernameCtx : username;
 
   useEffect(() => {
     let cancelado = false;
@@ -53,6 +132,7 @@ export default function TelaUsuario() {
         }
 
         if (data?.username != null) {
+          setUsernameLocal(data.username);
           setUsername(data.username);
         }
       } catch {
@@ -68,11 +148,114 @@ export default function TelaUsuario() {
     return () => {
       cancelado = true;
     };
-  }, [authUid]);
+  }, [authUid, setUsername]);
+
+  const publicacoesExibidas = useMemo(() => {
+    const proprias = postsPerfil.map((p) => ({ ...p, editavel: true }));
+    if (proprias.length > 0) return proprias;
+    return DEMO_PUBLICACOES;
+  }, [postsPerfil]);
 
   function irConfig(rota) {
     setCfgAberto(false);
     navigation.navigate(rota);
+  }
+
+  function confirmarLogout() {
+    setCfgAberto(false);
+    Alert.alert('Sair da conta', 'Deseja encerrar sua sessão?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Sair',
+        style: 'destructive',
+        onPress: () => {
+          logout();
+          setAuthUid(null);
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'TelaLogin' }],
+            }),
+          );
+        },
+      },
+    ]);
+  }
+
+  function abrirEdicao(post) {
+    if (!post.editavel) {
+      Alert.alert('Demonstração', 'Este é um exemplo fixo. Suas publicações reais podem ser editadas.');
+      return;
+    }
+    setTextoEdicao(post.descricao ?? '');
+    setEditandoPost(post);
+  }
+
+  function salvarEdicao() {
+    if (!editandoPost) return;
+    atualizarPostPerfil(editandoPost.id, { descricao: textoEdicao });
+    setEditandoPost(null);
+    setTextoEdicao('');
+  }
+
+  function confirmarExclusao(post) {
+    if (!post.editavel) {
+      Alert.alert('Demonstração', 'Este é um exemplo fixo. Suas publicações reais podem ser excluídas.');
+      return;
+    }
+    Alert.alert('Excluir publicação', 'Esta ação não pode ser desfeita.', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Excluir',
+        style: 'destructive',
+        onPress: () => removerPostPerfil(post.id),
+      },
+    ]);
+  }
+
+  function renderCelulaGrid(post) {
+    const ehPartida = post.tipo === 'partida';
+    const temImagem = Boolean(post.url);
+
+    return (
+      <Pressable
+        key={post.id}
+        style={styles.usuarioFeedCell}
+        onPress={() => setPostSelecionado(post)}
+        onLongPress={() => setPostAcoes(post)}
+        delayLongPress={450}
+      >
+        <View
+          style={[
+            styles.usuarioFeedCellInner,
+            ehPartida && !temImagem && styles.usuarioFeedCellPartida,
+          ]}
+        >
+          {temImagem ? (
+            <Image source={{ uri: post.url }} style={styles.usuarioFeedCellImage} resizeMode="cover" />
+          ) : (
+            <Ionicons
+              name={ehPartida ? 'football' : 'image-outline'}
+              size={32}
+              color={ehPartida ? colors.purple : colors.purpleLight}
+            />
+          )}
+          {ehPartida ? (
+            <View style={styles.usuarioFeedCellBadge}>
+              <Text style={styles.usuarioFeedCellBadgeText}>Partida</Text>
+            </View>
+          ) : null}
+        </View>
+      </Pressable>
+    );
+  }
+
+  function fecharAcoesPost() {
+    setPostAcoes(null);
+  }
+
+  function fecharDetalhe() {
+    setPostSelecionado(null);
   }
 
   return (
@@ -98,12 +281,10 @@ export default function TelaUsuario() {
           </View>
         </View>
 
-        <Text style={styles.usuarioName}>{carregando ? 'Carregando...' : username}</Text>
+        <Text style={styles.usuarioName}>{carregando ? 'Carregando...' : nomeExibido}</Text>
         <View style={styles.usuarioLocationRow}>
           <Ionicons name="location-outline" size={14} color={colors.textSecondary} />
-          <Text style={[styles.usuarioLocationText, { marginLeft: 4 }]}>
-            São Paulo, Brasil
-          </Text>
+          <Text style={[styles.usuarioLocationText, { marginLeft: 4 }]}>São Paulo, Brasil</Text>
         </View>
 
         <View style={styles.usuarioTagsRow}>
@@ -148,13 +329,13 @@ export default function TelaUsuario() {
           {aba === 'pub' ? (
             <>
               <View style={styles.usuarioFeedGrid}>
-                {[0, 1, 2, 3, 4, 5].map((i) => (
-                  <View key={i} style={styles.usuarioFeedCell}>
-                    <Ionicons name="image-outline" size={24} color={colors.purpleLight} />
-                  </View>
-                ))}
+                {publicacoesExibidas.map(renderCelulaGrid)}
               </View>
-              <Text style={styles.usuarioFeedCaption}>Imagens do feed do usuário</Text>
+              <Text style={styles.usuarioFeedCaption}>
+                {postsPerfil.length > 0
+                  ? 'Toque para abrir · segure para editar ou excluir.'
+                  : 'Toque para ver · segure o post para editar ou excluir.'}
+              </Text>
             </>
           ) : (
             <View style={styles.usuarioEmptyTab}>
@@ -202,9 +383,87 @@ export default function TelaUsuario() {
               <Text style={styles.perfilModalRowTitle}>Privacidade</Text>
               <Text style={styles.perfilModalRowHint}>Política, termos e LGPD</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.perfilModalLogoutRow}
+              onPress={confirmarLogout}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.perfilModalLogoutTitle}>Sair da conta</Text>
+              <Text style={styles.perfilModalLogoutHint}>Encerrar sessão neste dispositivo</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity style={styles.perfilModalCloseBtn} onPress={() => setCfgAberto(false)}>
               <Text style={styles.perfilModalCloseText}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <PerfilPostAcoesSheet
+        visible={postAcoes != null}
+        onClose={fecharAcoesPost}
+        onEdit={() => {
+          const p = postAcoes;
+          fecharAcoesPost();
+          if (p) abrirEdicao(p);
+        }}
+        onDelete={() => {
+          const p = postAcoes;
+          fecharAcoesPost();
+          if (p) confirmarExclusao(p);
+        }}
+      />
+
+      <PerfilPostModal
+        visible={postSelecionado != null}
+        post={postSelecionado}
+        username={nomeExibido}
+        isOwnProfile
+        onClose={fecharDetalhe}
+        onEdit={(p) => {
+          fecharDetalhe();
+          abrirEdicao(p);
+        }}
+        onDelete={(p) => {
+          fecharDetalhe();
+          confirmarExclusao(p);
+        }}
+        onLongPressPost={(p) => {
+          fecharDetalhe();
+          setPostAcoes(p);
+        }}
+      />
+
+      <Modal
+        visible={editandoPost != null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setEditandoPost(null)}
+      >
+        <View style={styles.perfilModalRoot}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.perfilModalBackdrop}
+            onPress={() => setEditandoPost(null)}
+          />
+          <View style={styles.perfilModalCard}>
+            <Text style={styles.perfilModalTitle}>Editar publicação</Text>
+            <TextInput
+              style={styles.createLocalInput}
+              placeholder="Descrição da publicação"
+              placeholderTextColor={colors.textSecondary}
+              value={textoEdicao}
+              onChangeText={setTextoEdicao}
+              multiline
+            />
+            <TouchableOpacity style={styles.perfilModalCloseBtn} onPress={salvarEdicao}>
+              <Text style={styles.perfilModalCloseText}>Salvar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{ marginTop: spacing.sm, alignSelf: 'center' }}
+              onPress={() => setEditandoPost(null)}
+            >
+              <Text style={{ color: colors.textSecondary }}>Cancelar</Text>
             </TouchableOpacity>
           </View>
         </View>

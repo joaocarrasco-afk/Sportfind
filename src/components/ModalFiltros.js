@@ -1,26 +1,29 @@
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import styles from '../../style';
-import { ACCESS_FILTERS, FILTER_ALL, SPORT_FILTERS } from '../domain/places';
+import { ACCESS_FILTERS, FILTER_ALL, INFRASTRUCTURE_OPTIONS, SPORT_FILTERS } from '../domain/places';
 import { colors, spacing } from '../../style/tokens';
 
 export default function ModalFiltros({
   visivel,
   fechar,
   sportFilters,
+  infraFilters,
   filtroAcesso,
   onAplicar,
   onLimparTodos,
 }) {
   const [draftSports, setDraftSports] = useState(sportFilters);
+  const [draftInfra, setDraftInfra] = useState(infraFilters ?? []);
   const [draftAccess, setDraftAccess] = useState(filtroAcesso);
 
   useEffect(() => {
     if (visivel) {
       setDraftSports(sportFilters);
+      setDraftInfra(infraFilters ?? []);
       setDraftAccess(filtroAcesso);
     }
-  }, [visivel, sportFilters, filtroAcesso]);
+  }, [visivel, sportFilters, infraFilters, filtroAcesso]);
 
   function toggleDraftSport(sport) {
     setDraftSports((prev) =>
@@ -28,19 +31,27 @@ export default function ModalFiltros({
     );
   }
 
+  function toggleDraftInfra(id) {
+    setDraftInfra((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
+  }
+
   function aplicar() {
-    onAplicar(draftSports, draftAccess);
+    onAplicar(draftSports, draftAccess, draftInfra);
     fechar();
   }
 
   function limpar() {
     setDraftSports([]);
+    setDraftInfra([]);
     setDraftAccess(FILTER_ALL);
     onLimparTodos();
     fechar();
   }
 
-  const temDraft = draftSports.length > 0 || draftAccess !== FILTER_ALL;
+  const temDraft =
+    draftSports.length > 0 || draftInfra.length > 0 || draftAccess !== FILTER_ALL;
 
   return (
     <Modal visible={visivel} transparent animationType="slide" onRequestClose={fechar}>
@@ -92,7 +103,44 @@ export default function ModalFiltros({
                   fontWeight: '600',
                 }}
               >
-                Selecionados: {draftSports.join(', ')}
+                Esportes: {draftSports.join(', ')}
+              </Text>
+            ) : null}
+
+            <Text style={styles.filterLabel}>Infraestrutura</Text>
+            <Text style={{ fontSize: 12, color: colors.textSecondary, marginBottom: spacing.sm }}>
+              O local precisa ter todos os itens marcados.
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+              {INFRASTRUCTURE_OPTIONS.map((item) => {
+                const ativo = draftInfra.includes(item.id);
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[styles.optionChip, ativo && styles.optionChipActive]}
+                    onPress={() => toggleDraftInfra(item.id)}
+                  >
+                    <Text style={[styles.optionChipText, ativo && styles.optionChipTextActive]}>
+                      {item.emoji} {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            {draftInfra.length > 0 ? (
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: colors.purple,
+                  marginBottom: spacing.md,
+                  fontWeight: '600',
+                }}
+              >
+                Infraestrutura:{' '}
+                {draftInfra
+                  .map((id) => INFRASTRUCTURE_OPTIONS.find((o) => o.id === id)?.label ?? id)
+                  .join(', ')}
               </Text>
             ) : null}
 
@@ -130,7 +178,9 @@ export default function ModalFiltros({
           >
             <Text style={{ color: colors.textOnPurple, fontWeight: '700', fontSize: 15 }}>
               Aplicar filtros
-              {draftSports.length > 0 ? ` (${draftSports.length} esporte${draftSports.length > 1 ? 's' : ''})` : ''}
+              {draftSports.length + draftInfra.length > 0
+                ? ` (${draftSports.length + draftInfra.length})`
+                : ''}
             </Text>
           </TouchableOpacity>
         </View>

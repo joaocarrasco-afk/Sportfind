@@ -11,3 +11,9 @@ export {
 } from './sportsMeta';
 export { filterPlaces } from './selectors';
 export { BOTTOM_TABS, TAB_CONTENT, TAB_IDS } from './tabs';
+export {
+  INFRASTRUCTURE_OPTIONS,
+  chipsInfraestrutura,
+  rotuloInfraestrutura,
+  rotulosInfraestrutura,
+} from './infraMeta';

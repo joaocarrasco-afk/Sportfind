@@ -23,7 +23,7 @@ const API_URL = 'http://10.100.1.177:3000';
 
 export default function TelaCriarPost() {
   const navigation = useNavigation();
-  const { authUid } = useAppState();
+  const { authUid, addPostPerfil } = useAppState();
   const [imagemUri, setImagemUri] = useState(null);
   const [descricao, setDescricao] = useState('');
   const [publicando, setPublicando] = useState(false);
@@ -74,13 +74,15 @@ export default function TelaCriarPost() {
         throw new Error('Falha ao publicar');
       }
 
-      Alert.alert('Publicado!', 'Sua publicação foi compartilhada no feed.', [
+      addPostPerfil({ tipo: 'imagem', url: imagemUri, descricao: descricao.trim() });
+      Alert.alert('Publicado!', 'Sua publicação foi compartilhada no feed e no seu perfil.', [
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     } catch {
+      addPostPerfil({ tipo: 'imagem', url: imagemUri, descricao: descricao.trim() });
       Alert.alert(
         'Salvo localmente',
-        'Não foi possível enviar ao servidor. A publicação aparecerá quando a conexão voltar.',
+        'Não foi possível enviar ao servidor. A publicação foi salva no seu perfil.',
         [{ text: 'OK', onPress: () => navigation.goBack() }],
       );
     } finally {

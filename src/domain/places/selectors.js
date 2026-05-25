@@ -5,6 +5,7 @@ const normalize = (value) => value.trim().toLowerCase();
 export const filterPlaces = ({
   places,
   sportFilters = [],
+  infraFilters = [],
   typeFilter,
   accessFilter = FILTER_ALL,
   search = '',
@@ -23,9 +24,16 @@ export const filterPlaces = ({
     return false;
   }
 
+  function combinaInfra(place) {
+    if (infraFilters.length === 0) return true;
+    const lista = Array.isArray(place.infraestrutura) ? place.infraestrutura : [];
+    return infraFilters.every((id) => lista.includes(id));
+  }
+
   return places.filter(
     (place) =>
       combinaEsporte(place) &&
+      combinaInfra(place) &&
       (accessFilter === FILTER_ALL || place.access === accessFilter) &&
       (normalize(place.name).includes(normalize(search)) ||
         normalize(place.address ?? '').includes(normalize(search))),

@@ -13,6 +13,7 @@ export const INITIAL_PLACES = [
     image: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400',
     description:
       'Quadra de basquete publica no Parque Max Feffer. Aberta todos os dias das 6h as 22h.',
+    infraestrutura: ['iluminacao', 'bebedouros', 'vestiario'],
   },
   {
     id: 2,
@@ -27,6 +28,7 @@ export const INITIAL_PLACES = [
     color: '#9756CA',
     image: 'https://images.unsplash.com/photo-1572635148818-ef6fd45eb394?w=400',
     description: 'Pista de skate publica com rampas e obstaculos variados.',
+    infraestrutura: ['iluminacao', 'arquibancada'],
   },
   {
     id: 3,
@@ -41,6 +43,7 @@ export const INITIAL_PLACES = [
     color: '#9756CA',
     image: 'https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=400',
     description: 'Campo society coberto com aluguel por hora. Vestiario disponivel.',
+    infraestrutura: ['iluminacao', 'vestiario', 'estacionamento', 'lanchonete'],
   },
   {
     id: 4,
@@ -55,6 +58,7 @@ export const INITIAL_PLACES = [
     color: '#9756CA',
     image: 'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=400',
     description: 'Quadras de tenis em saibro e cimento. Aulas disponiveis.',
+    infraestrutura: ['vestiario', 'estacionamento', 'wifi', 'lanchonete'],
   },
   {
     id: 5,
@@ -69,6 +73,7 @@ export const INITIAL_PLACES = [
     color: '#9756CA',
     image: 'https://images.unsplash.com/photo-1556300673-04df21735615?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     description: 'Quadra poliesportiva municipal com marcacoes para varios esportes.',
+    infraestrutura: ['iluminacao', 'bebedouros', 'vestiario', 'acessibilidade', 'arquibancada'],
   },
 ];
 

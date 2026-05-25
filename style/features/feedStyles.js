@@ -444,4 +444,88 @@ export const feedStyles = {
   feedMenuOptionDanger: {
     color: '#c62828',
   },
+
+  feedCardHeaderRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flex: 1,
+    gap: spacing.sm,
+  },
+  feedFollowBtn: {
+    borderColor: colors.purple,
+    borderRadius: radii.pill,
+    borderWidth: 1.5,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+  },
+  feedFollowBtnActive: {
+    backgroundColor: colors.purpleLight,
+  },
+  feedFollowBtnText: {
+    color: colors.purple,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  feedFollowBtnTextActive: {
+    color: colors.purple,
+  },
+  feedPartidaCard: {
+    backgroundColor: colors.purpleMuted,
+    borderColor: colors.purpleLight,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.sm,
+    padding: spacing.md,
+  },
+  feedPartidaTitle: {
+    color: colors.purple,
+    fontSize: 17,
+    fontWeight: '700',
+  },
+  feedPartidaMetaRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+    marginTop: spacing.sm,
+  },
+  feedPartidaMetaText: {
+    color: colors.textSecondary,
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  feedPartidaLocalRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+    marginTop: spacing.sm,
+  },
+  feedPartidaParticiparBtn: {
+    alignItems: 'center',
+    backgroundColor: colors.purple,
+    borderRadius: radii.md,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    paddingVertical: spacing.md,
+  },
+  feedPartidaParticiparBtnOutline: {
+    backgroundColor: colors.white,
+    borderColor: colors.purple,
+    borderWidth: 1.5,
+  },
+  feedPartidaParticiparText: {
+    color: colors.textOnPurple,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  feedPartidaParticiparTextOutline: {
+    color: colors.purple,
+  },
+  feedPartidaVagas: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    marginTop: spacing.xs,
+    textAlign: 'center',
+  },
 };

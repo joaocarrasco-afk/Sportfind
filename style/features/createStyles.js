@@ -263,4 +263,36 @@ export const createStyles = {
     color: colors.textSecondary,
     marginTop: 2,
   },
+  createPartidaLimiteRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginTop: spacing.sm,
+  },
+  createPartidaLimiteBtn: {
+    alignItems: 'center',
+    backgroundColor: colors.purpleMuted,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    height: 44,
+    justifyContent: 'center',
+    width: 44,
+  },
+  createPartidaLimiteValor: {
+    color: colors.textPrimary,
+    fontSize: 18,
+    fontWeight: '700',
+    minWidth: 48,
+    textAlign: 'center',
+  },
+  createLocalAddressGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    justifyContent: 'space-between',
+  },
+  createLocalAddressHalf: {
+    width: '48%',
+  },
 };

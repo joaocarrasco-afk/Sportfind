@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import styles from '../../style';
 import { colors, spacing } from '../../style/tokens';
+import { emojiEsporte, rotuloEsporte } from '../domain/feed/posts';
 
 const COMENTARIOS_DEMO = [
   { id: 'c1', autor: 'Marina', texto: 'Bora marcar um jogo!' },
@@ -27,7 +28,14 @@ function rotuloAcesso(acesso) {
   return acesso === 'Publico' ? 'Público' : acesso;
 }
 
-export default function FeedPostCard({ item, onOcultar }) {
+export default function FeedPostCard({
+  item,
+  onOcultar,
+  seguindo = false,
+  onSeguir,
+  onParticipar,
+  onDesistir,
+}) {
   const [curtido, setCurtido] = useState(false);
   const [likes, setLikes] = useState(item.likes ?? 0);
   const [comentarios, setComentarios] = useState(item.comentarios ?? 0);
@@ -35,6 +43,15 @@ export default function FeedPostCard({ item, onOcultar }) {
   const [comentariosAberto, setComentariosAberto] = useState(false);
   const [menuAberto, setMenuAberto] = useState(false);
   const [textoComentario, setTextoComentario] = useState('');
+
+  const participando = item.participantes?.includes('voce');
+  const totalParticipantes = item.participantes?.length ?? 0;
+  const maxParticipantes = item.maxParticipantes;
+  const vagasCheias =
+    maxParticipantes != null && totalParticipantes >= maxParticipantes && !participando;
+
+  const autor = item.username ?? 'Usuário';
+  const mostrarSeguir = autor !== 'Você' && onSeguir;
 
   function alternarCurtida() {
     setCurtido((prev) => {
@@ -56,9 +73,14 @@ export default function FeedPostCard({ item, onOcultar }) {
 
   async function compartilhar() {
     const titulo = item.username ?? 'Sportfind';
-    const mensagem =
-      item.descricao ??
-      (item.local ? `Confira ${item.local.name} no Sportfind!` : 'Veja no Sportfind!');
+    let mensagem = item.descricao ?? '';
+    if (item.kind === 'partida') {
+      mensagem = `${item.nomePartida} — ${rotuloEsporte(item.esporte)} em ${item.local?.name ?? 'local'} (${item.horario})`;
+    } else if (item.local) {
+      mensagem = `Confira ${item.local.name} no Sportfind!`;
+    } else {
+      mensagem = mensagem || 'Veja no Sportfind!';
+    }
     try {
       await Share.share({
         message: `${titulo}: ${mensagem}`,
@@ -78,6 +100,18 @@ export default function FeedPostCard({ item, onOcultar }) {
     Alert.alert('Sportfind', `Ação "${acao}" em breve.`);
   }
 
+  function acaoParticipar() {
+    if (participando) {
+      onDesistir?.(item.id);
+      return;
+    }
+    if (vagasCheias) {
+      Alert.alert('Partida cheia', 'Não há mais vagas para esta partida.');
+      return;
+    }
+    onParticipar?.(item.id);
+  }
+
   return (
     <View style={styles.feedCard}>
       <View style={styles.feedCardHeader}>
@@ -85,7 +119,27 @@ export default function FeedPostCard({ item, onOcultar }) {
           <Ionicons name="person" size={22} color={colors.purple} />
         </View>
         <View style={styles.feedCardHeaderMain}>
-          <Text style={styles.feedCardAuthor}>{item.username ?? 'Usuário'}</Text>
+          <View style={styles.feedCardHeaderRow}>
+            <Text style={styles.feedCardAuthor} numberOfLines={1}>
+              {autor}
+            </Text>
+            {mostrarSeguir ? (
+              <TouchableOpacity
+                style={[styles.feedFollowBtn, seguindo && styles.feedFollowBtnActive]}
+                onPress={() => onSeguir(autor)}
+                activeOpacity={0.8}
+              >
+                <Text
+                  style={[
+                    styles.feedFollowBtnText,
+                    seguindo && styles.feedFollowBtnTextActive,
+                  ]}
+                >
+                  {seguindo ? 'Seguindo' : 'Seguir'}
+                </Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
           <Text style={styles.feedCardTime}>{item.dataCriacao ?? ''}</Text>
         </View>
         <TouchableOpacity onPress={() => setMenuAberto(true)} hitSlop={8}>
@@ -93,32 +147,85 @@ export default function FeedPostCard({ item, onOcultar }) {
         </TouchableOpacity>
       </View>
 
-      {item.descricao ? (
-        <View style={{ paddingHorizontal: spacing.md, paddingBottom: spacing.sm }}>
-          <Text style={styles.feedCardCaptionPlaceholderText}>{item.descricao}</Text>
-        </View>
-      ) : null}
-
-      {item.kind === 'local' && item.local ? (
-        <Image source={{ uri: item.local.image }} style={styles.feedCardImage} resizeMode="cover" />
-      ) : item.url ? (
-        <Image source={{ uri: item.url }} style={styles.feedCardImage} resizeMode="cover" />
-      ) : null}
-
-      <View style={styles.feedCardBody}>
-        {item.kind === 'local' && item.local ? (
-          <>
-            <View style={styles.feedCardPlaceRow}>
-              <Text style={styles.feedCardPlaceEmoji}>{item.local.emoji}</Text>
-              <Text style={styles.feedCardPlaceName}>{item.local.name}</Text>
+      {item.kind === 'partida' ? (
+        <>
+          <View style={styles.feedPartidaCard}>
+            <Text style={styles.feedPartidaTitle}>{item.nomePartida}</Text>
+            <View style={styles.feedPartidaMetaRow}>
+              <Text style={{ fontSize: 18 }}>{emojiEsporte(item.esporte)}</Text>
+              <Text style={styles.feedPartidaMetaText}>
+                {rotuloEsporte(item.esporte)} • {item.horario}
+              </Text>
             </View>
-            <Text style={styles.feedCardBodyText}>
-              {rotuloTipo(item.local.type)} • {item.local.distance} •{' '}
-              {rotuloAcesso(item.local.access)}
+            {item.local ? (
+              <View style={styles.feedPartidaLocalRow}>
+                <Text style={{ fontSize: 16 }}>{item.local.emoji ?? '📍'}</Text>
+                <Text style={styles.feedPartidaMetaText} numberOfLines={2}>
+                  {item.local.name}
+                  {item.local.address ? ` — ${item.local.address}` : ''}
+                </Text>
+              </View>
+            ) : null}
+            {maxParticipantes != null ? (
+              <Text style={styles.feedPartidaVagas}>
+                {totalParticipantes}/{maxParticipantes} participantes
+              </Text>
+            ) : null}
+          </View>
+          <TouchableOpacity
+            style={[
+              styles.feedPartidaParticiparBtn,
+              participando && styles.feedPartidaParticiparBtnOutline,
+              vagasCheias && !participando && { opacity: 0.45 },
+            ]}
+            onPress={acaoParticipar}
+            disabled={vagasCheias && !participando}
+            activeOpacity={0.85}
+          >
+            <Text
+              style={[
+                styles.feedPartidaParticiparText,
+                participando && styles.feedPartidaParticiparTextOutline,
+              ]}
+            >
+              {participando ? 'Participando ✓' : 'Participar'}
             </Text>
-          </>
-        ) : null}
-      </View>
+          </TouchableOpacity>
+        </>
+      ) : (
+        <>
+          {item.descricao ? (
+            <View style={{ paddingHorizontal: spacing.md, paddingBottom: spacing.sm }}>
+              <Text style={styles.feedCardCaptionPlaceholderText}>{item.descricao}</Text>
+            </View>
+          ) : null}
+
+          {item.kind === 'local' && item.local ? (
+            <Image
+              source={{ uri: item.local.image }}
+              style={styles.feedCardImage}
+              resizeMode="cover"
+            />
+          ) : item.url ? (
+            <Image source={{ uri: item.url }} style={styles.feedCardImage} resizeMode="cover" />
+          ) : null}
+
+          <View style={styles.feedCardBody}>
+            {item.kind === 'local' && item.local ? (
+              <>
+                <View style={styles.feedCardPlaceRow}>
+                  <Text style={styles.feedCardPlaceEmoji}>{item.local.emoji}</Text>
+                  <Text style={styles.feedCardPlaceName}>{item.local.name}</Text>
+                </View>
+                <Text style={styles.feedCardBodyText}>
+                  {rotuloTipo(item.local.type)} • {item.local.distance} •{' '}
+                  {rotuloAcesso(item.local.access)}
+                </Text>
+              </>
+            ) : null}
+          </View>
+        </>
+      )}
 
       <View style={styles.feedCardActions}>
         <TouchableOpacity style={styles.feedActionBtn} activeOpacity={0.7} onPress={alternarCurtida}>

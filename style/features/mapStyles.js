@@ -172,4 +172,52 @@ export const mapStyles = {
     marginTop: 4,
     fontWeight: '600',
   },
+  infraChipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 6,
+  },
+  infraChip: {
+    alignItems: 'center',
+    backgroundColor: colors.purpleMuted,
+    borderColor: colors.purpleLight,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  infraChipCompact: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  infraChipMais: {
+    backgroundColor: colors.purpleLight,
+  },
+  infraChipEmoji: {
+    fontSize: 12,
+  },
+  infraChipLabel: {
+    color: colors.purple,
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  infraChipLabelCompact: {
+    fontSize: 10,
+  },
+  infraChipsEmpty: {
+    color: colors.textSecondary,
+    fontSize: 11,
+    fontStyle: 'italic',
+    marginTop: 4,
+  },
+  detailInfraTitle: {
+    color: colors.purple,
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: spacing.sm,
+    marginTop: spacing.md,
+  },
 };

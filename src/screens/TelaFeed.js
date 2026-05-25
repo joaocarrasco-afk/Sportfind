@@ -1,13 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { FlatList, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import FeedPostCard from '../components/FeedPostCard';
 import { useAppState } from '../state/AppStateContext';
 import styles from '../../style';
 import { colors } from '../../style/tokens';
 import { PLACES } from '../domain/places';
-
 const AUTORES = [
   { nome: 'Marina', emoji: '🧗' },
   { nome: 'Equipe Sportfind', emoji: '⭐' },
@@ -20,9 +19,25 @@ const TEMPOS = ['Há 2 h', 'Ontem', 'Há 3 h', 'Há 1 dia', 'Há 5 h'];
 
 const CHIPS = [
   { id: 'todos', label: 'Todos' },
+  { id: 'partidas', label: 'Partidas' },
   { id: 'locais', label: 'Locais' },
   { id: 'fotos', label: 'Fotos' },
 ];
+
+const PARTIDA_DEMO = {
+  id: 'partida-demo',
+  kind: 'partida',
+  nomePartida: 'Pelada de sábado',
+  esporte: 'Futebol',
+  horario: 'Sáb., 15:00',
+  local: PLACES[0],
+  username: 'Marina',
+  dataCriacao: 'Há 1 h',
+  likes: 14,
+  comentarios: 3,
+  maxParticipantes: 12,
+  participantes: ['u1', 'u2'],
+};
 
 function montarPublicacoesDemo() {
   const postsLocais = PLACES.map((place, indice) => ({
@@ -64,7 +79,7 @@ function montarPublicacoesDemo() {
     },
   ];
 
-  return [...postsLocais, ...postsImagem];
+  return [PARTIDA_DEMO, ...postsLocais, ...postsImagem];
 }
 
 const API_URL = 'http://10.100.1.177:3000';
@@ -74,16 +89,34 @@ function normalizarPostsApi(data) {
   if (!Array.isArray(lista)) return [];
 
   return lista
-    .map((feed, index) => ({
-      id: feed.id ?? feed._id ?? `api-${index}`,
-      kind: feed.type === 'local' ? 'local' : 'imagem',
-      url: feed.url,
-      username: feed.username ?? 'Usuário',
-      dataCriacao: feed.dataCriacao ?? '',
-      likes: feed.likes ?? 0,
-      comentarios: feed.comentarios ?? 0,
-      descricao: feed.descricao ?? '',
-    }))
+    .map((feed, index) => {
+      if (feed.type === 'partida' || feed.kind === 'partida') {
+        return {
+          id: feed.id ?? feed._id ?? `api-${index}`,
+          kind: 'partida',
+          nomePartida: feed.nomePartida ?? feed.nome ?? '',
+          esporte: feed.esporte ?? '',
+          horario: feed.horario ?? feed.dataCriacao ?? '',
+          local: feed.local ?? null,
+          username: feed.username ?? 'Usuário',
+          dataCriacao: feed.dataCriacao ?? '',
+          likes: feed.likes ?? 0,
+          comentarios: feed.comentarios ?? 0,
+          maxParticipantes: feed.maxParticipantes ?? null,
+          participantes: feed.participantes ?? [],
+        };
+      }
+      return {
+        id: feed.id ?? feed._id ?? `api-${index}`,
+        kind: feed.type === 'local' ? 'local' : 'imagem',
+        url: feed.url,
+        username: feed.username ?? 'Usuário',
+        dataCriacao: feed.dataCriacao ?? '',
+        likes: feed.likes ?? 0,
+        comentarios: feed.comentarios ?? 0,
+        descricao: feed.descricao ?? '',
+      };
+    })
     .filter((post) => post.id != null);
 }
 
@@ -93,7 +126,15 @@ export default function TelaFeed() {
   const [ocultos, setOcultos] = useState(() => new Set());
   const [carregando, setCarregando] = useState(true);
   const [chipAtivo, setChipAtivo] = useState('todos');
-  const { authUid } = useAppState();
+  const {
+    authUid,
+    postsPartidasFeed,
+    partidas,
+    seguindo,
+    alternarSeguir,
+    participarPartida,
+    desistirPartida,
+  } = useAppState();
 
   const carregarPublicacoes = useCallback(async () => {
     setCarregando(true);
@@ -105,13 +146,25 @@ export default function TelaFeed() {
       });
       const data = await res.json();
       const daApi = normalizarPostsApi(data);
-      setPublicacoes(daApi.length > 0 ? daApi : demo);
+      const base = daApi.length > 0 ? daApi : demo;
+      const idsPartidas = new Set(postsPartidasFeed.map((p) => p.id));
+      const semDuplicata = base.filter((p) => !idsPartidas.has(p.id));
+      setPublicacoes([...postsPartidasFeed, ...semDuplicata]);
     } catch {
       setPublicacoes(demo);
     } finally {
       setCarregando(false);
     }
-  }, [authUid]);
+  }, [authUid, postsPartidasFeed]);
+
+  const mesclarPartidas = useCallback(
+    (lista) => {
+      const ids = new Set(postsPartidasFeed.map((p) => p.id));
+      const filtrada = lista.filter((p) => !ids.has(p.id));
+      return [...postsPartidasFeed, ...filtrada];
+    },
+    [postsPartidasFeed],
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -119,12 +172,27 @@ export default function TelaFeed() {
     }, [carregarPublicacoes]),
   );
 
+  useEffect(() => {
+    setPublicacoes((prev) => mesclarPartidas(prev));
+  }, [partidas, postsPartidasFeed, mesclarPartidas]);
+
   const publicacoesFiltradas = useMemo(() => {
     let lista = publicacoes.filter((p) => !ocultos.has(p.id));
+    if (chipAtivo === 'partidas') lista = lista.filter((p) => p.kind === 'partida');
     if (chipAtivo === 'locais') lista = lista.filter((p) => p.kind === 'local');
     if (chipAtivo === 'fotos') lista = lista.filter((p) => p.kind === 'imagem');
     return lista;
   }, [publicacoes, chipAtivo, ocultos]);
+
+  function obterParticipantesPost(postId) {
+    const partida = partidas.find((p) => p.id === postId);
+    return partida?.participantes ?? [];
+  }
+
+  function postComParticipantes(item) {
+    if (item.kind !== 'partida') return item;
+    return { ...item, participantes: obterParticipantesPost(item.id) ?? item.participantes };
+  }
 
   function ocultarPost(id) {
     setOcultos((prev) => new Set([...prev, id]));
@@ -206,7 +274,19 @@ export default function TelaFeed() {
             </View>
           ) : null
         }
-        renderItem={({ item }) => <FeedPostCard item={item} onOcultar={ocultarPost} />}
+        renderItem={({ item }) => {
+          const post = postComParticipantes(item);
+          return (
+            <FeedPostCard
+              item={post}
+              onOcultar={ocultarPost}
+              seguindo={seguindo.has(post.username)}
+              onSeguir={alternarSeguir}
+              onParticipar={participarPartida}
+              onDesistir={desistirPartida}
+            />
+          );
+        }}
       />
 
       <TouchableOpacity
