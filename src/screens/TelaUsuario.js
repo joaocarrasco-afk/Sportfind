@@ -18,6 +18,7 @@ import { colors, spacing } from '../../style/tokens';
 import PerfilPostAcoesSheet from '../components/PerfilPostAcoesSheet';
 import PerfilPostModal from '../components/PerfilPostModal';
 import { useAppState } from '../state/AppStateContext';
+import { contagemConexoesAtual } from '../domain/users';
 
 const ABAS = [
   { id: 'pub', label: 'Publicações' },
@@ -100,6 +101,7 @@ export default function TelaUsuario() {
   const [username, setUsernameLocal] = useState('Explorador Sportfind');
 
   const nomeExibido = usernameCtx !== 'Você' ? usernameCtx : username;
+  const { seguidores: totalSeguidores, seguindo: totalSeguindo } = contagemConexoesAtual();
 
   useEffect(() => {
     let cancelado = false;
@@ -293,14 +295,22 @@ export default function TelaUsuario() {
         </View>
 
         <View style={styles.usuarioStatsRow}>
-          <View style={styles.usuarioStatBlock}>
-            <Text style={styles.usuarioStatValue}>122</Text>
+          <TouchableOpacity
+            style={styles.usuarioStatBlockPressable}
+            activeOpacity={0.75}
+            onPress={() => navigation.navigate('TelaListaConexoes', { tipo: 'seguidores' })}
+          >
+            <Text style={styles.usuarioStatValue}>{totalSeguidores}</Text>
             <Text style={styles.usuarioStatLabel}>Seguidores</Text>
-          </View>
-          <View style={styles.usuarioStatBlock}>
-            <Text style={styles.usuarioStatValue}>91</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.usuarioStatBlockPressable}
+            activeOpacity={0.75}
+            onPress={() => navigation.navigate('TelaListaConexoes', { tipo: 'seguindo' })}
+          >
+            <Text style={styles.usuarioStatValue}>{totalSeguindo}</Text>
             <Text style={styles.usuarioStatLabel}>Seguindo</Text>
-          </View>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.usuarioTrophyBox}>

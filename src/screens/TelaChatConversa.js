@@ -13,6 +13,7 @@ import {
 import ScreenSafe from '../components/ScreenSafe';
 import styles from '../../style';
 import { colors } from '../../style/tokens';
+import { abrirPerfilUsuario } from '../navigation/perfilNavigation';
 
 const MENSAGENS_DEMO = {
   '1': [
@@ -33,7 +34,7 @@ const MENSAGENS_DEMO = {
 export default function TelaChatConversa() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { conversaId, nome } = route.params ?? {};
+  const { conversaId, nome, userId } = route.params ?? {};
 
   const iniciais = useMemo(
     () => (MENSAGENS_DEMO[conversaId] ? [...(MENSAGENS_DEMO[conversaId] ?? [])] : []),
@@ -63,14 +64,18 @@ export default function TelaChatConversa() {
         >
           <Ionicons name="arrow-back" size={22} color={colors.purple} />
         </TouchableOpacity>
-        <View style={styles.chatHeaderCenter}>
+        <TouchableOpacity
+          style={styles.chatHeaderCenter}
+          activeOpacity={0.75}
+          onPress={() => abrirPerfilUsuario(navigation, { userId, username: nome })}
+        >
           <View style={styles.messageAvatar}>
             <Text style={styles.messageAvatarText}>{(nome ?? '?').charAt(0)}</Text>
           </View>
-          <Text style={styles.chatHeaderNome} numberOfLines={1}>
+          <Text style={[styles.chatHeaderNome, styles.messageCardNomeLink]} numberOfLines={1}>
             {nome ?? 'Conversa'}
           </Text>
-        </View>
+        </TouchableOpacity>
         <View style={styles.messageHeaderSpacer} />
       </View>
 

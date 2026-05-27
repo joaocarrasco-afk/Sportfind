@@ -213,6 +213,9 @@ export const feedStyles = {
     fontSize: 14,
     fontWeight: '600',
   },
+  feedCardAuthorLink: {
+    color: colors.purple,
+  },
   feedCardTime: {
     color: meta,
     fontSize: 12,

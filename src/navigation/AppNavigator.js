@@ -24,6 +24,9 @@ import TelaCriarLocal from '../screens/TelaCriarLocal';
 import TelaCriarPartida from '../screens/TelaCriarPartida';
 import TelaPartidas from '../screens/TelaPartidas';
 import TelaPartidaDetalhes from '../screens/TelaPartidaDetalhes';
+import TelaBuscaFeed from '../screens/TelaBuscaFeed';
+import TelaPerfilUsuario from '../screens/TelaPerfilUsuario';
+import TelaListaConexoes from '../screens/TelaListaConexoes';
 import { BOTTOM_TABS, TAB_IDS } from '../domain/places';
 import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -84,6 +87,10 @@ function FeedStackScreen() {
       <FeedStack.Screen name="TelaCriarPost" component={TelaCriarPost} />
       <FeedStack.Screen name="TelaMensagens" component={TelaMensagens} />
       <FeedStack.Screen name="TelaChatConversa" component={TelaChatConversa} />
+      <FeedStack.Screen name="TelaBuscaFeed" component={TelaBuscaFeed} />
+      <FeedStack.Screen name="TelaLocal" component={TelaLocal} />
+      <FeedStack.Screen name="TelaPerfilUsuario" component={TelaPerfilUsuario} />
+      <FeedStack.Screen name="TelaListaConexoes" component={TelaListaConexoes} />
     </FeedStack.Navigator>
   );
 }
@@ -110,6 +117,8 @@ function PerfilStackScreen() {
       <PerfilStack.Screen name="TelaConta" component={TelaConta} options={{ title: 'Conta' }} />
       <PerfilStack.Screen name="TelaPreferencias" component={TelaPreferencias} options={{ title: 'Preferências' }} />
       <PerfilStack.Screen name="TelaPrivacidade" component={TelaPrivacidade} options={{ title: 'Privacidade' }} />
+      <PerfilStack.Screen name="TelaPerfilUsuario" component={TelaPerfilUsuario} options={{ headerShown: false }} />
+      <PerfilStack.Screen name="TelaListaConexoes" component={TelaListaConexoes} options={{ headerShown: false }} />
     </PerfilStack.Navigator>
   );
 }

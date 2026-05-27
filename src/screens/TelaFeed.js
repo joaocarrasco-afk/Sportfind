@@ -7,16 +7,8 @@ import FeedPostCard from '../components/FeedPostCard';
 import { useAppState } from '../state/AppStateContext';
 import styles from '../../style';
 import { colors } from '../../style/tokens';
-import { PLACES } from '../domain/places';
-const AUTORES = [
-  { nome: 'Marina', emoji: '🧗' },
-  { nome: 'Equipe Sportfind', emoji: '⭐' },
-  { nome: 'João', emoji: '🚴' },
-  { nome: 'Ana', emoji: '🏃' },
-  { nome: 'Comunidade', emoji: '📍' },
-];
-
-const TEMPOS = ['Há 2 h', 'Ontem', 'Há 3 h', 'Há 1 dia', 'Há 5 h'];
+import { montarPublicacoesDemo } from '../domain/feed/feedDemo';
+import { abrirPerfilUsuario } from '../navigation/perfilNavigation';
 
 const CHIPS = [
   { id: 'todos', label: 'Todos' },
@@ -24,64 +16,6 @@ const CHIPS = [
   { id: 'locais', label: 'Locais' },
   { id: 'fotos', label: 'Fotos' },
 ];
-
-const PARTIDA_DEMO = {
-  id: 'partida-demo',
-  kind: 'partida',
-  nomePartida: 'Pelada de sábado',
-  esporte: 'Futebol',
-  horario: 'Sáb., 15:00',
-  local: PLACES[0],
-  username: 'Marina',
-  dataCriacao: 'Há 1 h',
-  likes: 14,
-  comentarios: 3,
-  maxParticipantes: 12,
-  participantes: ['u1', 'u2'],
-};
-
-function montarPublicacoesDemo() {
-  const postsLocais = PLACES.map((place, indice) => ({
-    id: `local-${place.id}`,
-    kind: 'local',
-    local: place,
-    username: AUTORES[indice % AUTORES.length].nome,
-    dataCriacao: TEMPOS[indice % TEMPOS.length],
-    likes: 12 + ((place.id * 7) % 80),
-    comentarios: 1 + ((place.id * 3) % 12),
-    descricao: place.description,
-  }));
-
-  const imagemDemo = [
-    'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=800&auto=format&fit=crop&q=80',
-  ];
-
-  const postsImagem = [
-    {
-      id: 'img-1',
-      kind: 'imagem',
-      url: imagemDemo[0],
-      username: AUTORES[0].nome,
-      dataCriacao: TEMPOS[2],
-      likes: 48,
-      comentarios: 7,
-      descricao: 'Melhor jogo do mês!',
-    },
-    {
-      id: 'img-2',
-      kind: 'imagem',
-      url: imagemDemo[1],
-      username: AUTORES[2].nome,
-      dataCriacao: TEMPOS[4],
-      likes: 21,
-      comentarios: 2,
-      descricao: 'Pelada no fim de semana.',
-    },
-  ];
-
-  return [PARTIDA_DEMO, ...postsLocais, ...postsImagem];
-}
 
 const API_URL = 'http://10.100.1.177:3000';
 
@@ -248,7 +182,7 @@ export default function TelaFeed() {
         <TouchableOpacity
           style={[styles.feedHeaderIconBtn, styles.feedToolbarSideBtn]}
           activeOpacity={0.75}
-          onPress={() => navigation.navigate('TelaBusca')}
+          onPress={() => navigation.navigate('TelaBuscaFeed')}
         >
           <Ionicons name="search" size={20} color={colors.purple} />
         </TouchableOpacity>
@@ -289,6 +223,7 @@ export default function TelaFeed() {
               onOcultar={ocultarPost}
               seguindo={seguindo.has(post.username)}
               onSeguir={alternarSeguir}
+              onPressAutor={(nome) => abrirPerfilUsuario(navigation, { username: nome })}
               onParticipar={participarEAbrirDetalhes}
               onDesistir={desistirPartida}
             />

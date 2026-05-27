@@ -4,11 +4,18 @@ import ScreenSafe from '../components/ScreenSafe';
 import { useNavigation } from '@react-navigation/native';
 import styles from '../../style';
 import { colors } from '../../style/tokens';
+import { abrirPerfilUsuario } from '../navigation/perfilNavigation';
 
 const CONVERSAS_DEMO = [
-  { id: '1', nome: 'Marina', ultima: 'Bora marcar um jogo?', hora: '14:30' },
-  { id: '2', nome: 'João', ultima: 'Confirmado para sábado!', hora: 'Ontem' },
-  { id: '3', nome: 'Equipe Sportfind', ultima: 'Nova partida perto de você.', hora: 'Seg' },
+  { id: '1', userId: 'u-marina', nome: 'Marina', ultima: 'Bora marcar um jogo?', hora: '14:30' },
+  { id: '2', userId: 'u-joao', nome: 'João', ultima: 'Confirmado para sábado!', hora: 'Ontem' },
+  {
+    id: '3',
+    userId: 'u-equipe',
+    nome: 'Equipe Sportfind',
+    ultima: 'Nova partida perto de você.',
+    hora: 'Seg',
+  },
 ];
 
 export default function TelaMensagens() {
@@ -19,7 +26,12 @@ export default function TelaMensagens() {
     navigation.navigate('TelaChatConversa', {
       conversaId: item.id,
       nome: item.nome,
+      userId: item.userId,
     });
+  }
+
+  function abrirPerfil(item) {
+    abrirPerfilUsuario(navigation, { userId: item.userId, username: item.nome });
   }
 
   return (
@@ -57,7 +69,11 @@ export default function TelaMensagens() {
                 <Text style={styles.messageAvatarText}>{item.nome.charAt(0)}</Text>
               </View>
               <View style={styles.messageCardBody}>
-                <Text style={styles.messageCardNome}>{item.nome}</Text>
+                <TouchableOpacity onPress={() => abrirPerfil(item)} activeOpacity={0.7}>
+                  <Text style={[styles.messageCardNome, styles.messageCardNomeLink]}>
+                    {item.nome}
+                  </Text>
+                </TouchableOpacity>
                 <Text style={styles.messageCardPreview} numberOfLines={1}>
                   {item.ultima}
                 </Text>

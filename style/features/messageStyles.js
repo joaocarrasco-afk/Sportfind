@@ -68,6 +68,9 @@ export const messageStyles = {
     fontWeight: '700',
     color: colors.textPrimary,
   },
+  messageCardNomeLink: {
+    color: colors.purple,
+  },
   messageCardPreview: {
     fontSize: 13,
     color: colors.textSecondary,

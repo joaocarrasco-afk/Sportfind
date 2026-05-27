@@ -33,6 +33,7 @@ export default function FeedPostCard({
   onOcultar,
   seguindo = false,
   onSeguir,
+  onPressAutor,
   onParticipar,
   onDesistir,
 }) {
@@ -120,9 +121,22 @@ export default function FeedPostCard({
         </View>
         <View style={styles.feedCardHeaderMain}>
           <View style={styles.feedCardHeaderRow}>
-            <Text style={styles.feedCardAuthor} numberOfLines={1}>
-              {autor}
-            </Text>
+            <TouchableOpacity
+              onPress={() => onPressAutor?.(autor)}
+              disabled={!onPressAutor}
+              activeOpacity={0.7}
+              style={{ flexShrink: 1 }}
+            >
+              <Text
+                style={[
+                  styles.feedCardAuthor,
+                  onPressAutor && styles.feedCardAuthorLink,
+                ]}
+                numberOfLines={1}
+              >
+                {autor}
+              </Text>
+            </TouchableOpacity>
             {mostrarSeguir ? (
               <TouchableOpacity
                 style={[styles.feedFollowBtn, seguindo && styles.feedFollowBtnActive]}
