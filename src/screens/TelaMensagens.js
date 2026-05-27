@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { FlatList, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import ScreenSafe from '../components/ScreenSafe';
 import { useNavigation } from '@react-navigation/native';
 import styles from '../../style';
 import { colors } from '../../style/tokens';
@@ -14,8 +15,15 @@ export default function TelaMensagens() {
   const navigation = useNavigation();
   const conversas = CONVERSAS_DEMO;
 
+  function abrirConversa(item) {
+    navigation.navigate('TelaChatConversa', {
+      conversaId: item.id,
+      nome: item.nome,
+    });
+  }
+
   return (
-    <SafeAreaView style={styles.messageScreen}>
+    <ScreenSafe style={styles.messageScreen} edges={['top', 'left', 'right', 'bottom']}>
       <View style={styles.messageHeader}>
         <TouchableOpacity
           style={styles.messageBackBtn}
@@ -40,7 +48,11 @@ export default function TelaMensagens() {
           contentContainerStyle={styles.messageList}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.messageCard} activeOpacity={0.85}>
+            <TouchableOpacity
+              style={styles.messageCard}
+              activeOpacity={0.85}
+              onPress={() => abrirConversa(item)}
+            >
               <View style={styles.messageAvatar}>
                 <Text style={styles.messageAvatarText}>{item.nome.charAt(0)}</Text>
               </View>
@@ -55,6 +67,6 @@ export default function TelaMensagens() {
           )}
         />
       )}
-    </SafeAreaView>
+    </ScreenSafe>
   );
 }

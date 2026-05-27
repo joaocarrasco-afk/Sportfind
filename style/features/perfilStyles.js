@@ -5,7 +5,7 @@ export const perfilStyles = {
   usuarioScreen: { flex: 1, backgroundColor: colors.white },
   usuarioTopRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
   },

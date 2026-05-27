@@ -1,14 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import {
-  Platform,
-  Pressable,
-  Text,
-  TouchableOpacity,
-  View,
-  Image,
-  SafeAreaView,
-} from 'react-native';
+import { Platform, Pressable, Text, TouchableOpacity, View, Image } from 'react-native';
 import { WebView } from 'react-native-webview';
 import styles from '../../style';
 import InfraestruturaChips from '../components/InfraestruturaChips';
@@ -16,8 +8,9 @@ import ModalFiltros from '../components/ModalFiltros';
 import { htmlMapa } from '../utils/htmlMapa';
 import { useAppState } from '../state/AppStateContext';
 import { parseMapMessage } from '../features/map/mapBridge';
-import { colors } from '../../style/tokens';
+import { colors, spacing } from '../../style/tokens';
 import { FILTER_ALL, rotuloInfraestrutura } from '../domain/places';
+import { useScreenInsets } from '../hooks/useScreenInsets';
 
 const MAP_APP_MESSAGE_TYPE = 'sportfind:map:command';
 
@@ -45,11 +38,15 @@ export default function TelaMapa({ navigation }) {
     refreshUserLocation,
   } = useAppState();
 
+  const insets = useScreenInsets();
   const temFiltros =
     sportFilters.length > 0 || infraFilters.length > 0 || accessFilter !== FILTER_ALL;
   const acessoLabel = rotuloAcesso(accessFilter);
 
-  const mapHtml = useMemo(() => htmlMapa(filteredPlaces), [filteredPlaces]);
+  const mapHtml = useMemo(
+    () => htmlMapa(filteredPlaces, userLocation),
+    [filteredPlaces, userLocation],
+  );
   const webViewRef = useRef(null);
   const iframeRef = useRef(null);
 
@@ -80,9 +77,23 @@ export default function TelaMapa({ navigation }) {
     [iframeRef, webViewRef],
   );
 
+  const sincronizarLocalizacaoNoMapa = useCallback(
+    (loc) => {
+      if (!loc?.lat || !loc?.lng) return;
+      enviarComandoMapa({
+        type: MAP_APP_MESSAGE_TYPE,
+        action: 'setUserLocation',
+        lat: loc.lat,
+        lng: loc.lng,
+      });
+    },
+    [enviarComandoMapa],
+  );
+
   const relocalizar = useCallback(async () => {
     const loc = userLocation ?? (await refreshUserLocation?.());
     if (!loc?.lat || !loc?.lng) return;
+    sincronizarLocalizacaoNoMapa(loc);
     enviarComandoMapa({
       type: MAP_APP_MESSAGE_TYPE,
       action: 'center',
@@ -90,7 +101,17 @@ export default function TelaMapa({ navigation }) {
       lng: loc.lng,
       zoom: 16,
     });
-  }, [enviarComandoMapa, refreshUserLocation, userLocation]);
+  }, [enviarComandoMapa, refreshUserLocation, sincronizarLocalizacaoNoMapa, userLocation]);
+
+  useEffect(() => {
+    refreshUserLocation?.();
+  }, [refreshUserLocation]);
+
+  useEffect(() => {
+    if (userLocation?.lat != null && userLocation?.lng != null) {
+      sincronizarLocalizacaoNoMapa(userLocation);
+    }
+  }, [userLocation, sincronizarLocalizacaoNoMapa]);
 
   const abrirDetalheLocal = useCallback(() => {
     if (!selectedPlace?.id) return;
@@ -142,7 +163,10 @@ export default function TelaMapa({ navigation }) {
         )}
       </View>
 
-      <SafeAreaView style={styles.mapFabColumn} pointerEvents="box-none">
+      <View
+        style={[styles.mapFabColumn, { bottom: spacing.xl + insets.bottom }]}
+        pointerEvents="box-none"
+      >
         <TouchableOpacity
           style={styles.mapFab}
           activeOpacity={0.9}
@@ -153,9 +177,12 @@ export default function TelaMapa({ navigation }) {
         <TouchableOpacity style={styles.mapFab} activeOpacity={0.9} onPress={relocalizar}>
           <Ionicons name="locate-outline" size={24} color={colors.textOnPurple} />
         </TouchableOpacity>
-      </SafeAreaView>
+      </View>
 
-      <SafeAreaView style={styles.mapTopOverlayAbsolute} pointerEvents="box-none">
+      <View
+        style={[styles.mapTopOverlayAbsolute, { paddingTop: insets.topWithPadding }]}
+        pointerEvents="box-none"
+      >
         <View style={styles.mapTopOverlay} pointerEvents="box-none">
           <View style={styles.mapSearchRow} pointerEvents="box-none">
             <TouchableOpacity
@@ -214,10 +241,10 @@ export default function TelaMapa({ navigation }) {
             </View>
           ) : null}
         </View>
-      </SafeAreaView>
+      </View>
 
       {mostrarCard ? (
-        <SafeAreaView style={styles.mapBottomCardOverlay}>
+        <View style={[styles.mapBottomCardOverlay, { paddingBottom: insets.bottomAboveTabBar }]}>
           <View style={styles.selectedPlaceCardWrap}>
             <Pressable
               style={({ pressed }) => [
@@ -252,7 +279,7 @@ export default function TelaMapa({ navigation }) {
               <Ionicons name="close-circle" size={28} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
-        </SafeAreaView>
+        </View>
       ) : null}
 
       <ModalFiltros

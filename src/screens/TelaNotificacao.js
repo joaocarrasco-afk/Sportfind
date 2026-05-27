@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { FlatList, Image, SafeAreaView, Text, View } from 'react-native';
+import { FlatList, Image, Text, View } from 'react-native';
+import ScreenSafe from '../components/ScreenSafe';
 import styles from '../../style';
 import { colors } from '../../style/tokens';
 import { PLACES } from '../domain/places';
@@ -33,7 +34,7 @@ export default function TelaNotificacao() {
   const notificacoes = NOTIFICACOES_DEMO;
 
   return (
-    <SafeAreaView style={styles.notificationScreen}>
+    <ScreenSafe style={styles.notificationScreen}>
       {notificacoes.length === 0 ? (
         <>
           <View style={styles.notificationEmpty}>
@@ -63,17 +64,19 @@ export default function TelaNotificacao() {
                     style={styles.notificationThumb}
                     resizeMode="cover"
                   />
-                  <View>
+                  <View style={styles.notificationTextBlock}>
                     <Text style={styles.notificationTextTitle}>{title}</Text>
                     <Text style={styles.notificationTextSubtitle}>{item.message}</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={18} color={colors.purple} />
+                  <View style={styles.notificationChevron}>
+                    <Ionicons name="chevron-forward" size={18} color={colors.purple} />
+                  </View>
                 </View>
               </View>
             );
           }}
         />
       )}
-    </SafeAreaView>
+    </ScreenSafe>
   );
 }

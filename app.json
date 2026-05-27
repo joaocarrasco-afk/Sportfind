@@ -27,7 +27,13 @@
       "favicon": "./assets/icon.png"
     },
     "plugins": [
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "O Sportfind usa sua localização para mostrar onde você está no mapa e encontrar locais perto de você."
+        }
+      ]
     ]
   }
 }

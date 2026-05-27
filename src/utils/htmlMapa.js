@@ -1,6 +1,6 @@
 import { createMapHtml } from '../features/map/createMapHtml';
 
-export const htmlMapa = (locais) =>
+export const htmlMapa = (locais, userLocation = null) =>
   createMapHtml(
     locais.map((local) => ({
       id: local.id,
@@ -9,4 +9,5 @@ export const htmlMapa = (locais) =>
       color: local.color ?? local.cor,
       emoji: local.emoji,
     })),
+    userLocation,
   );

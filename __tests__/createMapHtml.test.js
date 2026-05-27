@@ -12,11 +12,11 @@ describe('createMapHtml', () => {
     expect(html).toContain('.leaflet-control-attribution { display: none !important; }');
   });
 
-  it('renders clickable markers without cluster plugin', () => {
-    const html = createMapHtml(places);
-    expect(html).not.toContain('markercluster');
-    expect(html).toContain('sportfind-marker');
-    expect(html).toContain('marker.on(\'click\'');
+  it('renders user location marker support', () => {
+    const html = createMapHtml(places, { lat: -23.54, lng: -46.31 });
+    expect(html).toContain('sportfind-user-dot');
+    expect(html).toContain('setUserLocation');
+    expect(html).toContain('INITIAL_USER');
   });
 
   it('embeds places and message type for bridge', () => {

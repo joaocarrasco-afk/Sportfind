@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Alert, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import ScreenSafe from '../components/ScreenSafe';
 import { useNavigation } from '@react-navigation/native';
 import styles from '../../style';
 import { colors } from '../../style/tokens';
@@ -45,7 +46,7 @@ export default function TelaCriar() {
   }
 
   return (
-    <SafeAreaView style={styles.createScreen}>
+    <ScreenSafe style={styles.createScreen}>
       <ScrollView contentContainerStyle={styles.createScroll} showsVerticalScrollIndicator={false}>
         <View style={styles.createHero}>
           <View style={styles.createMascotCircle}>
@@ -83,6 +84,6 @@ export default function TelaCriar() {
           <Text style={styles.createPrimaryBtnText}>Começar agora</Text>
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </ScreenSafe>
   );
 }

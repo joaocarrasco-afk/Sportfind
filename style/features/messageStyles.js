@@ -89,4 +89,101 @@ export const messageStyles = {
     color: colors.textSecondary,
     textAlign: 'center',
   },
+
+  chatScreen: {
+    flex: 1,
+    backgroundColor: colors.white,
+  },
+  chatHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  chatHeaderCenter: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.sm,
+  },
+  chatHeaderNome: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  chatList: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    gap: spacing.sm,
+    flexGrow: 1,
+  },
+  chatBubbleRow: {
+    flexDirection: 'row',
+    marginBottom: spacing.xs,
+  },
+  chatBubbleRowMine: {
+    justifyContent: 'flex-end',
+  },
+  chatBubbleRowOther: {
+    justifyContent: 'flex-start',
+  },
+  chatBubble: {
+    maxWidth: '80%',
+    borderRadius: radii.lg,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+  },
+  chatBubbleMine: {
+    backgroundColor: colors.purple,
+    borderBottomRightRadius: 4,
+  },
+  chatBubbleOther: {
+    backgroundColor: colors.purpleMuted,
+    borderBottomLeftRadius: 4,
+  },
+  chatBubbleText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  chatBubbleTextMine: {
+    color: colors.textOnPurple,
+  },
+  chatBubbleTextOther: {
+    color: colors.textPrimary,
+  },
+  chatInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: colors.white,
+  },
+  chatInput: {
+    flex: 1,
+    minHeight: 44,
+    maxHeight: 100,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    fontSize: 14,
+    color: colors.textPrimary,
+    backgroundColor: colors.purpleMuted,
+  },
+  chatSendBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.purple,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 };

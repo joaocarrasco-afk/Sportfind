@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { FlatList, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import ScreenSafe from '../components/ScreenSafe';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import FeedPostCard from '../components/FeedPostCard';
 import { useAppState } from '../state/AppStateContext';
@@ -212,25 +213,15 @@ export default function TelaFeed() {
 
   const ListHeader = (
     <View style={styles.feedHeaderWrap}>
-      <View style={styles.feedToolbarTop}>
+      <View style={styles.feedToolbarRow}>
         <TouchableOpacity
-          style={styles.feedHeaderIconBtn}
-          activeOpacity={0.75}
-          onPress={() => navigation.navigate('TelaBusca')}
-        >
-          <Ionicons name="search" size={20} color={colors.purple} />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.feedHeaderIconBtn}
+          style={[styles.feedHeaderIconBtn, styles.feedToolbarSideBtn]}
           activeOpacity={0.75}
           onPress={() => navigation.navigate('TelaMensagens')}
         >
           <Ionicons name="chatbubble-outline" size={20} color={colors.purple} />
         </TouchableOpacity>
-      </View>
 
-      <View style={styles.feedFiltersRow}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -253,12 +244,20 @@ export default function TelaFeed() {
             );
           })}
         </ScrollView>
+
+        <TouchableOpacity
+          style={[styles.feedHeaderIconBtn, styles.feedToolbarSideBtn]}
+          activeOpacity={0.75}
+          onPress={() => navigation.navigate('TelaBusca')}
+        >
+          <Ionicons name="search" size={20} color={colors.purple} />
+        </TouchableOpacity>
       </View>
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <ScreenSafe style={styles.screen}>
       <FlatList
         data={publicacoesFiltradas}
         keyExtractor={(item) => String(item.id)}
@@ -296,14 +295,6 @@ export default function TelaFeed() {
           );
         }}
       />
-
-      <TouchableOpacity
-        style={styles.feedFab}
-        activeOpacity={0.9}
-        onPress={() => navigation.navigate('TelaCriarPost')}
-      >
-        <Ionicons name="add" size={28} color={colors.textOnPurple} />
-      </TouchableOpacity>
-    </SafeAreaView>
+    </ScreenSafe>
   );
 }

@@ -15,7 +15,6 @@ export const notificationStyles = {
   notificationScreen: { flex: 1, backgroundColor: colors.white },
   notificationHeader: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
     paddingBottom: spacing.sm,
   },
   notificationTitle: { fontSize: 20, fontWeight: '800', color: colors.purple, letterSpacing: -0.2 },
@@ -46,10 +45,12 @@ export const notificationStyles = {
     ...cardShadow,
   },
   notificationCardInner: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing.md,
     gap: spacing.md,
+    minWidth: 0,
   },
   notificationThumb: {
     width: 52,
@@ -57,9 +58,24 @@ export const notificationStyles = {
     borderRadius: 12,
     backgroundColor: '#f5f5f5',
   },
-  notificationTextBlock: { flex: 1 },
+  notificationTextBlock: {
+    flex: 1,
+    flexShrink: 1,
+    minWidth: 0,
+  },
   notificationTextTitle: { fontSize: 14, fontWeight: '800', color: colors.textPrimary },
-  notificationTextSubtitle: { fontSize: 12, color: meta, marginTop: 4, lineHeight: 16 },
+  notificationTextSubtitle: {
+    fontSize: 12,
+    color: meta,
+    marginTop: 4,
+    lineHeight: 16,
+    flexShrink: 1,
+  },
+  notificationChevron: {
+    flexShrink: 0,
+    alignSelf: 'center',
+    marginLeft: spacing.xs,
+  },
   notificationBadge: {
     width: 4,
     alignSelf: 'stretch',

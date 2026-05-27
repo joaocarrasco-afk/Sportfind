@@ -1,10 +1,15 @@
+import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AppNavigator from './src/navigation/AppNavigator';
 import { AppStateProvider } from './src/state/AppStateContext';
 
 export default function App() {
   return (
-    <AppStateProvider>
-      <AppNavigator />
-    </AppStateProvider>
+    <SafeAreaProvider>
+      <StatusBar style="dark" />
+      <AppStateProvider>
+        <AppNavigator />
+      </AppStateProvider>
+    </SafeAreaProvider>
   );
 }

@@ -8,7 +8,6 @@ export const mapStyles = {
     left: 0,
     right: 0,
     zIndex: 10,
-    paddingTop: spacing.sm,
     paddingHorizontal: spacing.lg,
     gap: spacing.sm,
   },

@@ -18,14 +18,15 @@ const cardShadow = {
 export const feedStyles = {
   feedHeaderWrap: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
     marginBottom: spacing.sm,
-    gap: spacing.md,
   },
-  feedToolbarTop: {
+  feedToolbarRow: {
     alignItems: 'center',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    minHeight: 40,
+  },
+  feedToolbarSideBtn: {
+    flexShrink: 0,
   },
   feedHeaderIconBtn: {
     alignItems: 'center',
@@ -36,40 +37,19 @@ export const feedStyles = {
     height: 40,
     justifyContent: 'center',
     width: 40,
-  },
-  feedFiltersRow: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    maxHeight: 40,
+    flexShrink: 0,
   },
   feedChipsScroll: {
-    flexGrow: 0,
+    flex: 1,
     maxHeight: 40,
-    width: '100%',
+    marginHorizontal: spacing.sm,
   },
   feedChipsContent: {
-    alignItems: 'center',
     flexGrow: 1,
-    gap: spacing.sm,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.sm,
-  },
-
-  feedFab: {
-    position: 'absolute',
-    right: spacing.lg,
-    bottom: spacing.xl,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.purple,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 6,
-    shadowColor: colors.purple,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
+    gap: spacing.sm,
   },
 
   createPostScreen: {

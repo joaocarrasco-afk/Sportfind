@@ -1,4 +1,5 @@
-import { FlatList, Image, SafeAreaView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import ScreenSafe from '../components/ScreenSafe';
 import styles from '../../style';
 import InfraestruturaChips from '../components/InfraestruturaChips';
 import ModalFiltros from '../components/ModalFiltros';
@@ -20,7 +21,7 @@ export default function TelaBusca({ navigation }) {
   } = useAppState();
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <ScreenSafe style={styles.screen} edges={['top', 'left', 'right', 'bottom']}>
       <View style={styles.searchBar}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Text style={{ fontSize: 22 }}>←</Text>
@@ -74,6 +75,6 @@ export default function TelaBusca({ navigation }) {
         onAplicar={applyFilters}
         onLimparTodos={resetFilters}
       />
-    </SafeAreaView>
+    </ScreenSafe>
   );
 }

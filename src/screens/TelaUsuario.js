@@ -6,13 +6,13 @@ import {
   Image,
   Modal,
   Pressable,
-  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+import ScreenSafe from '../components/ScreenSafe';
 import styles from '../../style';
 import { colors, spacing } from '../../style/tokens';
 import PerfilPostAcoesSheet from '../components/PerfilPostAcoesSheet';
@@ -259,12 +259,9 @@ export default function TelaUsuario() {
   }
 
   return (
-    <SafeAreaView style={styles.usuarioScreen}>
+    <ScreenSafe style={styles.usuarioScreen}>
       <ScrollView>
         <View style={styles.usuarioTopRow}>
-          <TouchableOpacity style={styles.usuarioIconBtn} onPress={() => {}}>
-            <Ionicons name="add" size={24} color={colors.purple} />
-          </TouchableOpacity>
           <TouchableOpacity style={styles.usuarioIconBtn} onPress={() => setCfgAberto(true)}>
             <Ionicons name="menu" size={24} color={colors.purple} />
           </TouchableOpacity>
@@ -468,6 +465,6 @@ export default function TelaUsuario() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </ScreenSafe>
   );
 }

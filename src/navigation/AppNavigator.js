@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import TelaFeed from '../screens/TelaFeed';
 import TelaCriarPost from '../screens/TelaCriarPost';
 import TelaMensagens from '../screens/TelaMensagens';
+import TelaChatConversa from '../screens/TelaChatConversa';
 import TelaBusca from '../screens/TelaBusca';
 import TelaCadastro from '../screens/TelaCadastro';
 import TelaSenha from '../screens/TelaSenha';
@@ -25,8 +26,11 @@ import TelaPartidas from '../screens/TelaPartidas';
 import TelaPartidaDetalhes from '../screens/TelaPartidaDetalhes';
 import { BOTTOM_TABS, TAB_IDS } from '../domain/places';
 import { Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styles from '../../style';
-import { colors } from '../../style/tokens';
+import { colors, spacing } from '../../style/tokens';
+/** Área útil dos ícones dentro da tab bar (sem home indicator) */
+const TAB_BAR_CONTENT_HEIGHT = 56;
 
 const Tab = createBottomTabNavigator();
 const MapStack = createNativeStackNavigator();
@@ -38,7 +42,7 @@ const RootStack = createNativeStackNavigator();
 function AppTabBarLabel({ focused, label, iconName, iconFocused, isCreate }) {
   if (isCreate) {
     return (
-      <View style={styles.tabBarItem}>
+      <View style={[styles.tabBarItem, styles.tabBarItemCreate]}>
         <View style={styles.tabPillCreate}>
           <Ionicons name="add" size={28} color={colors.textOnPurple} />
         </View>
@@ -53,9 +57,11 @@ function AppTabBarLabel({ focused, label, iconName, iconFocused, isCreate }) {
   return (
     <View style={styles.tabBarItem}>
       <View style={[styles.tabPill, focused && styles.tabPillActive]}>
-        <Ionicons name={name} size={22} color={iconColor} />
+        <Ionicons name={name} size={20} color={iconColor} />
       </View>
-      <Text style={[styles.tabLabel, focused && styles.tabLabelActive]}>{label}</Text>
+      <Text style={[styles.tabLabel, focused && styles.tabLabelActive]} numberOfLines={1}>
+        {label}
+      </Text>
     </View>
   );
 }
@@ -77,6 +83,7 @@ function FeedStackScreen() {
       <FeedStack.Screen name="TelaBusca" component={TelaBusca} />
       <FeedStack.Screen name="TelaCriarPost" component={TelaCriarPost} />
       <FeedStack.Screen name="TelaMensagens" component={TelaMensagens} />
+      <FeedStack.Screen name="TelaChatConversa" component={TelaChatConversa} />
     </FeedStack.Navigator>
   );
 }
@@ -108,6 +115,9 @@ function PerfilStackScreen() {
 }
 
 function AppTabs() {
+  const insets = useSafeAreaInsets();
+  const tabBarHeight = TAB_BAR_CONTENT_HEIGHT + insets.bottom;
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => {
@@ -116,7 +126,20 @@ function AppTabs() {
         return {
           headerShown: false,
           tabBarShowLabel: false,
-          tabBarStyle: styles.tabBar,
+          tabBarStyle: {
+            ...styles.tabBar,
+            height: tabBarHeight,
+            paddingTop: spacing.sm,
+            paddingBottom: insets.bottom,
+          },
+          tabBarItemStyle: {
+            marginVertical: 0,
+            paddingVertical: 0,
+          },
+          tabBarIconStyle: {
+            marginTop: 0,
+            marginBottom: 0,
+          },
           // eslint-disable-next-line react/no-unstable-nested-components
           tabBarIcon: ({ focused }) => (
             <AppTabBarLabel
@@ -156,7 +179,7 @@ export default function AppNavigator() {
         <RootStack.Screen name="TelaCadastro" component={TelaCadastro} />
         <RootStack.Screen name="TelaSenha" component={TelaSenha} />
         <RootStack.Screen name="TelaNovaSenha" component={TelaNovaSenha} />
-        <RootStack.Screen name="AppTabs" component={AppTabs} options={{ headerShown: true }} />
+        <RootStack.Screen name="AppTabs" component={AppTabs} options={{ headerShown: false }} />
         <RootStack.Screen name="TelaPartidas" component={TelaPartidas} />
         <RootStack.Screen name="TelaPartidaDetalhes" component={TelaPartidaDetalhes} />
       </RootStack.Navigator>
