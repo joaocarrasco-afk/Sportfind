@@ -21,6 +21,8 @@ import TelaNotificacao from '../screens/TelaNotificacao';
 import TelaCriar from '../screens/TelaCriar';
 import TelaCriarLocal from '../screens/TelaCriarLocal';
 import TelaCriarPartida from '../screens/TelaCriarPartida';
+import TelaPartidas from '../screens/TelaPartidas';
+import TelaPartidaDetalhes from '../screens/TelaPartidaDetalhes';
 import { BOTTOM_TABS, TAB_IDS } from '../domain/places';
 import { Text, View } from 'react-native';
 import styles from '../../style';
@@ -148,13 +150,15 @@ function AppTabs() {
 export default function AppNavigator() {
   return (
     <NavigationContainer>
-      <RootStack.Navigator initialRouteName="AppTabs" screenOptions={{ headerShown: false }}>
+      <RootStack.Navigator initialRouteName="AppTabs" screenOptions={{ headerShown: true }}>
         <RootStack.Screen name="TelaSplash" component={TelaSplash} />
         <RootStack.Screen name="TelaLogin" component={TelaLogin} />
         <RootStack.Screen name="TelaCadastro" component={TelaCadastro} />
         <RootStack.Screen name="TelaSenha" component={TelaSenha} />
         <RootStack.Screen name="TelaNovaSenha" component={TelaNovaSenha} />
         <RootStack.Screen name="AppTabs" component={AppTabs} options={{ headerShown: true }} />
+        <RootStack.Screen name="TelaPartidas" component={TelaPartidas} />
+        <RootStack.Screen name="TelaPartidaDetalhes" component={TelaPartidaDetalhes} />
       </RootStack.Navigator>
     </NavigationContainer>
   );

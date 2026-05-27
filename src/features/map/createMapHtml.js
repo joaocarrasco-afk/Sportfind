@@ -1,6 +1,7 @@
 import { MAP_WEB_MESSAGE_TYPE } from './mapBridge';
 
 const BRAND_PURPLE = '#9756CA';
+const MAP_APP_MESSAGE_TYPE = 'sportfind:map:command';
 
 export const createMapHtml = (places) => {
   const placesJson = JSON.stringify(
@@ -13,6 +14,7 @@ export const createMapHtml = (places) => {
   );
 
   const messageType = JSON.stringify(MAP_WEB_MESSAGE_TYPE);
+  const appMessageType = JSON.stringify(MAP_APP_MESSAGE_TYPE);
 
   return `<!DOCTYPE html>
 <html>
@@ -48,6 +50,7 @@ export const createMapHtml = (places) => {
     <div id="mapa"></div>
     <script>
       const MESSAGE_TYPE = ${messageType};
+      const APP_MESSAGE_TYPE = ${appMessageType};
       const PLACES = ${placesJson};
 
       const mapa = L.map('mapa', {
@@ -69,6 +72,39 @@ export const createMapHtml = (places) => {
           window.parent.postMessage(payload, '*');
         }
       }
+
+      function isFiniteNumber(x) {
+        return typeof x === 'number' && Number.isFinite(x);
+      }
+
+      function centerMap(lat, lng, zoom) {
+        if (!isFiniteNumber(lat) || !isFiniteNumber(lng)) return;
+        const nextZoom = isFiniteNumber(zoom) ? zoom : Math.max(mapa.getZoom(), 16);
+        mapa.flyTo([lat, lng], nextZoom, { animate: true, duration: 0.6 });
+      }
+
+      // API global para o app injetar JS (WebView.injectJavaScript).
+      window.__sportfind_center = function(lat, lng, zoom) {
+        centerMap(Number(lat), Number(lng), zoom == null ? undefined : Number(zoom));
+      };
+
+      // Listener para web/iframe e para RN WebView (postMessage).
+      function handleAppCommand(raw) {
+        if (!raw) return;
+        let data = raw;
+        if (typeof raw === 'string') {
+          try { data = JSON.parse(raw); } catch { return; }
+        }
+        if (!data || data.type !== APP_MESSAGE_TYPE) return;
+        if (data.action === 'center') {
+          centerMap(Number(data.lat), Number(data.lng), data.zoom == null ? undefined : Number(data.zoom));
+        }
+      }
+
+      window.addEventListener('message', function(event) {
+        if (!event) return;
+        handleAppCommand(event.data);
+      });
 
       PLACES.forEach(function (place) {
         const icon = L.divIcon({

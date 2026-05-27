@@ -17,6 +17,12 @@ const OPCOES = [
     title: 'Abrir partida',
     hint: 'Organize peladas e campeonatos abertos.',
   },
+  {
+    id: 'buscar_partidas',
+    icon: 'calendar',
+    title: 'Buscar partidas',
+    hint: 'Veja as partidas disponíveis e participe.',
+  },
 ];
 
 export default function TelaCriar() {
@@ -29,6 +35,10 @@ export default function TelaCriar() {
     }
     if (opcao.id === 'partida') {
       navigation.navigate('TelaCriarPartida');
+      return;
+    }
+    if (opcao.id === 'buscar_partidas') {
+      navigation.navigate('TelaPartidas');
       return;
     }
     Alert.alert('Em breve', `${opcao.title} estará disponível na próxima versão.`);

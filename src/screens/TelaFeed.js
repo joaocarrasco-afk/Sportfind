@@ -136,6 +136,14 @@ export default function TelaFeed() {
     desistirPartida,
   } = useAppState();
 
+  const participarEAbrirDetalhes = useCallback(
+    (partidaId) => {
+      participarPartida?.(partidaId);
+      navigation.navigate('TelaPartidaDetalhes', { partidaId });
+    },
+    [navigation, participarPartida],
+  );
+
   const carregarPublicacoes = useCallback(async () => {
     setCarregando(true);
     const demo = montarPublicacoesDemo();
@@ -282,7 +290,7 @@ export default function TelaFeed() {
               onOcultar={ocultarPost}
               seguindo={seguindo.has(post.username)}
               onSeguir={alternarSeguir}
-              onParticipar={participarPartida}
+              onParticipar={participarEAbrirDetalhes}
               onDesistir={desistirPartida}
             />
           );

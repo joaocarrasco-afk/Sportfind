@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   Platform,
   Pressable,
@@ -18,6 +18,8 @@ import { useAppState } from '../state/AppStateContext';
 import { parseMapMessage } from '../features/map/mapBridge';
 import { colors } from '../../style/tokens';
 import { FILTER_ALL, rotuloInfraestrutura } from '../domain/places';
+
+const MAP_APP_MESSAGE_TYPE = 'sportfind:map:command';
 
 function rotuloAcesso(acesso) {
   if (acesso === FILTER_ALL) return null;
@@ -39,6 +41,8 @@ export default function TelaMapa({ navigation }) {
     resetFilters,
     selectedPlace,
     setSelectedPlaceId,
+    userLocation,
+    refreshUserLocation,
   } = useAppState();
 
   const temFiltros =
@@ -46,6 +50,8 @@ export default function TelaMapa({ navigation }) {
   const acessoLabel = rotuloAcesso(accessFilter);
 
   const mapHtml = useMemo(() => htmlMapa(filteredPlaces), [filteredPlaces]);
+  const webViewRef = useRef(null);
+  const iframeRef = useRef(null);
 
   const handleMapMessage = useCallback(
     (raw) => {
@@ -56,6 +62,35 @@ export default function TelaMapa({ navigation }) {
     },
     [setSelectedPlaceId],
   );
+
+  const enviarComandoMapa = useCallback(
+    (payload) => {
+      const message = JSON.stringify(payload);
+      if (Platform.OS === 'web') {
+        try {
+          iframeRef.current?.contentWindow?.postMessage(message, '*');
+        } catch {
+          // ignore
+        }
+        return;
+      }
+      const script = `try { window.postMessage(${JSON.stringify(message)}, '*'); } catch (e) {} true;`;
+      webViewRef.current?.injectJavaScript?.(script);
+    },
+    [iframeRef, webViewRef],
+  );
+
+  const relocalizar = useCallback(async () => {
+    const loc = userLocation ?? (await refreshUserLocation?.());
+    if (!loc?.lat || !loc?.lng) return;
+    enviarComandoMapa({
+      type: MAP_APP_MESSAGE_TYPE,
+      action: 'center',
+      lat: loc.lat,
+      lng: loc.lng,
+      zoom: 16,
+    });
+  }, [enviarComandoMapa, refreshUserLocation, userLocation]);
 
   const abrirDetalheLocal = useCallback(() => {
     if (!selectedPlace?.id) return;
@@ -90,9 +125,11 @@ export default function TelaMapa({ navigation }) {
             title="Mapa Sportfind"
             style={{ border: 0, width: '100%', height: '100%', display: 'block' }}
             srcDoc={mapHtml}
+            ref={iframeRef}
           />
         ) : (
           <WebView
+            ref={webViewRef}
             style={{ flex: 1, opacity: 0.99 }}
             source={{ html: mapHtml }}
             onMessage={(event) => handleMapMessage(event.nativeEvent.data)}
@@ -104,6 +141,19 @@ export default function TelaMapa({ navigation }) {
           />
         )}
       </View>
+
+      <SafeAreaView style={styles.mapFabColumn} pointerEvents="box-none">
+        <TouchableOpacity
+          style={styles.mapFab}
+          activeOpacity={0.9}
+          onPress={() => navigation.navigate('TelaPartidas')}
+        >
+          <Ionicons name="calendar-outline" size={24} color={colors.textOnPurple} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.mapFab} activeOpacity={0.9} onPress={relocalizar}>
+          <Ionicons name="locate-outline" size={24} color={colors.textOnPurple} />
+        </TouchableOpacity>
+      </SafeAreaView>
 
       <SafeAreaView style={styles.mapTopOverlayAbsolute} pointerEvents="box-none">
         <View style={styles.mapTopOverlay} pointerEvents="box-none">

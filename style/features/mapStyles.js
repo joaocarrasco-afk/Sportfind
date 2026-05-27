@@ -220,4 +220,25 @@ export const mapStyles = {
     marginBottom: spacing.sm,
     marginTop: spacing.md,
   },
+
+  mapFabColumn: {
+    position: 'absolute',
+    right: spacing.lg,
+    bottom: spacing.xl,
+    zIndex: 12,
+    gap: spacing.sm,
+  },
+  mapFab: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: colors.purple,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,
+    shadowColor: colors.purple,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.28,
+    shadowRadius: 8,
+  },
 };

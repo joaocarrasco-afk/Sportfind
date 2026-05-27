@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import * as Location from 'expo-location';
 import {
   FILTER_ALL,
   filterPlaces,
@@ -17,6 +18,7 @@ const MAP_CENTER = { lat: -23.5445, lng: -46.3106 };
 export function AppStateProvider({ children }) {
   const [authUid, setAuthUid] = useState(null);
   const [username, setUsername] = useState('Você');
+  const [userLocation, setUserLocation] = useState(null); // { lat, lng, accuracy?, timestamp? }
   const [places, setPlaces] = useState(INITIAL_PLACES);
   const [selectedPlaceId, setSelectedPlaceId] = useState(null);
   const [sportFilters, setSportFilters] = useState([]);
@@ -35,6 +37,34 @@ export function AppStateProvider({ children }) {
       return [...INITIAL_PLACES, ...extras];
     });
   }, []);
+
+  const refreshUserLocation = useCallback(async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') return null;
+
+      const pos = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      if (!pos?.coords) return null;
+
+      const next = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        accuracy: pos.coords.accuracy ?? null,
+        timestamp: pos.timestamp ?? Date.now(),
+      };
+      setUserLocation(next);
+      return next;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  useEffect(() => {
+    // Melhor esforço: tenta obter a localização no boot (sem bloquear o app).
+    refreshUserLocation();
+  }, [refreshUserLocation]);
 
   const filteredPlaces = useMemo(
     () =>
@@ -232,6 +262,8 @@ export function AppStateProvider({ children }) {
     setAuthUid,
     username,
     setUsername,
+    userLocation,
+    refreshUserLocation,
     places,
     filteredPlaces,
     addPlace,
