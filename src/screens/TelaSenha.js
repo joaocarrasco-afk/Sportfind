@@ -12,7 +12,7 @@ export default function TelaSenha ({ navigation }) {
   async function linkRedefinirSenha() {
     try{
       // Envia a requisição usando o método POST
-      const res = await fetch(`${process.env.API_URL}/usuario/redefinirsenha`,{
+      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/usuario/redefinirsenha`,{
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

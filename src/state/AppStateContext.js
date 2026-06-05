@@ -38,7 +38,7 @@ export function AppStateProvider({ children }) {
   const refreshPlaces = useCallback(async () => {
     setPlacesLoading(true);
     try {
-      const res = await fetch(`${process.env.API_URL}/localizacao`);
+      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/localizacao`);
       if (!res.ok) return;
       const data = await res.json();
       if (!Array.isArray(data)) return;

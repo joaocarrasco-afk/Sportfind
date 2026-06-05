@@ -64,7 +64,7 @@ export default function TelaCriarPost() {
         name: 'post.jpg',
       });
 
-      const res = await fetch(`${process.env.API_URL}/feed/post/${userId}`, {
+      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/feed/post/${userId}`, {
         method: 'POST',
         body: formData,
       });

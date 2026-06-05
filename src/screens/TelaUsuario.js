@@ -114,7 +114,7 @@ export default function TelaUsuario() {
 
       setCarregando(true);
       try {
-        const res = await fetch(`${process.env.API_URL}/usuario/perfil/${encodeURIComponent(authUid)}`, {
+        const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/usuario/perfil/${encodeURIComponent(authUid)}`, {
           method: 'GET',
         });
         let data = null;

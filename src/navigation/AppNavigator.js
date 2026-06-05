@@ -182,7 +182,7 @@ function AppTabs() {
 export default function AppNavigator() {
   return (
     <NavigationContainer>
-      <RootStack.Navigator initialRouteName="AppTabs" screenOptions={{ headerShown: true }}>
+      <RootStack.Navigator initialRouteName="TelaLogin" screenOptions={{ headerShown: true }}>
         <RootStack.Screen name="TelaSplash" component={TelaSplash} />
         <RootStack.Screen name="TelaLogin" component={TelaLogin} />
         <RootStack.Screen name="TelaCadastro" component={TelaCadastro} />

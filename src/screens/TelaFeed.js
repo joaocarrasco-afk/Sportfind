@@ -82,7 +82,7 @@ export default function TelaFeed() {
     setCarregando(true);
     const demo = montarPublicacoesDemo();
     try {
-      const res = await fetch(`${process.env.API_URL}/feed`, {
+      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/feed`, {
         method: 'GET',
         headers: authUid ? { 'X-User-Id': String(authUid) } : undefined,
       });

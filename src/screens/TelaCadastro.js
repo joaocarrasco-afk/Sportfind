@@ -20,7 +20,7 @@ export default function TelaCadastro({ navigation }) {
   async function GravarUsuario() {
     try {
       // Envia a requisição usando o método POST
-      const res = await fetch(`${process.env.API_URL}/usuario/cadastro`, {
+      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/usuario/cadastro`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -17,7 +17,7 @@ export default function TelaLogin({ navigation }) {
     //Tenta enviar os dados no formato JSON
     try{
       // Envia a requisição usando o método POST
-      const res = await fetch(`${process.env.API_URL}/usuario/login`,{
+      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/usuario/login`,{
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

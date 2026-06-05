@@ -165,7 +165,7 @@ export default function TelaCriarLocal() {
     formData.append('image', { uri: fotoUri, type: 'image/jpeg', name: 'local.jpg' });
 
     try {
-      await fetch(`${process.env.API_URL}/localizacao`, { method: 'POST', body: formData });
+      await fetch(`${process.env.EXPO_PUBLIC_API_URL}/localizacao`, { method: 'POST', body: formData });
     } catch {
       /* mapa local segue funcionando mesmo se a API falhar */
     }

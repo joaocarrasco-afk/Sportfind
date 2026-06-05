@@ -36,7 +36,7 @@ export default function TelaConta() {
       setCarregando(true);
       try {
         const res = await fetch(
-          `${process.env.API_URL}/usuario/perfil/${encodeURIComponent(authUid)}`,
+          `${process.env.EXPO_PUBLIC_API_URL}/usuario/perfil/${encodeURIComponent(authUid)}`,
           { method: 'GET' },
         );
         let data = null;
@@ -83,7 +83,7 @@ export default function TelaConta() {
     
     setSalvando(true);
     try {
-      const res = await fetch(`${process.env.API_URL}/usuario/conta/${encodeURIComponent(authUid)}`, {
+      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/usuario/conta/${encodeURIComponent(authUid)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
