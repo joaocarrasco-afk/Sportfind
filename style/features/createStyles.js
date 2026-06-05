@@ -295,4 +295,18 @@ export const createStyles = {
   createLocalAddressHalf: {
     width: '48%',
   },
+  createLocalMapBox: {
+    height: 200,
+    borderRadius: radii.md,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.sm,
+  },
+  createLocalMapHint: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+    lineHeight: 16,
+  },
 };

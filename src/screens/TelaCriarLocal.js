@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -26,7 +26,11 @@ import {
   rotulosInfraestrutura,
   TAB_IDS,
 } from '../domain/places';
+import MapaPinPicker from '../components/MapaPinPicker';
 import { useAppState } from '../state/AppStateContext';
+import { buscarCepEGeocodificar } from '../utils/geocodeEndereco';
+
+const MAP_CENTER = { lat: -23.5445, lng: -46.3106 };
 
 const OPCOES_ACESSO = ACCESS_FILTERS.filter((a) => a !== FILTER_ALL);
 
@@ -53,6 +57,10 @@ export default function TelaCriarLocal() {
   const [acesso, setAcesso] = useState('Publico');
   const [fotoUri, setFotoUri] = useState(null);
   const [salvando, setSalvando] = useState(false);
+  const [lat, setLat] = useState(MAP_CENTER.lat);
+  const [lng, setLng] = useState(MAP_CENTER.lng);
+  const [buscandoCep, setBuscandoCep] = useState(false);
+  const ultimoCepProcessado = useRef('');
 
 
   const previewMeta = useMemo(() => resolvePlaceSportMeta(esportes), [esportes]);
@@ -65,6 +73,46 @@ export default function TelaCriarLocal() {
     ].filter(Boolean);
     return partes.join(' • ');
   }, [rua, numero, bairro, cidade, estado, cep]);
+
+  useEffect(() => {
+    const digits = cep.replace(/\D/g, '');
+    if (digits.length !== 8 || digits === ultimoCepProcessado.current) return undefined;
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      (async () => {
+        setBuscandoCep(true);
+        try {
+          const resultado = await buscarCepEGeocodificar(digits, {
+            signal: controller.signal,
+            onEndereco: (endereco) => {
+              if (controller.signal.aborted) return;
+              if (endereco.rua) setRua(endereco.rua);
+              if (endereco.bairro) setBairro(endereco.bairro);
+              if (endereco.cidade) setCidade(endereco.cidade);
+              if (endereco.estado) setEstado(endereco.estado);
+            },
+          });
+          if (controller.signal.aborted || !resultado) return;
+
+          ultimoCepProcessado.current = digits;
+          if (resultado.lat != null && resultado.lng != null) {
+            setLat(resultado.lat);
+            setLng(resultado.lng);
+          }
+        } catch {
+          /* requisição cancelada ou falha de rede */
+        } finally {
+          if (!controller.signal.aborted) setBuscandoCep(false);
+        }
+      })();
+    }, 350);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [cep]);
 
   async function selecionarFoto() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -98,7 +146,6 @@ export default function TelaCriarLocal() {
   }
 
   async function enviarParaApi(endereco) {
-    if (!fotoUri) return;
     const formData = new FormData();
     formData.append('name', nome.trim());
     formData.append('rua', endereco.rua);
@@ -107,8 +154,8 @@ export default function TelaCriarLocal() {
     formData.append('estado', endereco.estado);
     formData.append('cep', endereco.cep);
     formData.append('numero', endereco.numero || '0');
-    formData.append('lat', -23.55052);
-    formData.append('lng', -46.633308);
+    formData.append('lat', lat);
+    formData.append('lng', lng);
     formData.append('color', '#9756CA');
     formData.append('infraestrutura', JSON.stringify(infraestrutura));
     formData.append('emoji', previewMeta.emoji);
@@ -158,6 +205,8 @@ export default function TelaCriarLocal() {
         access: acesso,
         image: fotoUri ?? undefined,
         infraestrutura,
+        lat,
+        lng,
       });
 
       if (fotoUri) {
@@ -242,6 +291,27 @@ export default function TelaCriarLocal() {
 
           <View>
             <Text style={styles.createLocalFieldLabel}>Endereço</Text>
+            <Text style={styles.createLocalMapHint}>
+              Arraste o pin ou toque no mapa para marcar o local. Ao informar o CEP, o pin vai
+              para a rua automaticamente.
+            </Text>
+            <View style={styles.createLocalMapBox}>
+              <MapaPinPicker
+                lat={lat}
+                lng={lng}
+                onPinMove={(novaLat, novaLng) => {
+                  setLat(novaLat);
+                  setLng(novaLng);
+                }}
+                style={{ flex: 1 }}
+              />
+            </View>
+            {buscandoCep ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.sm }}>
+                <ActivityIndicator size="small" color={colors.purple} />
+                <Text style={{ fontSize: 12, color: colors.textSecondary }}>Buscando endereço pelo CEP...</Text>
+              </View>
+            ) : null}
             <TextInput
               style={styles.createLocalInput}
               placeholder="Rua / Avenida"
