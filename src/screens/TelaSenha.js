@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Image, SafeAreaView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import styles from '../../style';
 
-const API_URL = 'http://10.100.1.177:3000';
+
 
 export default function TelaSenha ({ navigation }) {
 
@@ -12,7 +12,7 @@ export default function TelaSenha ({ navigation }) {
   async function linkRedefinirSenha() {
     try{
       // Envia a requisição usando o método POST
-      const res = await fetch(`${API_URL}/usuario/redefinirsenha`,{
+      const res = await fetch(`${process.env.API_URL}/usuario/redefinirsenha`,{
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -19,7 +19,6 @@ import styles from '../../style';
 import { colors } from '../../style/tokens';
 import { useAppState } from '../state/AppStateContext';
 
-const API_URL = 'http://10.100.1.177:3000';
 
 export default function TelaCriarPost() {
   const navigation = useNavigation();
@@ -65,7 +64,7 @@ export default function TelaCriarPost() {
         name: 'post.jpg',
       });
 
-      const res = await fetch(`${API_URL}/feed/post/${userId}`, {
+      const res = await fetch(`${process.env.API_URL}/feed/post/${userId}`, {
         method: 'POST',
         body: formData,
       });

@@ -1,4 +1,6 @@
 export { toLegacyPlace, toLegacyPlaces } from './adapters';
+export { fromApiLocalizacao, withPlaceDistances } from './fromApi';
+export { findPlaceById, isValidPlaceId, samePlaceId } from './placeIds';
 export { ACCESS_FILTERS, FILTER_ALL, PLACE_TYPE_FILTERS, SPORT_FILTERS } from './filters';
 export { PLACES, INITIAL_PLACES } from './places';
 export {

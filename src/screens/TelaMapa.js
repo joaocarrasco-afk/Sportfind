@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { Platform, Pressable, Text, TouchableOpacity, View, Image } from 'react-native';
 import { WebView } from 'react-native-webview';
 import styles from '../../style';
@@ -36,6 +37,7 @@ export default function TelaMapa({ navigation }) {
     setSelectedPlaceId,
     userLocation,
     refreshUserLocation,
+    refreshPlaces,
   } = useAppState();
 
   const insets = useScreenInsets();
@@ -53,7 +55,7 @@ export default function TelaMapa({ navigation }) {
   const handleMapMessage = useCallback(
     (raw) => {
       const placeId = parseMapMessage(raw);
-      if (Number.isInteger(placeId) && placeId > 0) {
+      if (placeId != null) {
         setSelectedPlaceId(placeId);
       }
     },
@@ -102,6 +104,12 @@ export default function TelaMapa({ navigation }) {
       zoom: 16,
     });
   }, [enviarComandoMapa, refreshUserLocation, sincronizarLocalizacaoNoMapa, userLocation]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshPlaces?.();
+    }, [refreshPlaces]),
+  );
 
   useEffect(() => {
     refreshUserLocation?.();

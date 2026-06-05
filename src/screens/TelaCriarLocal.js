@@ -28,7 +28,6 @@ import {
 } from '../domain/places';
 import { useAppState } from '../state/AppStateContext';
 
-const API_URL = 'http://192.168.15.85:3000';
 const OPCOES_ACESSO = ACCESS_FILTERS.filter((a) => a !== FILTER_ALL);
 
 function rotuloAcesso(acesso) {
@@ -119,7 +118,7 @@ export default function TelaCriarLocal() {
     formData.append('image', { uri: fotoUri, type: 'image/jpeg', name: 'local.jpg' });
 
     try {
-      await fetch(`${API_URL}/localizacao`, { method: 'POST', body: formData });
+      await fetch(`${process.env.API_URL}/localizacao`, { method: 'POST', body: formData });
     } catch {
       /* mapa local segue funcionando mesmo se a API falhar */
     }

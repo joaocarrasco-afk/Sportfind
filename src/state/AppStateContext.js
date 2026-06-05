@@ -3,9 +3,13 @@ import * as Location from 'expo-location';
 import {
   FILTER_ALL,
   filterPlaces,
+  findPlaceById,
   formatPartidaData,
+  fromApiLocalizacao,
   INITIAL_PLACES,
   resolvePlaceSportMeta,
+  samePlaceId,
+  withPlaceDistances,
 } from '../domain/places';
 import { partidaParaFeedPost } from '../domain/feed/posts';
 
@@ -20,6 +24,7 @@ export function AppStateProvider({ children }) {
   const [username, setUsername] = useState('Você');
   const [userLocation, setUserLocation] = useState(null); // { lat, lng, accuracy?, timestamp? }
   const [places, setPlaces] = useState(INITIAL_PLACES);
+  const [placesLoading, setPlacesLoading] = useState(false);
   const [selectedPlaceId, setSelectedPlaceId] = useState(null);
   const [sportFilters, setSportFilters] = useState([]);
   const [infraFilters, setInfraFilters] = useState([]);
@@ -30,13 +35,37 @@ export function AppStateProvider({ children }) {
   const [seguindo, setSeguindo] = useState(() => new Set());
   const [postsPerfil, setPostsPerfil] = useState([]);
 
-  useEffect(() => {
-    setPlaces((prev) => {
-      const seedIds = new Set(INITIAL_PLACES.map((p) => p.id));
-      const extras = prev.filter((p) => !seedIds.has(p.id));
-      return [...INITIAL_PLACES, ...extras];
-    });
+  const refreshPlaces = useCallback(async () => {
+    setPlacesLoading(true);
+    try {
+      const res = await fetch(`${process.env.API_URL}/localizacao`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!Array.isArray(data)) return;
+
+      const fromApi = data
+        .map((doc) => fromApiLocalizacao(doc))
+        .filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng));
+
+      setPlaces((prev) => {
+        const locaisCriadosNoApp = prev.filter((p) => typeof p.id === 'number');
+        return [...fromApi, ...locaisCriadosNoApp];
+      });
+    } catch {
+      /* mantém locais em cache se a API estiver indisponível */
+    } finally {
+      setPlacesLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    refreshPlaces();
+  }, [refreshPlaces]);
+
+  useEffect(() => {
+    if (!userLocation?.lat || !userLocation?.lng) return;
+    setPlaces((prev) => withPlaceDistances(prev, userLocation));
+  }, [userLocation?.lat, userLocation?.lng]);
 
   const refreshUserLocation = useCallback(async () => {
     try {
@@ -78,10 +107,10 @@ export function AppStateProvider({ children }) {
     [places, sportFilters, infraFilters, accessFilter, search],
   );
 
-  const selectedPlace = useMemo(() => {
-    if (!Number.isInteger(selectedPlaceId) || selectedPlaceId <= 0) return null;
-    return places.find((place) => place.id === selectedPlaceId) ?? null;
-  }, [selectedPlaceId, places]);
+  const selectedPlace = useMemo(
+    () => findPlaceById(places, selectedPlaceId),
+    [selectedPlaceId, places],
+  );
 
   function montarEnderecoCompleto(endereco) {
     if (!endereco) return '';
@@ -128,7 +157,7 @@ export function AppStateProvider({ children }) {
   }
 
   function addPartida({ nome, esporte, data, placeId, maxParticipantes, autorUsername }) {
-    const place = places.find((p) => p.id === placeId);
+    const place = findPlaceById(places, placeId);
     if (!place) return null;
 
     const id = `partida-${Date.now()}`;
@@ -219,15 +248,15 @@ export function AppStateProvider({ children }) {
     setUsername('Você');
   }
 
-  const selectedPlaceForDetail = useMemo(() => {
-    if (!Number.isInteger(selectedPlaceId) || selectedPlaceId <= 0) return null;
-    return places.find((place) => place.id === selectedPlaceId) ?? null;
-  }, [selectedPlaceId, places]);
+  const selectedPlaceForDetail = useMemo(
+    () => findPlaceById(places, selectedPlaceId),
+    [selectedPlaceId, places],
+  );
 
   useEffect(() => {
     if (
       selectedPlaceId != null &&
-      !filteredPlaces.some((place) => place.id === selectedPlaceId)
+      !filteredPlaces.some((place) => samePlaceId(place.id, selectedPlaceId))
     ) {
       setSelectedPlaceId(null);
     }
@@ -265,6 +294,8 @@ export function AppStateProvider({ children }) {
     userLocation,
     refreshUserLocation,
     places,
+    placesLoading,
+    refreshPlaces,
     filteredPlaces,
     addPlace,
     partidas,

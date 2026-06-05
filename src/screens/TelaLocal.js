@@ -1,9 +1,10 @@
-import { useMemo } from 'react';
-import { Image, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import { useCallback, useMemo } from 'react';
+import { ActivityIndicator, Image, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect, useRoute } from '@react-navigation/native';
 import styles from '../../style';
-import { spacing } from '../../style/tokens';
+import { colors, spacing } from '../../style/tokens';
 import InfraestruturaChips from '../components/InfraestruturaChips';
+import { findPlaceById } from '../domain/places';
 import { useAppState } from '../state/AppStateContext';
 
 function rotuloAcesso(acesso) {
@@ -14,14 +15,19 @@ function rotuloAcesso(acesso) {
 
 export default function TelaLocal({ navigation }) {
   const route = useRoute();
-  const { places, setSelectedPlaceId } = useAppState();
+  const { places, placesLoading, refreshPlaces, setSelectedPlaceId } = useAppState();
   const placeIdParam = route.params?.placeId;
 
-  const selectedPlace = useMemo(() => {
-    const id = Number(placeIdParam);
-    if (!Number.isInteger(id) || id <= 0) return null;
-    return places.find((place) => place.id === id) ?? null;
-  }, [places, placeIdParam]);
+  const selectedPlace = useMemo(
+    () => findPlaceById(places, placeIdParam),
+    [places, placeIdParam],
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (placeIdParam != null) refreshPlaces?.();
+    }, [placeIdParam, refreshPlaces]),
+  );
 
   function voltar() {
     setSelectedPlaceId(null);
@@ -31,8 +37,15 @@ export default function TelaLocal({ navigation }) {
   if (!selectedPlace) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center' }}>
+        {placesLoading ? (
+          <ActivityIndicator size="large" color={colors.purple} style={{ marginBottom: spacing.md }} />
+        ) : (
+          <Text style={{ textAlign: 'center', color: colors.textSecondary, marginBottom: spacing.md }}>
+            Local não encontrado.
+          </Text>
+        )}
         <TouchableOpacity onPress={voltar} style={{ alignSelf: 'center', padding: 16 }}>
-          <Text style={{ color: '#9756CA', fontWeight: '700' }}>Voltar</Text>
+          <Text style={{ color: colors.purple, fontWeight: '700' }}>Voltar</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );

@@ -11,7 +11,6 @@ const inicial = {
   telefone: '',
 };
 
-const API_URL = 'http://10.100.1.177:3000';
 
 export default function TelaConta() {
   const { authUid } = useAppState();
@@ -37,7 +36,7 @@ export default function TelaConta() {
       setCarregando(true);
       try {
         const res = await fetch(
-          `${API_URL}/usuario/perfil/${encodeURIComponent(authUid)}`,
+          `${process.env.API_URL}/usuario/perfil/${encodeURIComponent(authUid)}`,
           { method: 'GET' },
         );
         let data = null;
@@ -84,7 +83,7 @@ export default function TelaConta() {
     
     setSalvando(true);
     try {
-      const res = await fetch(`${API_URL}/usuario/conta/${encodeURIComponent(authUid)}`, {
+      const res = await fetch(`${process.env.API_URL}/usuario/conta/${encodeURIComponent(authUid)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

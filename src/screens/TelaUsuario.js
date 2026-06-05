@@ -26,7 +26,7 @@ const ABAS = [
   { id: 'liked', label: 'Curtidos' },
 ];
 
-const API_URL = 'http://10.100.1.177:3000';
+
 
 const IMAGENS_DEMO = [
   'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=400&auto=format&fit=crop&q=80',
@@ -114,7 +114,7 @@ export default function TelaUsuario() {
 
       setCarregando(true);
       try {
-        const res = await fetch(`${API_URL}/usuario/perfil/${encodeURIComponent(authUid)}`, {
+        const res = await fetch(`${process.env.API_URL}/usuario/perfil/${encodeURIComponent(authUid)}`, {
           method: 'GET',
         });
         let data = null;

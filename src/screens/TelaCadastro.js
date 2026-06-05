@@ -14,23 +14,13 @@ export default function TelaCadastro({ navigation }) {
   const [phone,setPhone] = useState('');
 
 
-// Rota para acessar a API
-//Para funcionar tem que colocar ip da maquina 
-const API_URL = 'http://10.100.1.177:3000';
 
-  // Função para adicionar um novo usuário
+
+ 
   async function GravarUsuario() {
-    // Tenta enviar os dados no formato JSON
     try {
-      // const verificarInt = parseInt(contact);
-      // if(Number.isInteger(verificarInt)){
-      //   setPhone(contact);
-      // }else{
-      //   setEmail(contact);
-      // }
-
       // Envia a requisição usando o método POST
-      const res = await fetch(`${API_URL}/usuario/cadastro`, {
+      const res = await fetch(`${process.env.API_URL}/usuario/cadastro`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

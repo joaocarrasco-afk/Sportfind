@@ -1,3 +1,5 @@
+import { isValidPlaceId } from '../../domain/places/placeIds';
+
 export const MAP_WEB_MESSAGE_TYPE = 'sportfind:place:selected';
 
 export const parseMapMessage = (rawData) => {
@@ -9,13 +11,13 @@ export const parseMapMessage = (rawData) => {
 
   try {
     const parsed = JSON.parse(asText);
-    if (
-      parsed?.type === MAP_WEB_MESSAGE_TYPE &&
-      Number.isInteger(Number(parsed.placeId)) &&
-      Number(parsed.placeId) > 0
-    ) {
-      return Number(parsed.placeId);
-    }
+    if (parsed?.type !== MAP_WEB_MESSAGE_TYPE) return null;
+
+    const { placeId } = parsed;
+    if (!isValidPlaceId(placeId)) return null;
+
+    if (typeof placeId === 'number') return placeId;
+    return String(placeId);
   } catch {
     /* mensagem não é JSON válido */
   }

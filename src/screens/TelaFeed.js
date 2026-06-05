@@ -17,7 +17,6 @@ const CHIPS = [
   { id: 'fotos', label: 'Fotos' },
 ];
 
-const API_URL = 'http://10.100.1.177:3000';
 
 function normalizarPostsApi(data) {
   const lista = Array.isArray(data) ? data : (data?.feeds ?? data?.data ?? []);
@@ -83,7 +82,7 @@ export default function TelaFeed() {
     setCarregando(true);
     const demo = montarPublicacoesDemo();
     try {
-      const res = await fetch(`${API_URL}/feed`, {
+      const res = await fetch(`${process.env.API_URL}/feed`, {
         method: 'GET',
         headers: authUid ? { 'X-User-Id': String(authUid) } : undefined,
       });

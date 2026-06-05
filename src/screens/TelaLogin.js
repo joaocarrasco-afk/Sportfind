@@ -5,7 +5,7 @@ import { useAppState } from '../state/AppStateContext';
 
 // Rota para acessar a API
 //Para funcionar tem que colocar ip da maquina 
-const API_URL = 'http://10.100.1.177:3000';
+
 
 export default function TelaLogin({ navigation }) {
   const { setAuthUid, setUsername } = useAppState();
@@ -17,7 +17,7 @@ export default function TelaLogin({ navigation }) {
     //Tenta enviar os dados no formato JSON
     try{
       // Envia a requisição usando o método POST
-      const res = await fetch(`${API_URL}/usuario/login`,{
+      const res = await fetch(`${process.env.API_URL}/usuario/login`,{
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
