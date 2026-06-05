@@ -7,21 +7,16 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   useWindowDimensions,
   View,
 } from 'react-native';
 import styles from '../../style';
-import { colors, spacing } from '../../style/tokens';
+import { colors } from '../../style/tokens';
 import { rotuloEsporte } from '../domain/feed/posts';
-
-const COMENTARIOS_DEMO = [
-  { id: 'c1', autor: 'marina_sk8', texto: 'Que foto incrível! 🔥', tempo: '2 sem', curtidas: 4 },
-  { id: 'c2', autor: 'joao_bask', texto: 'Bora repetir semana que vem?', tempo: '1 sem', curtidas: 1 },
-  { id: 'c3', autor: 'ana_run', texto: 'Amei esse lugar!', tempo: '5 d', curtidas: 0 },
-  { id: 'c4', autor: 'pedro_fut', texto: 'Top demais 👏', tempo: '3 d', curtidas: 2 },
-];
+import { useComentarios } from '../hooks/useComentarios';
+import { useAppState } from '../state/AppStateContext';
+import ComentariosLista, { ComentarioInputBar } from './ComentariosLista';
 
 const MAX_COMENTARIOS_MOBILE = 3;
 
@@ -53,36 +48,6 @@ function BlocoLegenda({ username, legenda }) {
   );
 }
 
-function ListaComentarios({ comentarios }) {
-  return comentarios.map((c) => (
-    <View key={c.id} style={styles.instaPostComentarioRow}>
-      <View style={styles.instaPostComentarioAvatar}>
-        <Ionicons name="person" size={14} color={colors.purple} />
-      </View>
-      <View style={styles.instaPostComentarioCorpo}>
-        <Text style={styles.instaPostComentarioTexto}>
-          <Text style={styles.instaPostComentarioAutor}>{c.autor} </Text>
-          {c.texto}
-        </Text>
-        <View style={styles.instaPostComentarioMeta}>
-          <Text style={styles.instaPostComentarioTempo}>{c.tempo}</Text>
-          {c.curtidas > 0 ? (
-            <Text style={styles.instaPostComentarioTempo}>
-              {c.curtidas} curtida{c.curtidas !== 1 ? 's' : ''}
-            </Text>
-          ) : null}
-          <TouchableOpacity>
-            <Text style={styles.instaPostComentarioResponder}>Responder</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-      <TouchableOpacity hitSlop={8}>
-        <Ionicons name="heart-outline" size={12} color={colors.textSecondary} />
-      </TouchableOpacity>
-    </View>
-  ));
-}
-
 export default function PerfilPostModal({
   visible,
   post,
@@ -93,6 +58,7 @@ export default function PerfilPostModal({
   onDelete,
   onLongPressPost,
 }) {
+  const { authUid } = useAppState();
   const { width, height } = useWindowDimensions();
   const layoutLadoALado = width >= 720;
   const isMobile = !layoutLadoALado;
@@ -101,14 +67,35 @@ export default function PerfilPostModal({
   const [curtido, setCurtido] = useState(false);
   const [curtidas, setCurtidas] = useState(24);
   const [salvo, setSalvo] = useState(false);
-  const [comentarios, setComentarios] = useState(COMENTARIOS_DEMO);
-  const [textoComentario, setTextoComentario] = useState('');
+  const [mostrarTodosComentarios, setMostrarTodosComentarios] = useState(false);
+
+  const {
+    lista,
+    total: totalComentarios,
+    carregando,
+    enviando,
+    respondendoA,
+    setRespondendoA,
+    limparResposta,
+    editando,
+    texto,
+    setTexto,
+    textoEdicao,
+    setTextoEdicao,
+    enviar,
+    salvarEdicao,
+    cancelarEdicao,
+    opcoesComentario,
+  } = useComentarios(post?.id, {
+    userId: authUid,
+    username,
+    enabled: visible && !!post?.id,
+    contagemInicial: post?.comentarios ?? 0,
+  });
 
   const legenda = useMemo(() => montarLegenda(post), [post]);
-  const comentariosVisiveis = useMemo(
-    () => (isMobile ? comentarios.slice(0, MAX_COMENTARIOS_MOBILE) : comentarios),
-    [comentarios, isMobile],
-  );
+  const maxVisiveis =
+    isMobile && !mostrarTodosComentarios ? MAX_COMENTARIOS_MOBILE : undefined;
 
   const cardHeight = Math.min(height * 0.92, layoutLadoALado ? 580 : height * 0.9);
   const ladoWidth = layoutLadoALado ? Math.min(360, width * 0.38) : width;
@@ -117,14 +104,13 @@ export default function PerfilPostModal({
   useEffect(() => {
     if (!visible) {
       setMenuAberto(false);
-      setTextoComentario('');
+      setMostrarTodosComentarios(false);
       return;
     }
-    setComentarios(COMENTARIOS_DEMO);
     setCurtido(false);
-    setCurtidas(12 + (post?.id?.length ?? 0) * 3);
+    setCurtidas(post?.likes ?? 12 + (post?.id?.length ?? 0) * 3);
     setSalvo(false);
-  }, [visible, post?.id]);
+  }, [visible, post?.id, post?.likes]);
 
   if (!post) return null;
 
@@ -136,16 +122,6 @@ export default function PerfilPostModal({
     fecharMenu();
     if (tipo === 'editar') onEdit?.(post);
     if (tipo === 'excluir') onDelete?.(post);
-  }
-
-  function enviarComentario() {
-    const texto = textoComentario.trim();
-    if (!texto) return;
-    setComentarios((prev) => [
-      ...prev,
-      { id: `c-${Date.now()}`, autor: username, texto, tempo: 'Agora', curtidas: 0 },
-    ]);
-    setTextoComentario('');
   }
 
   const header = (
@@ -221,25 +197,23 @@ export default function PerfilPostModal({
       <Text style={styles.instaPostCurtidas}>
         {curtidas} curtida{curtidas !== 1 ? 's' : ''}
       </Text>
+      {totalComentarios > 0 ? (
+        <Text style={styles.instaPostData}>
+          {totalComentarios} comentário{totalComentarios !== 1 ? 's' : ''}
+        </Text>
+      ) : null}
       <Text style={styles.instaPostData}>{post.dataCriacao}</Text>
 
-      <View style={styles.instaPostInputRow}>
-        <Ionicons name="happy-outline" size={22} color={colors.textSecondary} />
-        <TextInput
-          style={styles.instaPostInput}
-          placeholder="Adicione um comentário..."
-          placeholderTextColor={colors.textSecondary}
-          value={textoComentario}
-          onChangeText={setTextoComentario}
-          onSubmitEditing={enviarComentario}
-          returnKeyType="send"
-        />
-        {textoComentario.trim() ? (
-          <TouchableOpacity onPress={enviarComentario}>
-            <Text style={styles.instaPostPostarBtn}>Publicar</Text>
-          </TouchableOpacity>
-        ) : null}
-      </View>
+      <ComentarioInputBar
+        variant="perfil"
+        texto={texto}
+        onChangeText={setTexto}
+        onEnviar={enviar}
+        enviando={enviando}
+        respondendoA={respondendoA}
+        onCancelarResposta={limparResposta}
+        placeholder="Adicione um comentário..."
+      />
     </View>
   );
 
@@ -282,11 +256,26 @@ export default function PerfilPostModal({
   const conteudoTexto = (
     <>
       <BlocoLegenda username={username} legenda={legenda} />
-      <ListaComentarios comentarios={comentariosVisiveis} />
-      {isMobile && comentarios.length > MAX_COMENTARIOS_MOBILE ? (
-        <Text style={styles.instaPostVerMaisComentarios}>
-          Ver todos os {comentarios.length} comentários
-        </Text>
+      <ComentariosLista
+        lista={lista}
+        carregando={carregando}
+        variant="perfil"
+        userId={authUid}
+        editando={editando}
+        textoEdicao={textoEdicao}
+        onChangeTextoEdicao={setTextoEdicao}
+        onSalvarEdicao={salvarEdicao}
+        onCancelarEdicao={cancelarEdicao}
+        onResponder={setRespondendoA}
+        onOpcoes={opcoesComentario}
+        maxVisiveis={maxVisiveis}
+      />
+      {isMobile && lista.length > MAX_COMENTARIOS_MOBILE && !mostrarTodosComentarios ? (
+        <TouchableOpacity onPress={() => setMostrarTodosComentarios(true)}>
+          <Text style={styles.instaPostVerMaisComentarios}>
+            Ver todos os {totalComentarios} comentários
+          </Text>
+        </TouchableOpacity>
       ) : null}
     </>
   );

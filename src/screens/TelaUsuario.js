@@ -106,46 +106,82 @@ export default function TelaUsuario() {
   const [fotoPerfil, setFotoPerfil] = useState(null);
   const [fotoPerfilPendente, setFotoPerfilPendente] = useState(null);
   const [salvandoFoto, setSalvandoFoto] = useState(false);
+  const [dataPost, setDataPost] = useState([]);
   const nomeExibido = usernameCtx !== 'Você' ? usernameCtx : username;
   const { seguidores: totalSeguidores, seguindo: totalSeguindo } = contagemConexoesAtual();
+  const [seguidores, setSeguidores] = useState('');
+  const [seguindo, setSeguindo] = useState('');
 
   useEffect(() => {
     let cancelado = false;
 
     async function carregarPerfil() {
+      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/usuario/perfil/${encodeURIComponent(authUid)}`, {
+        method: 'GET',
+      });
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+      if (cancelado) return;
+
+      if (!res.ok) {
+        Alert.alert(
+          'Perfil',
+          data?.messagem || data?.mensagem || 'Não foi possível carregar o perfil.',
+        );
+        return;
+      }
+
+      if (data?.username != null) {
+        setUsernameLocal(data.username);
+        setUsername(data.username);
+      }
+      if (data?.url) {
+        setFotoPerfil(data.url);
+      }
+      setSeguindo(data?.seguindo);
+      setSeguidores(data?.seguidores);
+      
+    }
+
+    async function carregarPosts() {
+      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/feed/post/${encodeURIComponent(authUid)}`, {
+        method: 'GET',
+      });
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+      if (cancelado) return;
+      if (!res.ok) return;
+
+      const lista = Array.isArray(data) ? data : [];
+      const data_post = lista.map((post, index) => ({
+        id: post.id ?? `post-${index}`,
+        url: post.url,
+        descricao: post.descricao ?? '',
+        dataCriacao: post.dataCriacao ?? '',
+        likes: post.likes ?? 0,
+        comentarios: post.comentarios ?? 0,
+      }));
+      setDataPost(data_post);
+    }
+
+    async function carregarTudo() {
       if (!authUid) {
         setCarregando(false);
+        setDataPost([]);
         return;
       }
 
       setCarregando(true);
       try {
-        const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/usuario/perfil/${encodeURIComponent(authUid)}`, {
-          method: 'GET',
-        });
-        let data = null;
-        try {
-          data = await res.json();
-        } catch {
-          data = null;
-        }
-        if (cancelado) return;
-
-        if (!res.ok) {
-          Alert.alert(
-            'Perfil',
-            data?.messagem || data?.mensagem || 'Não foi possível carregar o perfil.',
-          );
-          return;
-        }
-
-        if (data?.username != null) {
-          setUsernameLocal(data.username);
-          setUsername(data.username);
-        }
-        if (data?.url) {
-          setFotoPerfil(data.url);
-        }
+        await Promise.all([carregarPerfil(), carregarPosts()]);
       } catch {
         if (!cancelado) {
           Alert.alert('Perfil', 'Erro de rede ao carregar o perfil.');
@@ -155,17 +191,21 @@ export default function TelaUsuario() {
       }
     }
 
-    carregarPerfil();
+    carregarTudo();
     return () => {
       cancelado = true;
     };
   }, [authUid, setUsername]);
 
   const publicacoesExibidas = useMemo(() => {
-    const proprias = postsPerfil.map((p) => ({ ...p, editavel: true }));
-    if (proprias.length > 0) return proprias;
+    const idsApi = new Set(dataPost.map((p) => p.id));
+    const locais = postsPerfil
+      .filter((p) => !idsApi.has(p.id))
+      .map((p) => ({ ...p, editavel: true }));
+    const todas = [...locais, ...dataPost];
+    if (todas.length > 0) return todas;
     return DEMO_PUBLICACOES;
-  }, [postsPerfil]);
+  }, [dataPost, postsPerfil]);
 
   function irConfig(rota) {
     setCfgAberto(false);
@@ -202,7 +242,7 @@ export default function TelaUsuario() {
     const resultado = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
-      aspect: [1, 1],   // quadrado — ideal para avatar
+      aspect: [1, 1],   
       quality: 0.85,
     });
     if (!resultado.canceled && resultado.assets?.[0]?.uri) {
@@ -271,7 +311,11 @@ export default function TelaUsuario() {
 
   function salvarEdicao() {
     if (!editandoPost) return;
-    atualizarPostPerfil(editandoPost.id, { descricao: textoEdicao });
+    const descricao = textoEdicao.trim();
+    atualizarPostPerfil(editandoPost.id, { descricao });
+    setDataPost((prev) =>
+      prev.map((p) => (p.id === editandoPost.id ? { ...p, descricao } : p)),
+    );
     setEditandoPost(null);
     setTextoEdicao('');
   }
@@ -286,7 +330,10 @@ export default function TelaUsuario() {
       {
         text: 'Excluir',
         style: 'destructive',
-        onPress: () => removerPostPerfil(post.id),
+        onPress: () => {
+          removerPostPerfil(post.id);
+          setDataPost((prev) => prev.filter((p) => p.id !== post.id));
+        },
       },
     ]);
   }
@@ -409,7 +456,7 @@ export default function TelaUsuario() {
             activeOpacity={0.75}
             onPress={() => navigation.navigate('TelaListaConexoes', { tipo: 'seguidores' })}
           >
-            <Text style={styles.usuarioStatValue}>{totalSeguidores}</Text>
+            <Text style={styles.usuarioStatValue}>{seguidores}</Text>
             <Text style={styles.usuarioStatLabel}>Seguidores</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -417,7 +464,7 @@ export default function TelaUsuario() {
             activeOpacity={0.75}
             onPress={() => navigation.navigate('TelaListaConexoes', { tipo: 'seguindo' })}
           >
-            <Text style={styles.usuarioStatValue}>{totalSeguindo}</Text>
+            <Text style={styles.usuarioStatValue}>{seguindo}</Text>
             <Text style={styles.usuarioStatLabel}>Seguindo</Text>
           </TouchableOpacity>
         </View>
@@ -448,7 +495,7 @@ export default function TelaUsuario() {
                 {publicacoesExibidas.map(renderCelulaGrid)}
               </View>
               <Text style={styles.usuarioFeedCaption}>
-                {postsPerfil.length > 0
+                {dataPost.length > 0 || postsPerfil.length > 0
                   ? 'Toque para abrir · segure para editar ou excluir.'
                   : 'Toque para ver · segure o post para editar ou excluir.'}
               </Text>

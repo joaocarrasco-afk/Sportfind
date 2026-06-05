@@ -35,8 +35,11 @@ class ComentarioController{
     async deletarComentario(req, res){
         try{
             const {comentarioId, userId} = req.params;
-            await Comentario.deletarComentario(comentarioId, userId);
-            res.status(200).json({message: 'Comentário deletado com sucesso'});
+            const resultado = await Comentario.deletarComentario(comentarioId, userId);
+            if(resultado?.error){
+                return res.status(403).json({menssagem: resultado.error});
+            }
+            res.status(200).json(resultado);
         }catch(error){
             res.status(400).json({menssagem: 'Erro ao deletar o comentário', error});
         }
@@ -46,8 +49,11 @@ class ComentarioController{
         try{
             const {comentarioId, userId} = req.params;
             const {texto} = req.body;
-            await Comentario.editarComentario(comentarioId, userId, texto);
-            res.status(200).json({message: 'Comentário editado com sucesso'});
+            const resultado = await Comentario.editarComentario(comentarioId, userId, texto);
+            if(resultado?.error){
+                return res.status(403).json({menssagem: resultado.error});
+            }
+            res.status(200).json(resultado);
         }catch(error){
             res.status(400).json({menssagem: 'Erro ao editar o comentário', error});
         }

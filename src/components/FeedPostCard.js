@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Alert,
   Image,
@@ -7,18 +7,15 @@ import {
   ScrollView,
   Share,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import styles from '../../style';
 import { colors, spacing } from '../../style/tokens';
 import { emojiEsporte, rotuloEsporte } from '../domain/feed/posts';
-
-const COMENTARIOS_DEMO = [
-  { id: 'c1', autor: 'Marina', texto: 'Bora marcar um jogo!' },
-  { id: 'c2', autor: 'João', texto: 'Esse lugar é incrível.' },
-];
+import { useComentarios } from '../hooks/useComentarios';
+import { useAppState } from '../state/AppStateContext';
+import ComentariosLista, { ComentarioInputBar } from './ComentariosLista';
 
 function rotuloTipo(tipo) {
   return tipo === 'Tenis' ? 'Tênis' : tipo;
@@ -37,13 +34,35 @@ export default function FeedPostCard({
   onParticipar,
   onDesistir,
 }) {
+  const { authUid, username } = useAppState();
   const [curtido, setCurtido] = useState(false);
   const [likes, setLikes] = useState(item.likes ?? 0);
-  const [comentarios, setComentarios] = useState(item.comentarios ?? 0);
-  const [listaComentarios, setListaComentarios] = useState(COMENTARIOS_DEMO);
   const [comentariosAberto, setComentariosAberto] = useState(false);
   const [menuAberto, setMenuAberto] = useState(false);
-  const [textoComentario, setTextoComentario] = useState('');
+
+  const {
+    lista,
+    total: comentarios,
+    carregando,
+    enviando,
+    respondendoA,
+    setRespondendoA,
+    limparResposta,
+    editando,
+    texto,
+    setTexto,
+    textoEdicao,
+    setTextoEdicao,
+    enviar,
+    salvarEdicao,
+    cancelarEdicao,
+    opcoesComentario,
+  } = useComentarios(item.id, {
+    userId: authUid,
+    username,
+    enabled: comentariosAberto,
+    contagemInicial: item.comentarios ?? 0,
+  });
 
   const participando = item.participantes?.includes('voce');
   const totalParticipantes = item.participantes?.length ?? 0;
@@ -54,22 +73,15 @@ export default function FeedPostCard({
   const autor = item.username ?? 'Usuário';
   const mostrarSeguir = autor !== 'Você' && onSeguir;
 
+  useEffect(() => {
+    setLikes(item.likes ?? 0);
+  }, [item.likes, item.id]);
+
   function alternarCurtida() {
     setCurtido((prev) => {
       setLikes((n) => (prev ? n - 1 : n + 1));
       return !prev;
     });
-  }
-
-  function enviarComentario() {
-    const texto = textoComentario.trim();
-    if (!texto) return;
-    setListaComentarios((prev) => [
-      ...prev,
-      { id: `c-${Date.now()}`, autor: 'Você', texto },
-    ]);
-    setComentarios((n) => n + 1);
-    setTextoComentario('');
   }
 
   async function compartilhar() {
@@ -280,32 +292,29 @@ export default function FeedPostCard({
             <View style={styles.feedModalHandle} />
             <Text style={styles.feedModalTitle}>Comentários</Text>
             <ScrollView style={styles.feedCommentList} keyboardShouldPersistTaps="handled">
-              {listaComentarios.map((c) => (
-                <View key={c.id} style={styles.feedCommentItem}>
-                  <View style={styles.feedCommentAvatar}>
-                    <Ionicons name="person" size={16} color={colors.purple} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.feedCommentAuthor}>{c.autor}</Text>
-                    <Text style={styles.feedCommentText}>{c.texto}</Text>
-                  </View>
-                </View>
-              ))}
-            </ScrollView>
-            <View style={styles.feedCommentInputRow}>
-              <TextInput
-                style={styles.feedCommentInput}
-                placeholder="Escreva um comentário..."
-                placeholderTextColor={colors.textSecondary}
-                value={textoComentario}
-                onChangeText={setTextoComentario}
-                onSubmitEditing={enviarComentario}
-                returnKeyType="send"
+              <ComentariosLista
+                lista={lista}
+                carregando={carregando}
+                variant="feed"
+                userId={authUid}
+                editando={editando}
+                textoEdicao={textoEdicao}
+                onChangeTextoEdicao={setTextoEdicao}
+                onSalvarEdicao={salvarEdicao}
+                onCancelarEdicao={cancelarEdicao}
+                onResponder={setRespondendoA}
+                onOpcoes={opcoesComentario}
               />
-              <TouchableOpacity style={styles.feedCommentSendBtn} onPress={enviarComentario}>
-                <Ionicons name="send" size={18} color={colors.textOnPurple} />
-              </TouchableOpacity>
-            </View>
+            </ScrollView>
+            <ComentarioInputBar
+              variant="feed"
+              texto={texto}
+              onChangeText={setTexto}
+              onEnviar={enviar}
+              enviando={enviando}
+              respondendoA={respondendoA}
+              onCancelarResposta={limparResposta}
+            />
           </View>
         </View>
       </Modal>
