@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { CommonActions, useNavigation } from '@react-navigation/native';
 import { useState, useEffect, useMemo } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Image,
   Modal,
@@ -19,6 +20,8 @@ import PerfilPostAcoesSheet from '../components/PerfilPostAcoesSheet';
 import PerfilPostModal from '../components/PerfilPostModal';
 import { useAppState } from '../state/AppStateContext';
 import { contagemConexoesAtual } from '../domain/users';
+import * as ImagePicker from 'expo-image-picker';
+
 
 const ABAS = [
   { id: 'pub', label: 'Publicações' },
@@ -100,6 +103,9 @@ export default function TelaUsuario() {
   const [carregando, setCarregando] = useState(!!authUid);
   const [username, setUsernameLocal] = useState('Explorador Sportfind');
 
+  const [fotoPerfil, setFotoPerfil] = useState(null);
+  const [fotoPerfilPendente, setFotoPerfilPendente] = useState(null);
+  const [salvandoFoto, setSalvandoFoto] = useState(false);
   const nomeExibido = usernameCtx !== 'Você' ? usernameCtx : username;
   const { seguidores: totalSeguidores, seguindo: totalSeguindo } = contagemConexoesAtual();
 
@@ -136,6 +142,9 @@ export default function TelaUsuario() {
         if (data?.username != null) {
           setUsernameLocal(data.username);
           setUsername(data.username);
+        }
+        if (data?.url) {
+          setFotoPerfil(data.url);
         }
       } catch {
         if (!cancelado) {
@@ -182,6 +191,73 @@ export default function TelaUsuario() {
         },
       },
     ]);
+  }
+
+  async function selecionarFotoPerfil() {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permissão necessária', 'Permita o acesso à galeria.');
+      return;
+    }
+    const resultado = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],   // quadrado — ideal para avatar
+      quality: 0.85,
+    });
+    if (!resultado.canceled && resultado.assets?.[0]?.uri) {
+      setFotoPerfilPendente(resultado.assets[0].uri);
+    }
+  }
+
+  function cancelarFotoPerfil() {
+    setFotoPerfilPendente(null);
+  }
+
+  async function salvarFotoPerfil() {
+    if (!fotoPerfilPendente || !authUid || salvandoFoto) return;
+
+    setSalvandoFoto(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', {
+        uri: fotoPerfilPendente,
+        type: 'image/jpeg',
+        name: 'perfil.jpg',
+      });
+
+      const res = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/usuario/perfil/${encodeURIComponent(authUid)}`,
+        {
+          method: 'PUT',
+          body: formData,
+        },
+      );
+
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+
+      if (!res.ok) {
+        Alert.alert(
+          'Foto de perfil',
+          data?.mensagem || data?.messagem || 'Não foi possível salvar a foto.',
+        );
+        return;
+      }
+
+      setFotoPerfil(data?.url ?? fotoPerfilPendente);
+      setFotoPerfilPendente(null);
+      Alert.alert('Foto de perfil', 'Foto atualizada com sucesso.');
+    } catch (error) {
+      console.error('Erro ao adicionar uma foto de perfil', error);
+      Alert.alert('Foto de perfil', 'Erro de rede ao salvar a foto.');
+    } finally {
+      setSalvandoFoto(false);
+    }
   }
 
   function abrirEdicao(post) {
@@ -272,13 +348,46 @@ export default function TelaUsuario() {
         <View style={styles.usuarioAvatarWrap}>
           <View>
             <View style={styles.usuarioAvatar}>
-              <Ionicons name="paw" size={52} color={colors.purple} />
+              {fotoPerfilPendente || fotoPerfil ? (
+                <Image
+                  source={{ uri: fotoPerfilPendente ?? fotoPerfil }}
+                  style={styles.usuarioAvatarImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <Ionicons name="paw" size={52} color={colors.purple} />
+              )}
             </View>
-            <TouchableOpacity style={styles.usuarioEditBadge} onPress={() => {}}>
+            <TouchableOpacity style={styles.usuarioEditBadge} onPress={selecionarFotoPerfil}>
               <Ionicons name="pencil" size={16} color={colors.purple} />
             </TouchableOpacity>
           </View>
         </View>
+
+        {fotoPerfilPendente ? (
+          <View style={styles.usuarioFotoAcoesRow}>
+            <TouchableOpacity
+              style={styles.usuarioFotoSalvarBtn}
+              onPress={salvarFotoPerfil}
+              disabled={salvandoFoto}
+              activeOpacity={0.8}
+            >
+              {salvandoFoto ? (
+                <ActivityIndicator size="small" color={colors.textOnPurple} />
+              ) : (
+                <Text style={styles.usuarioFotoSalvarBtnText}>Salvar foto</Text>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.usuarioFotoCancelarBtn}
+              onPress={cancelarFotoPerfil}
+              disabled={salvandoFoto}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.usuarioFotoCancelarBtnText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
 
         <Text style={styles.usuarioName}>{carregando ? 'Carregando...' : nomeExibido}</Text>
         <View style={styles.usuarioLocationRow}>

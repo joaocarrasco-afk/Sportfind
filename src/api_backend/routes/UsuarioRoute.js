@@ -17,7 +17,7 @@ route.get('/usuario/perfil/:id', UsuarioController.dadosPerfil);
 
 route.put('/usuario/conta/:id', UsuarioController.atualizarDados);
 
-route.put('/usuario/avatar/:id', upload.single('image'), UsuarioController.editarFoto );
+route.put('/usuario/perfil/:id', upload.single('image'), UsuarioController.editarFoto );
 
 module.exports = route;
 

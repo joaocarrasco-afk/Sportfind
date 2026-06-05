@@ -30,6 +30,7 @@ export const perfilStyles = {
     borderColor: colors.purpleLight,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   usuarioAvatarEmoji: { fontSize: 56 },
   usuarioEditBadge: {
@@ -45,6 +46,30 @@ export const perfilStyles = {
     alignItems: 'center',
     justifyContent: 'center',
   },
+  usuarioAvatarImage: { width: '100%', height: '100%', borderRadius: 56 },
+  usuarioFotoAcoesRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: spacing.md,
+    columnGap: spacing.md,
+  },
+  usuarioFotoSalvarBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radii.md,
+    backgroundColor: colors.purple,
+  },
+  usuarioFotoSalvarBtnText: { color: colors.textOnPurple, fontSize: 14, fontWeight: '600' },
+  usuarioFotoCancelarBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.purple,
+    backgroundColor: colors.white,
+  },
+  usuarioFotoCancelarBtnText: { color: colors.purple, fontSize: 14, fontWeight: '600' },
   usuarioName: {
     marginTop: spacing.md,
     textAlign: 'center',
