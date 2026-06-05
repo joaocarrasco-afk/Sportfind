@@ -28,7 +28,7 @@ import {
 } from '../domain/places';
 import { useAppState } from '../state/AppStateContext';
 
-const API_URL = 'http://10.100.1.177:3000';
+const API_URL = 'http://192.168.15.85:3000';
 const OPCOES_ACESSO = ACCESS_FILTERS.filter((a) => a !== FILTER_ALL);
 
 function rotuloAcesso(acesso) {
@@ -54,6 +54,7 @@ export default function TelaCriarLocal() {
   const [acesso, setAcesso] = useState('Publico');
   const [fotoUri, setFotoUri] = useState(null);
   const [salvando, setSalvando] = useState(false);
+
 
   const previewMeta = useMemo(() => resolvePlaceSportMeta(esportes), [esportes]);
   const enderecoResumo = useMemo(() => {
@@ -115,11 +116,7 @@ export default function TelaCriarLocal() {
     formData.append('description', descricao.trim());
     formData.append('type', JSON.stringify(esportes));
     formData.append('access', acesso);
-    formData.append('image', {
-      uri: fotoUri,
-      type: 'image/jpeg',
-      name: 'local.jpg',
-    });
+    formData.append('image', { uri: fotoUri, type: 'image/jpeg', name: 'local.jpg' });
 
     try {
       await fetch(`${API_URL}/localizacao`, { method: 'POST', body: formData });

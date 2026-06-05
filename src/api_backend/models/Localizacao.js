@@ -39,7 +39,7 @@ class Localizacao{
                 description: description,
                 createdAt: new Date(),
                 permission: Boolean([false]),
-                infraestrutura: [...infraestrutura],
+                infraestrutura: infraestrutura,
                 endereco: {
                     rua: rua,
                     numero: numero,

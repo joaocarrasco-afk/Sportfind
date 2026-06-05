@@ -6,7 +6,7 @@ class LocalizacaoController{
             const { name, type, access, emoji, lat, lng, color, description, infraestrutura, rua, numero, bairro, cidade, estado, cep } = req.body;
             const file = req.file;
             if (!file) return res.status(400).json({ error: 'Nenhum arquivo enviado' });
-            const message = await Localizacao.criarLocalizacao({name, type, access, emoji, lat, lng, color, fileBuffer: file.buffer, description, infraestrutura, endereco: {rua, numero, bairro, cidade, estado, cep} });
+            const message = await Localizacao.criarLocalizacao({name, type: JSON.parse(type || '[]'), access, emoji, lat, lng, color, fileBuffer: file.buffer, description, infraestrutura: JSON.parse(infraestrutura || '[]'), endereco: {rua, numero, bairro, cidade, estado, cep} });
             res.status(201).json(message);
         } catch (error) {
             res.status(500).json({ error: 'Falha no upload' });
