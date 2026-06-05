@@ -1,7 +1,7 @@
 const { db, auth } = require('../factory/config');
 const {setDoc, doc, getDoc, updateDoc, where, query, collection, getDocs} = require('firebase/firestore');
 const {createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail} = require('firebase/auth'); 
-
+const CloudinaryMedia = require('./cloudinaryMedia');
 class Usuario{
 //ok
     async consultarUsername(username){
@@ -143,12 +143,18 @@ class Usuario{
         return atualizado.data();
     }
 
-
-
-
-
-
-
+    async editarFoto(id, fileBuffer) {
+        try{
+            const pasta = 'usuario';
+            const tipo = 'image';
+            const media = await CloudinaryMedia.salvarMedia(fileBuffer, tipo, pasta);
+            const ref = doc(db, 'usuario', id);
+            await updateDoc(ref, {publicId: media.publicId, url: media.url});
+            return {publicId: media.publicId, url: media.url};
+        }catch(error){
+            console.error(`Erro ao editar a foto: ${error.message}`);
+            throw error;
+        }
+    }
 }
-
 module.exports = new Usuario();

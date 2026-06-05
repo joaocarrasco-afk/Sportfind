@@ -1,5 +1,7 @@
 const UsuarioController = require('../controllers/UsuarioController');
 const express = require('express');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage(), limits: 100 * 1024 * 1024 }); 
 
 // Cria o agrupador de rotas relacionadas a usuário
 const route = express.Router()
@@ -14,6 +16,8 @@ route.post('/usuario/redefinirsenha', UsuarioController.linkRedefinirSenha);
 route.get('/usuario/perfil/:id', UsuarioController.dadosPerfil);
 
 route.put('/usuario/conta/:id', UsuarioController.atualizarDados);
+
+route.put('/usuario/avatar/:id', upload.single('image'), UsuarioController.editarFoto );
 
 module.exports = route;
 

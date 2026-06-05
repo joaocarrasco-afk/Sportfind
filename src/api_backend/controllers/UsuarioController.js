@@ -77,6 +77,19 @@ class UsuarioController{
         }
     }
 
+    async editarFoto(req, res){
+        try{
+            const { id } = req.params;
+            const file = req.file;
+            if (!file) return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+            const fileBuffer = file.buffer;
+            const fotoAtualizada = await Usuario.editarFoto(id, fileBuffer);
+            res.status(200).json(fotoAtualizada);
+        }catch(error){
+            res.status(400).json({mensagem: `Não foi possivel editar a foto: ${error} `});
+        }
+    }
+
 }
 
 module.exports = new UsuarioController();
