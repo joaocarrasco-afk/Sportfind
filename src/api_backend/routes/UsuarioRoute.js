@@ -19,6 +19,10 @@ route.put('/usuario/conta/:id', UsuarioController.atualizarDados);
 
 route.put('/usuario/perfil/:id', upload.single('image'), UsuarioController.editarFoto );
 
+route.put('/usuario/seguir/:id', UsuarioController.seguirUsuario);
+
+route.put('/usuario/deixarseguir/:id', UsuarioController.deixarSeguirUsuario);
+
 module.exports = route;
 
 

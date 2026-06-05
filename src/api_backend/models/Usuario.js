@@ -35,7 +35,9 @@ class Usuario{
                     seguidores: 0,
                     likes: 0,
                     privacidade: Boolean([]),
-                    email: email
+                    email: email,
+                    seguindo_id: [],
+                    seguidores_id: []
                 });
                 return {uid};
                 
@@ -153,6 +155,56 @@ class Usuario{
             return {publicId: media.publicId, url: media.url};
         }catch(error){
             console.error(`Erro ao editar a foto: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async seguirUsuario(user_id, seguindo_id ){
+        try{
+            
+            const ref_user = doc(db, 'usuario', user_id);
+            const snap_user = await getDoc(ref_user);
+            const quantidadeSeguindo = snap_user.data().seguindo;
+            await updateDoc(ref_user, {seguindo_id: [...snap_user.data().seguindo_id, seguindo_id], seguindo: quantidadeSeguindo + 1 });
+
+            const ref_seguindo = doc(db, 'usuario', seguindo_id);
+            const snap_seguindo = await getDoc(ref_seguindo);
+            const quantidadeSeguidores = snap_seguindo.data().seguidores;
+            await updateDoc(ref_seguindo, {
+                seguidores_id: [...snap_seguindo.data().seguidores_id, user_id], 
+                seguidores: quantidadeSeguidores + 1
+            })
+
+            return {message: 'Usuário seguido com sucesso'};
+            
+        }catch(error){
+            console.error(`Erro ao seguir: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async deixarSeguirUsuario(user_id, seguindo_id ){
+        try{
+            const ref_user = doc(db, 'usuario', user_id);
+            const snap_user = await getDoc(ref_user);
+            const quantidadeSeguindo = snap_user.data().seguindo;
+            const seguindo_id_atualizado = snap_user.data().seguindo_id.filter(id => id !== seguindo_id);
+            await updateDoc(ref_user, {
+                seguindo_id: seguindo_id_atualizado, 
+                seguindo: quantidadeSeguindo - 1 
+            });
+
+            const ref_seguindo = doc(db, 'usuario', seguindo_id);
+            const snap_seguindo = await getDoc(ref_seguindo);
+            const quantidadeSeguidores = snap_seguindo.data().seguidores;
+            const seguidores_id_atualizado = snap_seguindo.data().seguidores_id.filter(id => id !== user_id);
+            await updateDoc(ref_seguindo, {
+                seguidores_id: seguidores_id_atualizado, 
+                seguidores: quantidadeSeguidores - 1
+            })
+            return {message: 'Usuário deixou de seguir com sucesso'};       
+        }catch(error){
+            console.error(`Erro ao deixar de seguir: ${error.message}`);
             throw error;
         }
     }

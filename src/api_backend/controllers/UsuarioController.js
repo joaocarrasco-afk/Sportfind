@@ -90,6 +90,28 @@ class UsuarioController{
         }
     }
 
+    async seguirUsuario(req, res){
+        try{
+            const { id } = req.params;
+            const { idSeguir } = req.body;
+            const resultado = await Usuario.seguirUsuario(id, idSeguir);
+            res.status(200).json(resultado);
+        }catch(error){
+            res.status(400).json({mensagem: `Não foi possível seguir o usuário: ${error}`});
+        }
+    }
+
+    async deixarSeguirUsuario(req, res){
+        try{
+            const { id } = req.params;
+            const { idSeguir } = req.body;
+            const resultado = await Usuario.deixarSeguirUsuario(id, idSeguir);
+            res.status(200).json(resultado);
+        }catch(error){
+            res.status(400).json({mensagem: `Não foi possível deixar de seguir o usuário: ${error}`});
+        }
+    }
+
 }
 
 module.exports = new UsuarioController();
