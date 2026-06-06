@@ -75,6 +75,26 @@ class FeedController{
             res.status(500).json({ error: 'Erro ao editar post' });
         }
     }
+
+    async likePost(req, res) {
+        try {
+            const { postId, userIdCurtiu } = req.params;
+            await Feed.likePost(postId, userIdCurtiu);
+            res.status(200).json({ message: 'Post curtido com sucesso' });
+        } catch (error) {
+            res.status(500).json({ error: 'Erro ao curtir post' });
+        }
+    }
+
+    async tirarLikePost(req, res) {
+        try {
+            const { postId, userIdCurtiu } = req.params;
+            await Feed.tirarLikePost(postId, userIdCurtiu);
+            res.status(200).json({ message: 'Like removido com sucesso' });
+        } catch (error) {
+            res.status(500).json({ error: 'Erro ao remover like' });
+        }
+    }
             
 }
 

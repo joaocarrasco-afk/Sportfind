@@ -12,6 +12,7 @@ route.get('/feed/post/:userId', FeedController.mostrarPostUsuario);
 route.get('/feed/post/usuario/:postId', FeedController.post);
 route.delete('/feed/post/:postId/:userId', FeedController.deletarPost);
 route.put('/feed/post/:postId/:userId', FeedController.editarPost);
-
+route.put('/feed/post/:postId/like/:userIdCurtiu', FeedController.likePost);
+route.put('/feed/post/:postId/unlike/:userIdCurtiu', FeedController.tirarLikePost);
 
 module.exports = route;

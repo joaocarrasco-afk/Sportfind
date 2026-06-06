@@ -2,6 +2,7 @@ const {db} = require('../factory/config');
 const {addDoc, doc, getDoc, collection, query, getDocs, where, updateDoc, deleteDoc} = require('firebase/firestore');
 const cloudinary = require('../factory/cloudinary');
 const CloudinaryMedia = require('./cloudinaryMedia');
+
 class Feed{
 
     async criarPost({userId, descricao = '', fileBuffer, tipo}) {
@@ -113,35 +114,51 @@ class Feed{
         }
     }
         
-    async likePost(postId) {
+    async likePost(postId, userIdCurtiu) {
         try {
+            //atualizar os likes do post
             const postRef = doc(db, 'feed', postId);
             const postDoc = await getDoc(postRef);
             if (!postDoc.exists()) return { error: 'Post não encontrado' };
-            const quantidadeLikes = postDoc.data().likes;
-            await updateDoc(postRef, { likes: quantidadeLikes + 1 });
+            const likes = postDoc.data().likes;
+            await updateDoc(postRef, { likes: likes + 1 });
+
+            //adiciona o id do post na lista de likes do usuário que curtiu
+            const userRefCurtiu = doc(db, 'usuario', userIdCurtiu);
+            const userDocCurtiu = await getDoc(userRefCurtiu);
+            await updateDoc(userRefCurtiu, { likes_id: [...userDocCurtiu.data().likes_id, postId] });
+
+            //atualizar os likes do usuário que fez o post
+            const userRef = doc(db, 'usuario', postDoc.data().user);
+            const userDoc = await getDoc(userRef);
+            await updateDoc(userRef, { likes: userDoc.data().likes + 1 });
             return { message: 'Post curtido com sucesso' };
         } catch (error) {
             console.error('Não foi possível curtir o post:', error);
         }
     }
 
-    async tirarLikePost(postId) {
+    async tirarLikePost(postId, userIdCurtiu) {
         try {
+            //tirar o like do post
             const postRef = doc(db, 'feed', postId);
             const postDoc = await getDoc(postRef);
             if (!postDoc.exists()) return { error: 'Post não encontrado' };
-            const quantidadeLikes = postDoc.data().likes;
-            if (quantidadeLikes > 0) {
-                await updateDoc(postRef, { likes: quantidadeLikes - 1 });
-                return { message: 'Like removido com sucesso' };
-            }
-            return { message: 'Post já não possui likes' };
+            const likes = postDoc.data().likes;
+            await updateDoc(postRef, { likes: likes - 1 });
+            //tirar o like do usuário que curtiu
+            const userRefCurtiu = doc(db, 'usuario', userIdCurtiu);
+            const userDocCurtiu = await getDoc(userRefCurtiu);
+            await updateDoc(userRefCurtiu, { likes_id: userDocCurtiu.data().likes_id.filter(id => id !== postId) });
+            //atualizar os likes do usuário que fez o post
+            const userRef = doc(db, 'usuario', postDoc.data().user);
+            const userDoc = await getDoc(userRef);
+            await updateDoc(userRef, { likes: userDoc.data().likes - 1 });
+            return { message: 'Like removido com sucesso' };
         } catch (error) {
-            console.error('Não foi possível remover o like do post:', error);
+            console.error('Não foi possível tirar o like do post:', error);
         }
     }
-    
 
 }
 

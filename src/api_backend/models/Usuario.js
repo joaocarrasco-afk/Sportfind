@@ -37,7 +37,8 @@ class Usuario{
                     privacidade: Boolean([]),
                     email: email,
                     seguindo_id: [],
-                    seguidores_id: []
+                    seguidores_id: [],
+                    likes_id: [],
                 });
                 return {uid};
                 
