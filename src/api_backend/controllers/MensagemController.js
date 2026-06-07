@@ -17,12 +17,16 @@ class MensagemController{
         try{
             const { idChat } = req.params;
 
-            res.setHeader("Content-Type", "text/event-stream");
-            res.setHeader("Cache-Control", "no-cache");
-            res.setHeader("Connection", "keep-alive");
+            res.setHeader('Content-Type', 'text/event-stream');
+            res.setHeader('Cache-Control', 'no-cache');
+            res.setHeader('Connection', 'keep-alive');
 
-            Mensagem.mostrarMensagens(idChat, (mensagens) => {
+            const cancelar = Mensagem.mostrarMensagens(idChat, (mensagens) => {
                 res.write(`data: ${JSON.stringify(mensagens)}\n\n`);
+            });
+
+            req.on('close', () => {
+                cancelar?.();
             });
         }catch(error){
             res.status(400).json({menssagem: 'Erro ao mostrar as mensagens', error});

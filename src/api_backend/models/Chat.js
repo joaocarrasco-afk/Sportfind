@@ -9,24 +9,41 @@ class Chat{
         try{
             const ref = query(collection(db,"usuario"), where('username', '==', username));
             const consultar = await getDocs(ref);
-            const documen = consultar.docs[0];
-
-            const userIds = [id, documen.id];
-
-            const refRota = query(collection(db,"chat_rota"), where('usuario_id', 'array-contains-any', userIds), where('tipo_chat', '==', 'PV'));
-            const consultarRota = await getDocs(refRota);            
-            
-            if(!consultarRota.empty){
-                return "Já tem uma rota";
-            }else{
-                const rota = await addDoc(collection(db, "chat"), {
-                    tipo_chat: "PV",
-                    usuario_id: userIds
-                });
-                return { mensagem:"Criada com sucesso", userIds};
+            if (consultar.empty) {
+                return { erro: 'Usuário não encontrado' };
             }
+            const documen = consultar.docs[0];
+            return this.buscarOuCriarChatPV(id, documen.id);
         }catch(error){
             console.error(`Não foi possível acessar o chat: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async buscarOuCriarChatPV(idUsuario, idOutroUsuario){
+        try{
+            const refRota = query(
+                collection(db, 'chat'),
+                where('usuario_id', 'array-contains', idUsuario),
+                where('tipo_chat', '==', 'PV'),
+            );
+            const consultarRota = await getDocs(refRota);
+
+            for (const docSnap of consultarRota.docs) {
+                const ids = docSnap.data().usuario_id ?? [];
+                if (ids.includes(idOutroUsuario)) {
+                    return { chatId: docSnap.id, criado: false };
+                }
+            }
+
+            const rota = await addDoc(collection(db, 'chat'), {
+                tipo_chat: 'PV',
+                usuario_id: [idUsuario, idOutroUsuario],
+            });
+            return { chatId: rota.id, criado: true };
+        }catch(error){
+            console.error(`Não foi possível acessar o chat: ${error.message}`);
+            throw error;
         }
     }
 

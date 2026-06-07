@@ -23,13 +23,17 @@ class Mensagem{
     mostrarMensagens(idChat, callback) {
         try {
             const mensagensRef = ref(realdb, `chat/${idChat}/mensagens`);
-            onValue(mensagensRef, (snapshot) => {
-            const mensagensData = snapshot.val() || {};
-            const mensagens = Object.values(mensagensData);
-            callback(mensagens); 
+            return onValue(mensagensRef, (snapshot) => {
+                const mensagensData = snapshot.val() || {};
+                const mensagens = Object.entries(mensagensData).map(([id, msg]) => ({
+                    id,
+                    ...msg,
+                }));
+                callback(mensagens);
             });
         } catch (error) {
             console.error(`Não foi possível listar as mensagens: ${error.message}`);
+            return () => {};
         }
     }
 

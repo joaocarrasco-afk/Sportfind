@@ -6,9 +6,25 @@ class ChatController{
         try{
             const{id, username} = req.body;
             const resultado = await Chat.rotaDoChatPV(id, username);
+            if (resultado?.erro) {
+                return res.status(404).json({ mensagem: resultado.erro });
+            }
             res.status(201).json(resultado);
         }catch(error){
             res.status(400).json({menssagem: 'Erro ao criar o chat', error});
+        }
+    }
+
+    async buscarOuCriarChatPV(req, res){
+        try{
+            const { idUsuario, idOutroUsuario } = req.body;
+            if (!idUsuario || !idOutroUsuario) {
+                return res.status(400).json({ mensagem: 'IDs de usuário obrigatórios' });
+            }
+            const resultado = await Chat.buscarOuCriarChatPV(idUsuario, idOutroUsuario);
+            res.status(resultado.criado ? 201 : 200).json(resultado);
+        }catch(error){
+            res.status(400).json({ menssagem: 'Erro ao acessar o chat', error });
         }
     }
 
