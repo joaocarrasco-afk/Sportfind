@@ -42,7 +42,8 @@ class Feed{
                 const userRef = doc(db, 'usuario', post.user);
                 const userDoc = await getDoc(userRef);
                 const username = userDoc.exists() ? userDoc.data().username : 'Usuário Desconecido';
-                return {...post, username };
+                const url_perfil = userDoc.exists() ? userDoc.data().url : null;
+                return {...post, username, url_perfil };
             }));
             return feedWithUsernames;
         }catch(error){
@@ -77,7 +78,8 @@ class Feed{
             const userRef = doc(db, 'usuario', postData.user);
             const userDoc = await getDoc(userRef);
             const username = userDoc.exists() ? userDoc.data().username : 'Usuário Desconecido';
-            return { ...postData, username };
+            const url_perfil = userDoc.exists() ? userDoc.data().url : null;
+            return { ...postData, username, url_perfil };
         } catch (error) {
             console.error('Não foi possível mostrar o post:', error);
         }

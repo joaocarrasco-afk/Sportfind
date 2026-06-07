@@ -200,6 +200,11 @@ export const feedStyles = {
     borderRadius: 20,
     height: 40,
     justifyContent: 'center',
+    overflow: 'hidden',
+    width: 40,
+  },
+  feedCardAvatarImage: {
+    height: 40,
     width: 40,
   },
   feedCardAvatarEmoji: {

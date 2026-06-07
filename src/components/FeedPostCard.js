@@ -129,7 +129,15 @@ export default function FeedPostCard({
     <View style={styles.feedCard}>
       <View style={styles.feedCardHeader}>
         <View style={styles.feedCardAvatar}>
-          <Ionicons name="person" size={22} color={colors.purple} />
+          {item.url_perfil ? (
+            <Image
+              source={{ uri: item.url_perfil }}
+              style={styles.feedCardAvatarImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <Ionicons name="person" size={22} color={colors.purple} />
+          )}
         </View>
         <View style={styles.feedCardHeaderMain}>
           <View style={styles.feedCardHeaderRow}>

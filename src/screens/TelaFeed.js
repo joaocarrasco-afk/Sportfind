@@ -33,11 +33,13 @@ function normalizarPostsApi(data) {
           horario: feed.horario ?? feed.dataCriacao ?? '',
           local: feed.local ?? null,
           username: feed.username ?? 'Usuário',
+          userId: feed.user ?? feed.userId ?? null,
           dataCriacao: feed.dataCriacao ?? '',
           likes: feed.likes ?? 0,
           comentarios: feed.comentarios ?? 0,
           maxParticipantes: feed.maxParticipantes ?? null,
           participantes: feed.participantes ?? [],
+          url_perfil: feed.url_perfil ?? null,
         };
       }
       return {
@@ -45,10 +47,12 @@ function normalizarPostsApi(data) {
         kind: feed.type === 'local' ? 'local' : 'imagem',
         url: feed.url,
         username: feed.username ?? 'Usuário',
+        userId: feed.user ?? feed.userId ?? null,
         dataCriacao: feed.dataCriacao ?? '',
         likes: feed.likes ?? 0,
         comentarios: feed.comentarios ?? 0,
         descricao: feed.descricao ?? '',
+        url_perfil: feed.url_perfil ?? null,
       };
     })
     .filter((post) => post.id != null);
@@ -222,7 +226,13 @@ export default function TelaFeed() {
               onOcultar={ocultarPost}
               seguindo={seguindo.has(post.username)}
               onSeguir={alternarSeguir}
-              onPressAutor={(nome) => abrirPerfilUsuario(navigation, { username: nome })}
+              onPressAutor={() =>
+                abrirPerfilUsuario(navigation, {
+                  userId: post.userId,
+                  username: post.username,
+                  authUid,
+                })
+              }
               onParticipar={participarEAbrirDetalhes}
               onDesistir={desistirPartida}
             />

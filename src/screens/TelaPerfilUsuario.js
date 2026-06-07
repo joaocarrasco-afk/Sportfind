@@ -1,7 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
-import { useMemo, useState } from 'react';
-import { Image, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import PerfilPostModal from '../components/PerfilPostModal';
 import ScreenSafe from '../components/ScreenSafe';
 import { getUsuarioPorId } from '../domain/users';
@@ -14,16 +22,104 @@ const ABAS = [
   { id: 'trophy', label: 'Troféus' },
 ];
 
+function normalizarPostsApi(data) {
+  const lista = Array.isArray(data) ? data : [];
+  return lista.map((post, index) => ({
+    id: post.id ?? `post-${index}`,
+    url: post.url,
+    descricao: post.descricao ?? '',
+    dataCriacao: post.dataCriacao ?? '',
+    likes: post.likes ?? 0,
+    comentarios: post.comentarios ?? 0,
+    tipo: post.type === 'video' ? 'video' : 'imagem',
+  }));
+}
+
+function normalizarPerfilApi(userId, data) {
+  return {
+    id: userId,
+    username: data?.username ?? 'Usuário',
+    cidade: data?.cidade ?? '',
+    bio: data?.bio ?? '',
+    tags: Array.isArray(data?.tags) ? data.tags : [],
+    seguidoresIds: data?.seguidores_id ?? [],
+    seguindoIds: data?.seguindo_id ?? [],
+    url: data?.url ?? null,
+  };
+}
+
+
+
 export default function TelaPerfilUsuario({ navigation }) {
   const route = useRoute();
   const userId = route.params?.userId;
-  const usuario = useMemo(() => getUsuarioPorId(userId), [userId]);
+  const usuarioDemo = useMemo(() => getUsuarioPorId(userId), [userId]);
   const { seguindo, alternarSeguir } = useAppState();
   const [aba, setAba] = useState('pub');
   const [postSelecionado, setPostSelecionado] = useState(null);
+  const [usuarioApi, setUsuarioApi] = useState(null);
+  const [publicacoes, setPublicacoes] = useState(() => usuarioDemo?.publicacoes ?? []);
+  const [carregando, setCarregando] = useState(() => !usuarioDemo && Boolean(userId));
 
+  const usuario = usuarioDemo ?? usuarioApi;
+  const fotoPerfil = usuario?.url ?? null;
   const jaSeguindo = usuario ? seguindo.has(usuario.username) : false;
-  const publicacoes = usuario?.publicacoes ?? [];
+
+  const carregarPerfilApi = useCallback(async () => {
+    if (!userId || usuarioDemo) return;
+
+    setCarregando(true);
+    try {
+      const [resPerfil, resPosts] = await Promise.all([
+        fetch(`${process.env.EXPO_PUBLIC_API_URL}/usuario/perfil/${encodeURIComponent(userId)}`, {
+          method: 'GET',
+        }),
+        fetch(`${process.env.EXPO_PUBLIC_API_URL}/feed/post/${encodeURIComponent(userId)}`, {
+          method: 'GET',
+        }),
+      ]);
+
+      if (resPerfil.ok) {
+        const data = await resPerfil.json();
+        setUsuarioApi(normalizarPerfilApi(userId, data));
+      } else {
+        setUsuarioApi(null);
+      }
+
+      if (resPosts.ok) {
+        const posts = await resPosts.json();
+        setPublicacoes(normalizarPostsApi(posts));
+      } else {
+        setPublicacoes([]);
+      }
+    } catch {
+      setUsuarioApi(null);
+      setPublicacoes([]);
+    } finally {
+      setCarregando(false);
+    }
+  }, [userId, usuarioDemo]);
+
+  useEffect(() => {
+    carregarPerfilApi();
+  }, [carregarPerfilApi]);
+
+  if (carregando) {
+    return (
+      <ScreenSafe style={styles.usuarioScreen} edges={['top', 'left', 'right', 'bottom']}>
+        <View style={styles.conexoesHeader}>
+          <TouchableOpacity style={styles.messageBackBtn} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={22} color={colors.purple} />
+          </TouchableOpacity>
+          <Text style={styles.conexoesHeaderTitle}>Perfil</Text>
+          <View style={styles.messageHeaderSpacer} />
+        </View>
+        <View style={styles.userSearchEmpty}>
+          <ActivityIndicator size="large" color={colors.purple} />
+        </View>
+      </ScreenSafe>
+    );
+  }
 
   if (!usuario) {
     return (
@@ -84,7 +180,7 @@ export default function TelaPerfilUsuario({ navigation }) {
           <Ionicons name="arrow-back" size={22} color={colors.purple} />
         </TouchableOpacity>
         <Text style={styles.perfilOutroTopTitle} numberOfLines={1}>
-          {usuario.username}
+          {usuario.username} {/*nome do usuario*/}
         </Text>
         <View style={styles.messageHeaderSpacer} />
       </View>
@@ -92,25 +188,33 @@ export default function TelaPerfilUsuario({ navigation }) {
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.usuarioAvatarWrap}>
           <View style={styles.usuarioAvatar}>
-            <Text style={styles.perfilOutroAvatarLetter}>{usuario.username.charAt(0)}</Text>
+            {fotoPerfil ? (
+              <Image source={{ uri: fotoPerfil }} style={styles.usuarioAvatarImage} resizeMode="cover" />
+            ) : (
+              <Text style={styles.perfilOutroAvatarLetter}>{usuario.username.charAt(0)}</Text>
+            )}
           </View>
         </View>
 
         <Text style={styles.usuarioName}>{usuario.username}</Text>
-        <View style={styles.usuarioLocationRow}>
-          <Ionicons name="location-outline" size={14} color={colors.textSecondary} />
-          <Text style={[styles.usuarioLocationText, { marginLeft: 4 }]}>{usuario.cidade}</Text>
-        </View>
+        {usuario.cidade ? (
+          <View style={styles.usuarioLocationRow}>
+            <Ionicons name="location-outline" size={14} color={colors.textSecondary} />
+            <Text style={[styles.usuarioLocationText, { marginLeft: 4 }]}>{usuario.cidade}</Text>
+          </View>
+        ) : null}
 
         {usuario.bio ? <Text style={styles.perfilOutroBio}>{usuario.bio}</Text> : null}
 
-        <View style={styles.usuarioTagsRow}>
-          {usuario.tags.map((t) => (
-            <View key={t} style={styles.usuarioTagPill}>
-              <Text style={styles.usuarioTagText}>{t}</Text>
-            </View>
-          ))}
-        </View>
+        {usuario.tags.length > 0 ? (
+          <View style={styles.usuarioTagsRow}>
+            {usuario.tags.map((t) => (
+              <View key={t} style={styles.usuarioTagPill}>
+                <Text style={styles.usuarioTagText}>{t}</Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
 
         <View style={styles.usuarioStatsRow}>
           <View style={styles.usuarioStatBlock}>
