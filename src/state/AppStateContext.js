@@ -12,6 +12,7 @@ import {
   withPlaceDistances,
 } from '../domain/places';
 import { partidaParaFeedPost } from '../domain/feed/posts';
+import { usernameParaUserId } from '../domain/users';
 
 const AppStateContext = createContext(null);
 
@@ -33,6 +34,7 @@ export function AppStateProvider({ children }) {
   const [search, setSearch] = useState('');
   const [partidas, setPartidas] = useState([]);
   const [seguindo, setSeguindo] = useState(() => new Set());
+  const [curtidos, setCurtidos] = useState(() => new Set());
   const [postsPerfil, setPostsPerfil] = useState([]);
 
   const refreshPlaces = useCallback(async () => {
@@ -210,15 +212,121 @@ export function AppStateProvider({ children }) {
     );
   }, []);
 
-  const alternarSeguir = useCallback((autor) => {
-    if (!autor) return;
-    setSeguindo((prev) => {
-      const next = new Set(prev);
-      if (next.has(autor)) next.delete(autor);
-      else next.add(autor);
-      return next;
-    });
-  }, []);
+  useEffect(() => {
+    if (!authUid) {
+      setSeguindo(new Set());
+      setCurtidos(new Set());
+      return;
+    }
+
+    let cancelado = false;
+
+    async function carregarConexoes() {
+      try {
+        const res = await fetch(
+          `${process.env.EXPO_PUBLIC_API_URL}/usuario/perfil/${encodeURIComponent(authUid)}`,
+          { method: 'GET' },
+        );
+        if (!res.ok || cancelado) return;
+        const data = await res.json();
+        const seguindoIds = Array.isArray(data?.seguindo_id) ? data.seguindo_id : [];
+        const curtidosIds = Array.isArray(data?.likes_id) ? data.likes_id : [];
+        if (!cancelado) {
+          setSeguindo(new Set(seguindoIds));
+          setCurtidos(new Set(curtidosIds));
+        }
+      } catch {
+        /* mantém estado local se a API falhar */
+      }
+    }
+
+    carregarConexoes();
+    return () => {
+      cancelado = true;
+    };
+  }, [authUid]);
+
+  const alternarCurtida = useCallback(
+    async (postId) => {
+      if (!postId) return { ok: false };
+
+      let vaiCurtir = false;
+      setCurtidos((prev) => {
+        vaiCurtir = !prev.has(postId);
+        const next = new Set(prev);
+        if (vaiCurtir) next.add(postId);
+        else next.delete(postId);
+        return next;
+      });
+
+      if (!authUid) return { ok: true, curtido: vaiCurtir };
+
+      const acao = vaiCurtir ? 'like' : 'unlike';
+      try {
+        const res = await fetch(
+          `${process.env.EXPO_PUBLIC_API_URL}/feed/post/${encodeURIComponent(postId)}/${acao}/${encodeURIComponent(authUid)}`,
+          { method: 'PUT' },
+        );
+        if (!res.ok) throw new Error('falha');
+        return { ok: true, curtido: vaiCurtir };
+      } catch {
+        setCurtidos((prev) => {
+          const next = new Set(prev);
+          if (vaiCurtir) next.delete(postId);
+          else next.add(postId);
+          return next;
+        });
+        return { ok: false };
+      }
+    },
+    [authUid],
+  );
+
+  const alternarSeguir = useCallback(
+    async (alvo) => {
+      const userId =
+        typeof alvo === 'string'
+          ? usernameParaUserId(alvo) ?? alvo
+          : alvo?.userId ?? usernameParaUserId(alvo?.username);
+
+      if (!userId) return false;
+      if (authUid && userId === authUid) return false;
+
+      let vaiSeguir = false;
+      setSeguindo((prev) => {
+        vaiSeguir = !prev.has(userId);
+        const next = new Set(prev);
+        if (vaiSeguir) next.add(userId);
+        else next.delete(userId);
+        return next;
+      });
+
+      if (!authUid) return true;
+
+      const endpoint = vaiSeguir ? 'seguir' : 'deixarseguir';
+      try {
+        const res = await fetch(
+          `${process.env.EXPO_PUBLIC_API_URL}/usuario/${endpoint}/${encodeURIComponent(authUid)}`,
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idSeguir: userId }),
+          },
+        );
+        if (!res.ok) throw new Error('falha');
+        return true;
+      } catch {
+        setSeguindo((prev) => {
+          const next = new Set(prev);
+          if (vaiSeguir) next.delete(userId);
+          else next.add(userId);
+          return next;
+        });
+        return false;
+      }
+    },
+    [authUid],
+  );
 
   function addPostPerfil(post) {
     const novo = {
@@ -246,6 +354,8 @@ export function AppStateProvider({ children }) {
   function logout() {
     setAuthUid(null);
     setUsername('Você');
+    setSeguindo(new Set());
+    setCurtidos(new Set());
   }
 
   const selectedPlaceForDetail = useMemo(
@@ -305,6 +415,8 @@ export function AppStateProvider({ children }) {
     desistirPartida,
     seguindo,
     alternarSeguir,
+    curtidos,
+    alternarCurtida,
     postsPerfil,
     addPostPerfil,
     atualizarPostPerfil,

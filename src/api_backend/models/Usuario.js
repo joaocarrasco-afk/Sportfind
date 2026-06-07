@@ -162,19 +162,31 @@ class Usuario{
 
     async seguirUsuario(user_id, seguindo_id ){
         try{
-            
             const ref_user = doc(db, 'usuario', user_id);
             const snap_user = await getDoc(ref_user);
-            const quantidadeSeguindo = snap_user.data().seguindo;
-            await updateDoc(ref_user, {seguindo_id: [...snap_user.data().seguindo_id, seguindo_id], seguindo: quantidadeSeguindo + 1 });
+            if (!snap_user.exists()) throw new Error('Usuário não encontrado');
+
+            const seguindoIds = snap_user.data().seguindo_id ?? [];
+            if (seguindoIds.includes(seguindo_id)) {
+                return { message: 'Usuário já seguido' };
+            }
+
+            const quantidadeSeguindo = snap_user.data().seguindo ?? seguindoIds.length;
+            await updateDoc(ref_user, {
+                seguindo_id: [...seguindoIds, seguindo_id],
+                seguindo: quantidadeSeguindo + 1,
+            });
 
             const ref_seguindo = doc(db, 'usuario', seguindo_id);
             const snap_seguindo = await getDoc(ref_seguindo);
-            const quantidadeSeguidores = snap_seguindo.data().seguidores;
+            if (!snap_seguindo.exists()) throw new Error('Usuário alvo não encontrado');
+
+            const seguidoresIds = snap_seguindo.data().seguidores_id ?? [];
+            const quantidadeSeguidores = snap_seguindo.data().seguidores ?? seguidoresIds.length;
             await updateDoc(ref_seguindo, {
-                seguidores_id: [...snap_seguindo.data().seguidores_id, user_id], 
-                seguidores: quantidadeSeguidores + 1
-            })
+                seguidores_id: [...seguidoresIds, user_id],
+                seguidores: quantidadeSeguidores + 1,
+            });
 
             return {message: 'Usuário seguido com sucesso'};
             
@@ -188,21 +200,31 @@ class Usuario{
         try{
             const ref_user = doc(db, 'usuario', user_id);
             const snap_user = await getDoc(ref_user);
-            const quantidadeSeguindo = snap_user.data().seguindo;
-            const seguindo_id_atualizado = snap_user.data().seguindo_id.filter(id => id !== seguindo_id);
+            if (!snap_user.exists()) throw new Error('Usuário não encontrado');
+
+            const seguindoIds = snap_user.data().seguindo_id ?? [];
+            if (!seguindoIds.includes(seguindo_id)) {
+                return { message: 'Usuário não estava sendo seguido' };
+            }
+
+            const quantidadeSeguindo = snap_user.data().seguindo ?? seguindoIds.length;
+            const seguindo_id_atualizado = seguindoIds.filter(id => id !== seguindo_id);
             await updateDoc(ref_user, {
                 seguindo_id: seguindo_id_atualizado, 
-                seguindo: quantidadeSeguindo - 1 
+                seguindo: Math.max(0, quantidadeSeguindo - 1),
             });
 
             const ref_seguindo = doc(db, 'usuario', seguindo_id);
             const snap_seguindo = await getDoc(ref_seguindo);
-            const quantidadeSeguidores = snap_seguindo.data().seguidores;
-            const seguidores_id_atualizado = snap_seguindo.data().seguidores_id.filter(id => id !== user_id);
+            if (!snap_seguindo.exists()) throw new Error('Usuário alvo não encontrado');
+
+            const seguidoresIds = snap_seguindo.data().seguidores_id ?? [];
+            const quantidadeSeguidores = snap_seguindo.data().seguidores ?? seguidoresIds.length;
+            const seguidores_id_atualizado = seguidoresIds.filter(id => id !== user_id);
             await updateDoc(ref_seguindo, {
                 seguidores_id: seguidores_id_atualizado, 
-                seguidores: quantidadeSeguidores - 1
-            })
+                seguidores: Math.max(0, quantidadeSeguidores - 1),
+            });
             return {message: 'Usuário deixou de seguir com sucesso'};       
         }catch(error){
             console.error(`Erro ao deixar de seguir: ${error.message}`);

@@ -8,6 +8,7 @@ import { useAppState } from '../state/AppStateContext';
 import styles from '../../style';
 import { colors } from '../../style/tokens';
 import { montarPublicacoesDemo } from '../domain/feed/feedDemo';
+import { usernameParaUserId } from '../domain/users';
 import { abrirPerfilUsuario } from '../navigation/perfilNavigation';
 
 const CHIPS = [
@@ -69,6 +70,7 @@ export default function TelaFeed() {
     postsPartidasFeed,
     partidas,
     seguindo,
+    curtidos,
     alternarSeguir,
     participarPartida,
     desistirPartida,
@@ -140,8 +142,21 @@ export default function TelaFeed() {
     return { ...item, participantes: obterParticipantesPost(item.id) ?? item.participantes };
   }
 
+  function idSeguirPost(post) {
+    return post.userId ?? usernameParaUserId(post.username);
+  }
+
+  function postJaSeguido(post) {
+    const id = idSeguirPost(post);
+    return id ? seguindo.has(id) : false;
+  }
+
   function ocultarPost(id) {
     setOcultos((prev) => new Set([...prev, id]));
+  }
+
+  function atualizarLikesPost(postId, { likes }) {
+    setPublicacoes((prev) => prev.map((p) => (p.id === postId ? { ...p, likes } : p)));
   }
 
   function restaurarFeed() {
@@ -198,6 +213,7 @@ export default function TelaFeed() {
       <FlatList
         data={publicacoesFiltradas}
         keyExtractor={(item) => String(item.id)}
+        extraData={[seguindo, curtidos]}
         ListHeaderComponent={ListHeader}
         contentContainerStyle={styles.feedList}
         showsVerticalScrollIndicator={false}
@@ -224,8 +240,9 @@ export default function TelaFeed() {
             <FeedPostCard
               item={post}
               onOcultar={ocultarPost}
-              seguindo={seguindo.has(post.username)}
+              seguindo={postJaSeguido(post)}
               onSeguir={alternarSeguir}
+              onLikeChange={atualizarLikesPost}
               onPressAutor={() =>
                 abrirPerfilUsuario(navigation, {
                   userId: post.userId,

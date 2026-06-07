@@ -118,47 +118,67 @@ class Feed{
         
     async likePost(postId, userIdCurtiu) {
         try {
-            //atualizar os likes do post
             const postRef = doc(db, 'feed', postId);
             const postDoc = await getDoc(postRef);
-            if (!postDoc.exists()) return { error: 'Post não encontrado' };
-            const likes = postDoc.data().likes;
-            await updateDoc(postRef, { likes: likes + 1 });
+            if (!postDoc.exists()) throw new Error('Post não encontrado');
 
-            //adiciona o id do post na lista de likes do usuário que curtiu
             const userRefCurtiu = doc(db, 'usuario', userIdCurtiu);
             const userDocCurtiu = await getDoc(userRefCurtiu);
-            await updateDoc(userRefCurtiu, { likes_id: [...userDocCurtiu.data().likes_id, postId] });
+            if (!userDocCurtiu.exists()) throw new Error('Usuário não encontrado');
 
-            //atualizar os likes do usuário que fez o post
+            const likesIds = userDocCurtiu.data().likes_id ?? [];
+            if (likesIds.includes(postId)) {
+                return { message: 'Post já curtido' };
+            }
+
+            const likesAtual = postDoc.data().likes ?? 0;
+            await updateDoc(postRef, { likes: likesAtual + 1 });
+            await updateDoc(userRefCurtiu, { likes_id: [...likesIds, postId] });
+
             const userRef = doc(db, 'usuario', postDoc.data().user);
             const userDoc = await getDoc(userRef);
-            await updateDoc(userRef, { likes: userDoc.data().likes + 1 });
+            if (userDoc.exists()) {
+                const likesUsuario = userDoc.data().likes ?? 0;
+                await updateDoc(userRef, { likes: likesUsuario + 1 });
+            }
             return { message: 'Post curtido com sucesso' };
         } catch (error) {
             console.error('Não foi possível curtir o post:', error);
+            throw error;
         }
     }
 
     async tirarLikePost(postId, userIdCurtiu) {
         try {
-            //tirar o like do post
             const postRef = doc(db, 'feed', postId);
             const postDoc = await getDoc(postRef);
-            if (!postDoc.exists()) return { error: 'Post não encontrado' };
-            const likes = postDoc.data().likes;
-            await updateDoc(postRef, { likes: likes - 1 });
-            //tirar o like do usuário que curtiu
+            if (!postDoc.exists()) throw new Error('Post não encontrado');
+
             const userRefCurtiu = doc(db, 'usuario', userIdCurtiu);
             const userDocCurtiu = await getDoc(userRefCurtiu);
-            await updateDoc(userRefCurtiu, { likes_id: userDocCurtiu.data().likes_id.filter(id => id !== postId) });
-            //atualizar os likes do usuário que fez o post
+            if (!userDocCurtiu.exists()) throw new Error('Usuário não encontrado');
+
+            const likesIds = userDocCurtiu.data().likes_id ?? [];
+            if (!likesIds.includes(postId)) {
+                return { message: 'Post não estava curtido' };
+            }
+
+            const likesAtual = postDoc.data().likes ?? 0;
+            await updateDoc(postRef, { likes: Math.max(0, likesAtual - 1) });
+            await updateDoc(userRefCurtiu, {
+                likes_id: likesIds.filter((id) => id !== postId),
+            });
+
             const userRef = doc(db, 'usuario', postDoc.data().user);
             const userDoc = await getDoc(userRef);
-            await updateDoc(userRef, { likes: userDoc.data().likes - 1 });
+            if (userDoc.exists()) {
+                const likesUsuario = userDoc.data().likes ?? 0;
+                await updateDoc(userRef, { likes: Math.max(0, likesUsuario - 1) });
+            }
             return { message: 'Like removido com sucesso' };
         } catch (error) {
             console.error('Não foi possível tirar o like do post:', error);
+            throw error;
         }
     }
 

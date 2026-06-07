@@ -57,15 +57,16 @@ export default function PerfilPostModal({
   onEdit,
   onDelete,
   onLongPressPost,
+  onLikeChange,
 }) {
-  const { authUid } = useAppState();
+  const { authUid, curtidos, alternarCurtida } = useAppState();
   const { width, height } = useWindowDimensions();
   const layoutLadoALado = width >= 720;
   const isMobile = !layoutLadoALado;
 
   const [menuAberto, setMenuAberto] = useState(false);
-  const [curtido, setCurtido] = useState(false);
-  const [curtidas, setCurtidas] = useState(24);
+  const curtido = post?.id ? curtidos.has(post.id) : false;
+  const [curtidas, setCurtidas] = useState(post?.likes ?? 0);
   const [salvo, setSalvo] = useState(false);
   const [mostrarTodosComentarios, setMostrarTodosComentarios] = useState(false);
 
@@ -107,10 +108,21 @@ export default function PerfilPostModal({
       setMostrarTodosComentarios(false);
       return;
     }
-    setCurtido(false);
-    setCurtidas(post?.likes ?? 12 + (post?.id?.length ?? 0) * 3);
+    setCurtidas(post?.likes ?? 0);
     setSalvo(false);
   }, [visible, post?.id, post?.likes]);
+
+  async function alternarCurtidaPost() {
+    if (!post?.id) return;
+
+    const eraCurtido = curtidos.has(post.id);
+    const resultado = await alternarCurtida(post.id);
+    if (!resultado.ok) return;
+
+    const novosLikes = eraCurtido ? Math.max(0, curtidas - 1) : curtidas + 1;
+    setCurtidas(novosLikes);
+    onLikeChange?.(post.id, { curtido: resultado.curtido, likes: novosLikes }, post);
+  }
 
   if (!post) return null;
 
@@ -163,15 +175,7 @@ export default function PerfilPostModal({
   const footer = (
     <View style={styles.instaPostFooter}>
       <View style={styles.instaPostAcoes}>
-        <TouchableOpacity
-          onPress={() => {
-            setCurtido((v) => {
-              setCurtidas((n) => (v ? n - 1 : n + 1));
-              return !v;
-            });
-          }}
-          hitSlop={8}
-        >
+        <TouchableOpacity onPress={alternarCurtidaPost} hitSlop={8}>
           <Ionicons
             name={curtido ? 'heart' : 'heart-outline'}
             size={24}

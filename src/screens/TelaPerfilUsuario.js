@@ -54,7 +54,7 @@ export default function TelaPerfilUsuario({ navigation }) {
   const route = useRoute();
   const userId = route.params?.userId;
   const usuarioDemo = useMemo(() => getUsuarioPorId(userId), [userId]);
-  const { seguindo, alternarSeguir } = useAppState();
+  const { seguindo, alternarSeguir, authUid } = useAppState();
   const [aba, setAba] = useState('pub');
   const [postSelecionado, setPostSelecionado] = useState(null);
   const [usuarioApi, setUsuarioApi] = useState(null);
@@ -63,7 +63,30 @@ export default function TelaPerfilUsuario({ navigation }) {
 
   const usuario = usuarioDemo ?? usuarioApi;
   const fotoPerfil = usuario?.url ?? null;
-  const jaSeguindo = usuario ? seguindo.has(usuario.username) : false;
+  const jaSeguindo = usuario ? seguindo.has(usuario.id) : false;
+
+  const alternarSeguirPerfil = useCallback(async () => {
+    if (!usuario?.id) return;
+
+    const eraSeguindo = seguindo.has(usuario.id);
+    const ok = await alternarSeguir({ userId: usuario.id, username: usuario.username });
+    if (!ok || !usuarioApi || !authUid) return;
+
+    setUsuarioApi((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        seguidoresIds: eraSeguindo
+          ? prev.seguidoresIds.filter((id) => id !== authUid)
+          : [...prev.seguidoresIds, authUid],
+      };
+    });
+  }, [usuario, seguindo, alternarSeguir, authUid, usuarioApi]);
+
+  const handleLikeChange = useCallback((postId, { likes }) => {
+    setPublicacoes((prev) => prev.map((p) => (p.id === postId ? { ...p, likes } : p)));
+    setPostSelecionado((prev) => (prev?.id === postId ? { ...prev, likes } : prev));
+  }, []);
 
   const carregarPerfilApi = useCallback(async () => {
     if (!userId || usuarioDemo) return;
@@ -229,8 +252,9 @@ export default function TelaPerfilUsuario({ navigation }) {
 
         <TouchableOpacity
           style={[styles.perfilOutroFollowBtn, jaSeguindo && styles.perfilOutroFollowBtnActive]}
-          onPress={() => alternarSeguir(usuario.username)}
+          onPress={alternarSeguirPerfil}
           activeOpacity={0.85}
+          disabled={!authUid || authUid === usuario.id}
         >
           <Text
             style={[
@@ -281,6 +305,7 @@ export default function TelaPerfilUsuario({ navigation }) {
         username={usuario.username}
         isOwnProfile={false}
         onClose={() => setPostSelecionado(null)}
+        onLikeChange={handleLikeChange}
       />
     </ScreenSafe>
   );

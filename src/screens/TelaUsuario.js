@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { CommonActions, useNavigation } from '@react-navigation/native';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -62,7 +62,7 @@ async function buscarPostsPorIds(ids) {
 
   const resultados = await Promise.all(
     ids.map(async (postId) => {
-      const res = await fetch(`${API_URL}/feed/post/usuario/${encodeURIComponent(postId)}`, {
+      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/feed/post/usuario/${encodeURIComponent(postId)}`, {
         method: 'GET',
       });
       if (!res.ok) return null;
@@ -426,6 +426,23 @@ export default function TelaUsuario() {
     ]);
   }
 
+  const handleLikeChange = useCallback((postId, { curtido, likes }, postRef) => {
+    setDataPost((prev) => prev.map((p) => (p.id === postId ? { ...p, likes } : p)));
+    atualizarPostPerfil(postId, { likes });
+    setPostSelecionado((prev) => (prev?.id === postId ? { ...prev, likes } : prev));
+    setPostsCurtidos((prev) => {
+      if (curtido) {
+        const existente = prev.find((p) => p.id === postId);
+        if (existente) {
+          return prev.map((p) => (p.id === postId ? { ...p, likes } : p));
+        }
+        if (!postRef) return prev;
+        return [{ ...postRef, likes }, ...prev];
+      }
+      return prev.filter((p) => p.id !== postId);
+    });
+  }, [atualizarPostPerfil]);
+
   function renderCelulaGrid(post) {
     const ehPartida = post.tipo === 'partida';
     const temImagem = Boolean(post.url);
@@ -701,6 +718,7 @@ export default function TelaUsuario() {
           fecharDetalhe();
           setPostAcoes(p);
         }}
+        onLikeChange={handleLikeChange}
       />
 
       <Modal

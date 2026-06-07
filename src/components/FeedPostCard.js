@@ -33,12 +33,15 @@ export default function FeedPostCard({
   onPressAutor,
   onParticipar,
   onDesistir,
+  onLikeChange,
 }) {
-  const { authUid, username } = useAppState();
-  const [curtido, setCurtido] = useState(false);
+  const { authUid, username, curtidos, alternarCurtida } = useAppState();
+  const curtido = curtidos.has(item.id);
   const [likes, setLikes] = useState(item.likes ?? 0);
   const [comentariosAberto, setComentariosAberto] = useState(false);
   const [menuAberto, setMenuAberto] = useState(false);
+  const [curtidas, setCurtidas] = useState(item.likes ?? 0);
+
 
   const {
     lista,
@@ -71,17 +74,23 @@ export default function FeedPostCard({
     maxParticipantes != null && totalParticipantes >= maxParticipantes && !participando;
 
   const autor = item.username ?? 'Usuário';
-  const mostrarSeguir = autor !== 'Você' && onSeguir;
+  const ehProprioPost = Boolean(item.userId && authUid && item.userId === authUid);
+  const mostrarSeguir = Boolean(onSeguir && authUid && autor !== 'Você' && !ehProprioPost);
 
   useEffect(() => {
     setLikes(item.likes ?? 0);
   }, [item.likes, item.id]);
 
-  function alternarCurtida() {
-    setCurtido((prev) => {
-      setLikes((n) => (prev ? n - 1 : n + 1));
-      return !prev;
-    });
+  async function alternarCurtidaPost() {
+
+
+    const eraCurtido = curtidos.has(item.id);
+    const resultado = await alternarCurtida(item.id);
+    if (!resultado.ok) return;
+
+    const novosLikes = eraCurtido ? Math.max(0, curtidas - 1) : curtidas + 1;
+    setCurtidas(novosLikes);
+    onLikeChange?.(item.id, { curtido: resultado.curtido, likes: novosLikes }, post);
   }
 
   async function compartilhar() {
@@ -160,7 +169,7 @@ export default function FeedPostCard({
             {mostrarSeguir ? (
               <TouchableOpacity
                 style={[styles.feedFollowBtn, seguindo && styles.feedFollowBtnActive]}
-                onPress={() => onSeguir(autor)}
+                onPress={() => onSeguir?.({ userId: item.userId, username: autor })}
                 activeOpacity={0.8}
               >
                 <Text
@@ -262,7 +271,7 @@ export default function FeedPostCard({
       )}
 
       <View style={styles.feedCardActions}>
-        <TouchableOpacity style={styles.feedActionBtn} activeOpacity={0.7} onPress={alternarCurtida}>
+        <TouchableOpacity style={styles.feedActionBtn} activeOpacity={0.7} onPress={alternarCurtidaPost}>
           <Ionicons
             name={curtido ? 'heart' : 'heart-outline'}
             size={18}
