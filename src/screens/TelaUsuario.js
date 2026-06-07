@@ -19,8 +19,78 @@ import { colors, spacing } from '../../style/tokens';
 import PerfilPostAcoesSheet from '../components/PerfilPostAcoesSheet';
 import PerfilPostModal from '../components/PerfilPostModal';
 import { useAppState } from '../state/AppStateContext';
-import { contagemConexoesAtual } from '../domain/users';
 import * as ImagePicker from 'expo-image-picker';
+
+
+function formatarDataCriacao(dataCriacao) {
+  if (!dataCriacao) return '';
+  if (typeof dataCriacao === 'string') return dataCriacao;
+  if (typeof dataCriacao.toDate === 'function') return dataCriacao.toDate().toISOString();
+  return String(dataCriacao);
+}
+
+async function buscarUsuariosPorIds(ids) {
+  if (!Array.isArray(ids) || ids.length === 0) return [];
+
+  const resultados = await Promise.all(
+    ids.map(async (id) => {
+      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/usuario/perfil/${encodeURIComponent(id)}`, {
+        method: 'GET',
+      });
+      if (!res.ok) return null;
+
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        return null;
+      }
+
+      return {
+        id,
+        username: data?.username ?? 'Usuário',
+        url: data?.url ?? null,
+      };
+    }),
+  );
+
+  return resultados.filter(Boolean);
+}
+
+async function buscarPostsPorIds(ids) {
+  if (!Array.isArray(ids) || ids.length === 0) return [];
+
+  const resultados = await Promise.all(
+    ids.map(async (postId) => {
+      const res = await fetch(`${API_URL}/feed/post/usuario/${encodeURIComponent(postId)}`, {
+        method: 'GET',
+      });
+      if (!res.ok) return null;
+
+      let post = null;
+      try {
+        post = await res.json();
+      } catch {
+        return null;
+      }
+
+      if (!post || post.error) return null;
+
+      return {
+        id: postId,
+        url: post.url,
+        descricao: post.descricao ?? '',
+        dataCriacao: formatarDataCriacao(post.dataCriacao),
+        likes: post.likes ?? 0,
+        comentarios: post.comentarios ?? 0,
+        tipo: post.type === 'video' ? 'video' : 'imagem',
+        editavel: false,
+      };
+    }),
+  );
+
+  return resultados.filter(Boolean);
+}
 
 
 const ABAS = [
@@ -108,9 +178,11 @@ export default function TelaUsuario() {
   const [salvandoFoto, setSalvandoFoto] = useState(false);
   const [dataPost, setDataPost] = useState([]);
   const nomeExibido = usernameCtx !== 'Você' ? usernameCtx : username;
-  const { seguidores: totalSeguidores, seguindo: totalSeguindo } = contagemConexoesAtual();
-  const [seguidores, setSeguidores] = useState('');
-  const [seguindo, setSeguindo] = useState('');
+  const [seguidores, setSeguidores] = useState(0);
+  const [seguindo, setSeguindo] = useState(0);
+  const [listaSeguidores, setListaSeguidores] = useState([]);
+  const [listaSeguindo, setListaSeguindo] = useState([]);
+  const [postsCurtidos, setPostsCurtidos] = useState([]);
 
   useEffect(() => {
     let cancelado = false;
@@ -142,9 +214,20 @@ export default function TelaUsuario() {
       if (data?.url) {
         setFotoPerfil(data.url);
       }
-      setSeguindo(data?.seguindo);
-      setSeguidores(data?.seguidores);
-      
+      setSeguindo(data?.seguindo ?? 0);
+      setSeguidores(data?.seguidores ?? 0);
+
+      const [usuariosSeguidores, usuariosSeguindo, curtidos] = await Promise.all([
+        buscarUsuariosPorIds(data?.seguidores_id),
+        buscarUsuariosPorIds(data?.seguindo_id),
+        buscarPostsPorIds(data?.likes_id),
+      ]);
+
+      if (cancelado) return;
+
+      setListaSeguidores(usuariosSeguidores);
+      setListaSeguindo(usuariosSeguindo);
+      setPostsCurtidos(curtidos);
     }
 
     async function carregarPosts() {
@@ -176,6 +259,11 @@ export default function TelaUsuario() {
       if (!authUid) {
         setCarregando(false);
         setDataPost([]);
+        setListaSeguidores([]);
+        setListaSeguindo([]);
+        setPostsCurtidos([]);
+        setSeguidores(0);
+        setSeguindo(0);
         return;
       }
 
@@ -454,7 +542,12 @@ export default function TelaUsuario() {
           <TouchableOpacity
             style={styles.usuarioStatBlockPressable}
             activeOpacity={0.75}
-            onPress={() => navigation.navigate('TelaListaConexoes', { tipo: 'seguidores' })}
+            onPress={() =>
+              navigation.navigate('TelaListaConexoes', {
+                tipo: 'seguidores',
+                lista: listaSeguidores,
+              })
+            }
           >
             <Text style={styles.usuarioStatValue}>{seguidores}</Text>
             <Text style={styles.usuarioStatLabel}>Seguidores</Text>
@@ -462,7 +555,12 @@ export default function TelaUsuario() {
           <TouchableOpacity
             style={styles.usuarioStatBlockPressable}
             activeOpacity={0.75}
-            onPress={() => navigation.navigate('TelaListaConexoes', { tipo: 'seguindo' })}
+            onPress={() =>
+              navigation.navigate('TelaListaConexoes', {
+                tipo: 'seguindo',
+                lista: listaSeguindo,
+              })
+            }
           >
             <Text style={styles.usuarioStatValue}>{seguindo}</Text>
             <Text style={styles.usuarioStatLabel}>Seguindo</Text>
@@ -500,16 +598,24 @@ export default function TelaUsuario() {
                   : 'Toque para ver · segure o post para editar ou excluir.'}
               </Text>
             </>
+          ) : aba === 'liked' ? (
+            postsCurtidos.length > 0 ? (
+              <>
+                <View style={styles.usuarioFeedGrid}>
+                  {postsCurtidos.map(renderCelulaGrid)}
+                </View>
+                <Text style={styles.usuarioFeedCaption}>Toque para abrir o post curtido.</Text>
+              </>
+            ) : (
+              <View style={styles.usuarioEmptyTab}>
+                <Ionicons name="heart-outline" size={36} color={colors.purpleLight} />
+                <Text style={styles.usuarioEmptyTabText}>Nenhum post curtido ainda.</Text>
+              </View>
+            )
           ) : (
             <View style={styles.usuarioEmptyTab}>
-              <Ionicons
-                name={aba === 'trophy' ? 'trophy-outline' : 'heart-outline'}
-                size={36}
-                color={colors.purpleLight}
-              />
-              <Text style={styles.usuarioEmptyTabText}>
-                {aba === 'trophy' ? 'Troféus aparecerão aqui.' : 'Posts curtidos aparecerão aqui.'}
-              </Text>
+              <Ionicons name="trophy-outline" size={36} color={colors.purpleLight} />
+              <Text style={styles.usuarioEmptyTabText}>Troféus aparecerão aqui.</Text>
             </View>
           )}
         </View>

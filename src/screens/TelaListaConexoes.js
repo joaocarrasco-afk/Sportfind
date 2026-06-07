@@ -15,7 +15,10 @@ export default function TelaListaConexoes({ navigation }) {
   const tipo = route.params?.tipo === 'seguindo' ? 'seguindo' : 'seguidores';
 
   const titulo = tipo === 'seguindo' ? 'Seguindo' : 'Seguidores';
-  const lista = tipo === 'seguindo' ? listarSeguindoDoAtual() : listarSeguidoresDoAtual();
+  const listaApi = Array.isArray(route.params?.lista) ? route.params.lista : null;
+  const lista =
+    listaApi ??
+    (tipo === 'seguindo' ? listarSeguindoDoAtual() : listarSeguidoresDoAtual());
 
   return (
     <ScreenSafe style={styles.screen} edges={['top', 'left', 'right', 'bottom']}>
