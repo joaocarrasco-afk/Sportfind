@@ -15,6 +15,7 @@ function normalizarComentario(raw) {
     postId: raw.postId,
     userId: raw.user ?? raw.userId,
     autor: raw.username ?? 'Usuário',
+    url_perfil: raw.url_perfil ?? null,
     texto: raw.texto ?? '',
     dataCriacao: raw.dataCriacao ?? new Date().toISOString(),
     tempo: formatarTempoRelativo(raw.dataCriacao),

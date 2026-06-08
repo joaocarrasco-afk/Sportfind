@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import {
   ActivityIndicator,
+  Image,
   Text,
   TextInput,
   TouchableOpacity,
@@ -8,6 +9,25 @@ import {
 } from 'react-native';
 import styles from '../../style';
 import { colors } from '../../style/tokens';
+
+function ComentarioAvatar({ url, autor, style, iconSize }) {
+  if (url) {
+    return <Image source={{ uri: url }} style={style} resizeMode="cover" />;
+  }
+
+  const inicial = (autor ?? '?').charAt(0).toUpperCase();
+  return (
+    <View style={style}>
+      {autor ? (
+        <Text style={{ fontWeight: '700', color: colors.purple, fontSize: Math.max(10, iconSize - 2) }}>
+          {inicial}
+        </Text>
+      ) : (
+        <Ionicons name="person" size={iconSize} color={colors.purple} />
+      )}
+    </View>
+  );
+}
 
 function ComentarioItem({
   comentario,
@@ -31,9 +51,12 @@ function ComentarioItem({
 
   return (
     <View style={[rowStyle, indent && { marginLeft: isFeed ? 28 : 24 }]}>
-      <View style={avatarStyle}>
-        <Ionicons name="person" size={iconSize} color={colors.purple} />
-      </View>
+      <ComentarioAvatar
+        url={comentario.url_perfil}
+        autor={comentario.autor}
+        style={avatarStyle}
+        iconSize={iconSize}
+      />
       <View style={isFeed ? { flex: 1 } : styles.instaPostComentarioCorpo}>
         {emEdicao ? (
           <>

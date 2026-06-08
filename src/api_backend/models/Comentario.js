@@ -15,10 +15,17 @@ class Comentario{
         }
     }
 
-    async _buscarUsername(userId){
+    async _buscarPerfilUsuario(userId){
         const userRef = doc(db, 'usuario', userId);
         const userDoc = await getDoc(userRef);
-        return userDoc.exists() ? userDoc.data().username : 'Usuário Desconhecido';
+        if (!userDoc.exists()) {
+            return { username: 'Usuário Desconhecido', url_perfil: null };
+        }
+        const data = userDoc.data();
+        return {
+            username: data.username ?? 'Usuário Desconhecido',
+            url_perfil: data.url ?? null,
+        };
     }
 
     _formatarComentario(docSnap){
@@ -40,8 +47,17 @@ class Comentario{
                 dataCriacao: new Date()
             });
             await this._ajustarContagemPost(postId, 1);
-            const username = await this._buscarUsername(userId);
-            return { id: comentarioRef.id, user: userId, postId, texto, tipo: 'comentario', username, dataCriacao: new Date().toISOString() };
+            const { username, url_perfil } = await this._buscarPerfilUsuario(userId);
+            return {
+                id: comentarioRef.id,
+                user: userId,
+                postId,
+                texto,
+                tipo: 'comentario',
+                username,
+                url_perfil,
+                dataCriacao: new Date().toISOString(),
+            };
         }catch(error){
             console.error('Não foi possível criar o comentário:', error);
             throw error;
@@ -54,8 +70,8 @@ class Comentario{
             const comentariosSnapshot = await getDocs(comentariosRef);
             const comentarios = await Promise.all(comentariosSnapshot.docs.map(async d => {
                 const comentarioData = this._formatarComentario(d);
-                const username = await this._buscarUsername(comentarioData.user);
-                return { ...comentarioData, username };
+                const { username, url_perfil } = await this._buscarPerfilUsuario(comentarioData.user);
+                return { ...comentarioData, username, url_perfil };
             }));
             return comentarios.sort((a, b) => new Date(a.dataCriacao) - new Date(b.dataCriacao));
         }catch(error){
@@ -70,8 +86,8 @@ class Comentario{
             const respostasSnapshot = await getDocs(respostasRef);
             const respostas = await Promise.all(respostasSnapshot.docs.map(async d => {
                 const respostaData = this._formatarComentario(d);
-                const username = await this._buscarUsername(respostaData.user);
-                return {...respostaData, username };
+                const { username, url_perfil } = await this._buscarPerfilUsuario(respostaData.user);
+                return { ...respostaData, username, url_perfil };
             }));
             return respostas.sort((a, b) => new Date(a.dataCriacao) - new Date(b.dataCriacao));
         }catch(error){
@@ -134,8 +150,18 @@ class Comentario{
                 dataCriacao: new Date()
             });
             await this._ajustarContagemPost(postId, 1);
-            const username = await this._buscarUsername(userId);
-            return { id: respostaRef.id, user: userId, postId, texto, comentarioPaiId, tipo: 'resposta', username, dataCriacao: new Date().toISOString() };
+            const { username, url_perfil } = await this._buscarPerfilUsuario(userId);
+            return {
+                id: respostaRef.id,
+                user: userId,
+                postId,
+                texto,
+                comentarioPaiId,
+                tipo: 'resposta',
+                username,
+                url_perfil,
+                dataCriacao: new Date().toISOString(),
+            };
         }catch(error){
             console.error('Não foi possível criar a resposta:', error);
             throw error;
