@@ -1,7 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useMemo, useState } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useCallback, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
+  RefreshControl,
   SafeAreaView,
   ScrollView,
   Text,
@@ -9,11 +12,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import styles from '../../style';
 import { colors, spacing } from '../../style/tokens';
-import { useAppState } from '../state/AppStateContext';
 import { rotuloEsporte } from '../domain/feed/posts';
+import { eventoParaDetalhes, listarEventos } from '../utils/eventoApi';
 
 function asDate(value) {
   if (!value) return null;
@@ -41,9 +43,32 @@ const FILTROS = [
 
 export default function TelaPartidas() {
   const navigation = useNavigation();
-  const { partidas } = useAppState();
+  const [partidas, setPartidas] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [atualizando, setAtualizando] = useState(false);
   const [busca, setBusca] = useState('');
   const [filtrosAtivos, setFiltrosAtivos] = useState(() => new Set());
+
+  const carregarPartidas = useCallback(async (silencioso = false) => {
+    if (silencioso) setAtualizando(true);
+    else setCarregando(true);
+
+    try {
+      const eventos = await listarEventos();
+      setPartidas(eventos.map(eventoParaDetalhes));
+    } catch {
+      setPartidas([]);
+    } finally {
+      setCarregando(false);
+      setAtualizando(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      carregarPartidas();
+    }, [carregarPartidas]),
+  );
 
   const lista = useMemo(() => {
     const termo = busca.trim().toLowerCase();
@@ -57,12 +82,21 @@ export default function TelaPartidas() {
     const fimSemana = new Date(inicioSemana);
     fimSemana.setDate(fimSemana.getDate() + 7);
 
-    return [...(partidas ?? [])]
+    return [...partidas]
       .filter((p) => {
         const nome = (p.nome ?? '').toLowerCase();
         const esporte = (p.esporte ?? '').toLowerCase();
+        const esporteLabel = rotuloEsporte(p.esporte).toLowerCase();
         const local = (p.place?.name ?? '').toLowerCase();
-        if (termo && !nome.includes(termo) && !esporte.includes(termo) && !local.includes(termo)) {
+        const autor = (p.autorUsername ?? '').toLowerCase();
+        if (
+          termo &&
+          !nome.includes(termo) &&
+          !esporte.includes(termo) &&
+          !esporteLabel.includes(termo) &&
+          !local.includes(termo) &&
+          !autor.includes(termo)
+        ) {
           return false;
         }
 
@@ -149,12 +183,33 @@ export default function TelaPartidas() {
             })}
           </ScrollView>
         </View>
+
+        {!carregando && (
+          <Text style={[styles.feedPartidaMetaText, { marginTop: -4 }]}>
+            {lista.length} partida{lista.length === 1 ? '' : 's'}
+            {busca.trim() || filtrosAtivos.size > 0 ? ' encontrada(s)' : ''}
+          </Text>
+        )}
       </View>
 
+      {carregando ? (
+        <View style={[styles.feedEmpty, { flex: 1 }]}>
+          <ActivityIndicator size="large" color={colors.purple} />
+        </View>
+      ) : (
       <FlatList
         data={lista}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={[styles.feedList, { paddingTop: spacing.lg }]}
+        refreshControl={
+          <RefreshControl
+            refreshing={atualizando}
+            onRefresh={() => carregarPartidas(true)}
+            colors={[colors.purple]}
+            tintColor={colors.purple}
+          />
+        }
+        keyboardShouldPersistTaps="handled"
         renderItem={({ item }) => {
           const total = item.participantes?.length ?? 0;
           const max = item.maxParticipantes;
@@ -198,6 +253,7 @@ export default function TelaPartidas() {
         }
         showsVerticalScrollIndicator={false}
       />
+      )}
     </SafeAreaView>
   );
 }
