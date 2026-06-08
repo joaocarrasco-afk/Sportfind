@@ -119,6 +119,30 @@ export async function listarSeguidosComPerfil(seguindoIds) {
   return perfis.filter(Boolean);
 }
 
+export async function listarIdsChatsPV(idUsuario) {
+  const res = await fetch(`${API}/chat/pv/${encodeURIComponent(idUsuario)}`, {
+    method: 'GET',
+  });
+  if (!res.ok) return [];
+  const data = await parseJson(res);
+  return Array.isArray(data) ? data : [];
+}
+
+export async function listarContatosMensagens(authUid, seguindoIds) {
+  const [idsChatsPv, idsSeguindo] = await Promise.all([
+    listarIdsChatsPV(authUid),
+    Promise.resolve(Array.from(seguindoIds ?? [])),
+  ]);
+
+  const idsUnicos = [...new Set([...idsSeguindo, ...idsChatsPv])].filter((id) => id !== authUid);
+  if (idsUnicos.length === 0) return [];
+
+  const perfis = await Promise.all(idsUnicos.map((id) => carregarPerfilUsuario(id)));
+  return perfis
+    .filter(Boolean)
+    .sort((a, b) => a.username.localeCompare(b.username, 'pt-BR'));
+}
+
 export function formatarHoraMensagem(timestamp) {
   if (!timestamp) return '';
   const diff = Date.now() - timestamp;

@@ -12,7 +12,7 @@ import {
 import ScreenSafe from '../components/ScreenSafe';
 import { abrirPerfilUsuario } from '../navigation/perfilNavigation';
 import { useAppState } from '../state/AppStateContext';
-import { buscarOuCriarChatPV, listarSeguidosComPerfil } from '../utils/chatApi';
+import { buscarOuCriarChatPV, listarContatosMensagens } from '../utils/chatApi';
 import styles from '../../style';
 import { colors } from '../../style/tokens';
 
@@ -32,7 +32,7 @@ export default function TelaMensagens() {
 
     setCarregando(true);
     try {
-      const lista = await listarSeguidosComPerfil(seguindo);
+      const lista = await listarContatosMensagens(authUid, seguindo);
       setContatos(lista);
     } catch {
       setContatos([]);
@@ -57,6 +57,7 @@ export default function TelaMensagens() {
         conversaId: chatId,
         nome: item.username,
         userId: item.id,
+        url: item.url,
       });
     } catch {
       /* falha silenciosa — usuário pode tentar de novo */
@@ -96,7 +97,7 @@ export default function TelaMensagens() {
         <View style={styles.messageEmpty}>
           <Ionicons name="chatbubbles-outline" size={48} color={colors.purpleLight} />
           <Text style={styles.messageEmptyText}>
-            Siga pessoas para iniciar uma conversa.
+            Siga pessoas ou inicie uma conversa para aparecer aqui.
           </Text>
         </View>
       ) : (

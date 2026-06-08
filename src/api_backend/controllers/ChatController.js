@@ -100,6 +100,19 @@ class ChatController{
         }
     }
 
+    async listarChatsPV(req, res){
+        try{
+            const { idUsuario } = req.params;
+            if (!idUsuario) {
+                return res.status(400).json({ mensagem: 'ID de usuário obrigatório' });
+            }
+            const resultado = await Chat.listarChatsPV(idUsuario);
+            res.status(200).json(resultado);
+        }catch(error){
+            res.status(400).json({ menssagem: 'Erro ao listar chats PV', error });
+        }
+    }
+
 
 }
 

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Text,
@@ -14,23 +15,37 @@ import {
 import ScreenSafe from '../components/ScreenSafe';
 import { abrirPerfilUsuario } from '../navigation/perfilNavigation';
 import { useAppState } from '../state/AppStateContext';
-import { enviarMensagem, escutarMensagens, formatarHoraMensagem } from '../utils/chatApi';
+import { enviarMensagem, escutarMensagens, formatarHoraMensagem, carregarPerfilUsuario } from '../utils/chatApi';
 import styles from '../../style';
 import { colors } from '../../style/tokens';
 
 export default function TelaChatConversa() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { conversaId, nome, userId } = route.params ?? {};
+  const { conversaId, nome, userId, url: urlInicial } = route.params ?? {};
   const { authUid } = useAppState();
 
   const [mensagens, setMensagens] = useState([]);
   const [texto, setTexto] = useState('');
   const [carregando, setCarregando] = useState(true);
   const [enviando, setEnviando] = useState(false);
+  const [fotoPerfil, setFotoPerfil] = useState(urlInicial ?? null);
   const listaRef = useRef(null);
 
   const iniciais = useMemo(() => (nome ?? '?').charAt(0), [nome]);
+
+  useEffect(() => {
+    if (!userId) return undefined;
+
+    let ativo = true;
+    carregarPerfilUsuario(userId).then((perfil) => {
+      if (ativo) setFotoPerfil(perfil?.url ?? null);
+    });
+
+    return () => {
+      ativo = false;
+    };
+  }, [userId]);
 
   useEffect(() => {
     if (!conversaId) {
@@ -87,9 +102,13 @@ export default function TelaChatConversa() {
           activeOpacity={0.75}
           onPress={() => abrirPerfilUsuario(navigation, { userId, username: nome })}
         >
-          <View style={styles.messageAvatar}>
-            <Text style={styles.messageAvatarText}>{iniciais}</Text>
-          </View>
+          {fotoPerfil ? (
+            <Image source={{ uri: fotoPerfil }} style={styles.messageAvatar} />
+          ) : (
+            <View style={styles.messageAvatar}>
+              <Text style={styles.messageAvatarText}>{iniciais}</Text>
+            </View>
+          )}
           <Text style={[styles.chatHeaderNome, styles.messageCardNomeLink]} numberOfLines={1}>
             {nome ?? 'Conversa'}
           </Text>

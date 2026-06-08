@@ -5,6 +5,7 @@ const route = express.Router();
 
 route.post('/chat', ChatController.criarChatPV);
 route.post('/chat/pv', ChatController.buscarOuCriarChatPV);
+route.get('/chat/pv/:idUsuario', ChatController.listarChatsPV);
 route.post('/chat/grupo', ChatController.criarChatGrupo);
 route.post('/chat/grupo/:idChat/adicionar', ChatController.adicionarMembroGrupo);
 route.put('/chat/grupo/:idChat/editar', ChatController.editarChatGrupo);

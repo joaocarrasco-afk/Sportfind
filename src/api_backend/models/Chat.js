@@ -174,6 +174,29 @@ class Chat{
 
     }
 
+    async listarChatsPV(idUsuario){
+        try{
+            const refChat = query(
+                collection(db, 'chat'),
+                where('usuario_id', 'array-contains', idUsuario),
+                where('tipo_chat', '==', 'PV'),
+            );
+            const chatDoc = await getDocs(refChat);
+            const outrosIds = [];
+
+            for (const docSnap of chatDoc.docs) {
+                const ids = docSnap.data().usuario_id ?? [];
+                const outro = ids.find((id) => id !== idUsuario);
+                if (outro) outrosIds.push(outro);
+            }
+
+            return [...new Set(outrosIds)];
+        }catch(error){
+            console.error(`Não foi possível listar chats PV: ${error.message}`);
+            throw error;
+        }
+    }
+
 
 
 
