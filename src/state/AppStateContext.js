@@ -6,7 +6,6 @@ import {
   findPlaceById,
   formatPartidaData,
   fromApiLocalizacao,
-  INITIAL_PLACES,
   resolvePlaceSportMeta,
   samePlaceId,
   withPlaceDistances,
@@ -24,7 +23,7 @@ export function AppStateProvider({ children }) {
   const [authUid, setAuthUid] = useState(null);
   const [username, setUsername] = useState('Você');
   const [userLocation, setUserLocation] = useState(null); // { lat, lng, accuracy?, timestamp? }
-  const [places, setPlaces] = useState(INITIAL_PLACES);
+  const [places, setPlaces] = useState([]);
   const [placesLoading, setPlacesLoading] = useState(false);
   const [selectedPlaceId, setSelectedPlaceId] = useState(null);
   const [sportFilters, setSportFilters] = useState([]);

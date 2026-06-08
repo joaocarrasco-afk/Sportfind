@@ -136,7 +136,7 @@ export default function TelaCriarPartida() {
     if (typeof localSelecionadoId === 'number') {
       Alert.alert(
         'Local inválido',
-        'Selecione um local cadastrado no servidor (não use apenas locais de demonstração).',
+        'Selecione um local cadastrado no servidor.',
       );
       return;
     }

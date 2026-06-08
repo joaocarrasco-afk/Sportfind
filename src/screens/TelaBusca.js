@@ -1,6 +1,8 @@
+import { Ionicons } from '@expo/vector-icons';
 import { FlatList, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import ScreenSafe from '../components/ScreenSafe';
 import styles from '../../style';
+import { colors } from '../../style/tokens';
 import InfraestruturaChips from '../components/InfraestruturaChips';
 import ModalFiltros from '../components/ModalFiltros';
 import { useAppState } from '../state/AppStateContext';
@@ -34,7 +36,7 @@ export default function TelaBusca({ navigation }) {
           autoFocus
         />
         <TouchableOpacity style={styles.filterButton} onPress={() => setFilterVisible(true)}>
-          <Text style={{ fontSize: 20 }}>⚙️</Text>
+          <Ionicons name="options-outline" size={22} color={colors.purple} />
         </TouchableOpacity>
       </View>
 
@@ -46,6 +48,12 @@ export default function TelaBusca({ navigation }) {
         data={filteredPlaces}
         keyExtractor={(i) => String(i.id)}
         contentContainerStyle={styles.listContent}
+        ListEmptyComponent={
+          <View style={styles.userSearchEmpty}>
+            <Ionicons name="location-outline" size={40} color={colors.purpleLight} />
+            <Text style={styles.userSearchEmptyText}>Nenhum local encontrado.</Text>
+          </View>
+        }
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}

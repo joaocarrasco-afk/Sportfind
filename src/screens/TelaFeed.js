@@ -7,7 +7,6 @@ import FeedPostCard from '../components/FeedPostCard';
 import { useAppState } from '../state/AppStateContext';
 import styles from '../../style';
 import { colors } from '../../style/tokens';
-import { montarPublicacoesDemo } from '../domain/feed/feedDemo';
 import { usernameParaUserId } from '../domain/users';
 import { abrirPerfilUsuario } from '../navigation/perfilNavigation';
 import { listarEventos, normalizarEventosParaFeed, participarEvento } from '../utils/eventoApi';
@@ -62,7 +61,7 @@ function normalizarPostsApi(data) {
 
 export default function TelaFeed() {
   const navigation = useNavigation();
-  const [publicacoes, setPublicacoes] = useState(() => montarPublicacoesDemo());
+  const [publicacoes, setPublicacoes] = useState([]);
   const [ocultos, setOcultos] = useState(() => new Set());
   const [carregando, setCarregando] = useState(true);
   const [chipAtivo, setChipAtivo] = useState('todos');
@@ -121,7 +120,6 @@ export default function TelaFeed() {
 
   const carregarPublicacoes = useCallback(async () => {
     setCarregando(true);
-    const demo = montarPublicacoesDemo();
     try {
       const [feedRes, eventos] = await Promise.all([
         fetch(`${process.env.EXPO_PUBLIC_API_URL}/feed`, {
@@ -136,11 +134,9 @@ export default function TelaFeed() {
       const postsPartidas = normalizarEventosParaFeed(eventos);
       const idsPartidas = new Set(postsPartidas.map((p) => p.id));
       const semDuplicata = postsFeed.filter((p) => !idsPartidas.has(p.id));
-      const merged = [...postsPartidas, ...semDuplicata];
-
-      setPublicacoes(merged.length > 0 ? merged : demo);
+      setPublicacoes([...postsPartidas, ...semDuplicata]);
     } catch {
-      setPublicacoes(demo);
+      setPublicacoes([]);
     } finally {
       setCarregando(false);
     }

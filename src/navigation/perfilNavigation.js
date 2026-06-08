@@ -1,18 +1,12 @@
 import { TAB_IDS } from '../domain/places';
-import { ehUsuarioAtual, resolveUsuario } from '../domain/users';
 
 /**
  * Abre o perfil do usuário na stack atual ou vai à aba Perfil se for o usuário logado.
  */
-export function abrirPerfilUsuario(navigation, { userId, username, authUid }) {
-  const usuarioDemo = resolveUsuario({ userId, username });
-  const idAlvo = userId ?? usuarioDemo?.id;
-  if (!idAlvo) return false;
+export function abrirPerfilUsuario(navigation, { userId, authUid }) {
+  if (!userId) return false;
 
-  const ehProprioPerfil =
-    (authUid && idAlvo === authUid) || (usuarioDemo && ehUsuarioAtual(usuarioDemo));
-
-  if (ehProprioPerfil) {
+  if (authUid && userId === authUid) {
     const parent = navigation.getParent?.();
     if (parent?.navigate) {
       parent.navigate(TAB_IDS.PROFILE, { screen: 'PerfilPrincipal' });
@@ -22,6 +16,6 @@ export function abrirPerfilUsuario(navigation, { userId, username, authUid }) {
     return true;
   }
 
-  navigation.navigate('TelaPerfilUsuario', { userId: idAlvo });
+  navigation.navigate('TelaPerfilUsuario', { userId });
   return true;
 }

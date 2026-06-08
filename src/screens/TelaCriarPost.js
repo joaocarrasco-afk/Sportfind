@@ -52,7 +52,11 @@ export default function TelaCriarPost() {
       return;
     }
 
-    const userId = authUid ?? 'demo-user';
+    if (!authUid) {
+      Alert.alert('Login necessário', 'Faça login para publicar no feed.');
+      return;
+    }
+    const userId = authUid;
     setPublicando(true);
 
     try {

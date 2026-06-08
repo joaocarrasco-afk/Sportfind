@@ -3,15 +3,6 @@ import { Alert, SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, Vie
 import styles from '../../style';
 import { useAppState } from '../state/AppStateContext';
 
-/** Dados de demonstração até integrar API */
-const inicial = {
-  nome: 'João da Silva',
-  email: 'joao@email.com',
-  username: 'joaosp',
-  telefone: '',
-};
-
-
 export default function TelaConta() {
   const { authUid } = useAppState();
   const [carregando, setCarregando] = useState(!!authUid);
@@ -141,13 +132,13 @@ export default function TelaConta() {
   function excluirConta() {
     Alert.alert(
       'Excluir conta',
-      'Esta ação é permanente. Tem certeza? (Somente demo: nada será apagado no servidor.)',
+      'Esta ação é permanente. Tem certeza?',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Excluir',
           style: 'destructive',
-          onPress: () => Alert.alert('Conta', 'Exclusão simulada. Conecte a API depois.'),
+          onPress: () => Alert.alert('Conta', 'Funcionalidade em desenvolvimento.'),
         },
       ]
     );

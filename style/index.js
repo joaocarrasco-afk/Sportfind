@@ -48,6 +48,7 @@ const baseStyles = {
     shadowOpacity: 0.2,
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
+    paddingTop: 8,
   },
   detailContent: { padding: 20 },
   detailTitle: { fontSize: 20, fontWeight: '700', color: colors.black, flex: 1 },

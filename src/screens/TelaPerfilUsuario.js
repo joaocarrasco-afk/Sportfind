@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import PerfilPostModal from '../components/PerfilPostModal';
 import ScreenSafe from '../components/ScreenSafe';
-import { getUsuarioPorId } from '../domain/users';
 import { useAppState } from '../state/AppStateContext';
 import styles from '../../style';
 import { colors } from '../../style/tokens';
@@ -53,15 +52,12 @@ function normalizarPerfilApi(userId, data) {
 export default function TelaPerfilUsuario({ navigation }) {
   const route = useRoute();
   const userId = route.params?.userId;
-  const usuarioDemo = useMemo(() => getUsuarioPorId(userId), [userId]);
   const { seguindo, alternarSeguir, authUid } = useAppState();
   const [aba, setAba] = useState('pub');
   const [postSelecionado, setPostSelecionado] = useState(null);
-  const [usuarioApi, setUsuarioApi] = useState(null);
-  const [publicacoes, setPublicacoes] = useState(() => usuarioDemo?.publicacoes ?? []);
-  const [carregando, setCarregando] = useState(() => !usuarioDemo && Boolean(userId));
-
-  const usuario = usuarioDemo ?? usuarioApi;
+  const [usuario, setUsuario] = useState(null);
+  const [publicacoes, setPublicacoes] = useState([]);
+  const [carregando, setCarregando] = useState(Boolean(userId));
   const fotoPerfil = usuario?.url ?? null;
   const jaSeguindo = usuario ? seguindo.has(usuario.id) : false;
 
@@ -70,9 +66,9 @@ export default function TelaPerfilUsuario({ navigation }) {
 
     const eraSeguindo = seguindo.has(usuario.id);
     const ok = await alternarSeguir({ userId: usuario.id, username: usuario.username });
-    if (!ok || !usuarioApi || !authUid) return;
+    if (!ok || !usuario || !authUid) return;
 
-    setUsuarioApi((prev) => {
+    setUsuario((prev) => {
       if (!prev) return prev;
       return {
         ...prev,
@@ -81,7 +77,7 @@ export default function TelaPerfilUsuario({ navigation }) {
           : [...prev.seguidoresIds, authUid],
       };
     });
-  }, [usuario, seguindo, alternarSeguir, authUid, usuarioApi]);
+  }, [usuario, seguindo, alternarSeguir, authUid]);
 
   const handleLikeChange = useCallback((postId, { likes }) => {
     setPublicacoes((prev) => prev.map((p) => (p.id === postId ? { ...p, likes } : p)));
@@ -89,7 +85,10 @@ export default function TelaPerfilUsuario({ navigation }) {
   }, []);
 
   const carregarPerfilApi = useCallback(async () => {
-    if (!userId || usuarioDemo) return;
+    if (!userId) {
+      setCarregando(false);
+      return;
+    }
 
     setCarregando(true);
     try {
@@ -104,9 +103,9 @@ export default function TelaPerfilUsuario({ navigation }) {
 
       if (resPerfil.ok) {
         const data = await resPerfil.json();
-        setUsuarioApi(normalizarPerfilApi(userId, data));
+        setUsuario(normalizarPerfilApi(userId, data));
       } else {
-        setUsuarioApi(null);
+        setUsuario(null);
       }
 
       if (resPosts.ok) {
@@ -116,12 +115,12 @@ export default function TelaPerfilUsuario({ navigation }) {
         setPublicacoes([]);
       }
     } catch {
-      setUsuarioApi(null);
+      setUsuario(null);
       setPublicacoes([]);
     } finally {
       setCarregando(false);
     }
-  }, [userId, usuarioDemo]);
+  }, [userId]);
 
   useEffect(() => {
     carregarPerfilApi();

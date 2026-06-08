@@ -101,57 +101,6 @@ const ABAS = [
 
 
 
-const IMAGENS_DEMO = [
-  'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=400&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=400&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=400&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1551958219-ac0fb825e0f7?w=400&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1529900748604-07564a03e7a9?w=400&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&auto=format&fit=crop&q=80',
-];
-
-const DEMO_PUBLICACOES = [
-  ...IMAGENS_DEMO.slice(0, 6).map((url, i) => ({
-    id: `demo-pub-${i + 1}`,
-    tipo: 'imagem',
-    url,
-    descricao: ['Treino na quadra', 'Pelada de sábado', 'Corrida no parque', 'Basquete com a galera', 'Skate no fim de tarde', 'Futebol no campinho'][i],
-    dataCriacao: `Há ${i + 1} dia${i > 0 ? 's' : ''}`,
-    editavel: false,
-  })),
-  {
-    id: 'demo-pub-7',
-    tipo: 'partida',
-    url: IMAGENS_DEMO[6],
-    nomePartida: 'Pelada do bairro',
-    esporte: 'Futebol',
-    horario: 'Sáb., 10:00',
-    descricao: 'Partida aberta — venha jogar!',
-    dataCriacao: 'Há 1 semana',
-    editavel: false,
-  },
-  {
-    id: 'demo-pub-8',
-    tipo: 'imagem',
-    url: IMAGENS_DEMO[7],
-    descricao: 'Melhor jogo da semana!',
-    dataCriacao: 'Há 2 semanas',
-    editavel: false,
-  },
-  {
-    id: 'demo-pub-9',
-    tipo: 'partida',
-    nomePartida: 'Treino de tênis',
-    esporte: 'Tenis',
-    horario: 'Dom., 08:00',
-    descricao: 'Vagas limitadas',
-    dataCriacao: 'Há 3 semanas',
-    editavel: false,
-  },
-];
-
 export default function TelaUsuario() {
   const navigation = useNavigation();
   const [aba, setAba] = useState('pub');
@@ -171,7 +120,9 @@ export default function TelaUsuario() {
     removerPostPerfil,
   } = useAppState();
   const [carregando, setCarregando] = useState(!!authUid);
-  const [username, setUsernameLocal] = useState('Explorador Sportfind');
+  const [username, setUsernameLocal] = useState('Usuário');
+  const [cidade, setCidade] = useState('');
+  const [tags, setTags] = useState([]);
 
   const [fotoPerfil, setFotoPerfil] = useState(null);
   const [fotoPerfilPendente, setFotoPerfilPendente] = useState(null);
@@ -214,6 +165,12 @@ export default function TelaUsuario() {
       if (data?.url) {
         setFotoPerfil(data.url);
       }
+      if (data?.cidade != null) {
+        setCidade(data.cidade);
+      }
+      if (Array.isArray(data?.tags)) {
+        setTags(data.tags);
+      }
       setSeguindo(data?.seguindo ?? 0);
       setSeguidores(data?.seguidores ?? 0);
 
@@ -251,6 +208,7 @@ export default function TelaUsuario() {
         dataCriacao: post.dataCriacao ?? '',
         likes: post.likes ?? 0,
         comentarios: post.comentarios ?? 0,
+        editavel: true,
       }));
       setDataPost(data_post);
     }
@@ -290,9 +248,7 @@ export default function TelaUsuario() {
     const locais = postsPerfil
       .filter((p) => !idsApi.has(p.id))
       .map((p) => ({ ...p, editavel: true }));
-    const todas = [...locais, ...dataPost];
-    if (todas.length > 0) return todas;
-    return DEMO_PUBLICACOES;
+    return [...locais, ...dataPost];
   }, [dataPost, postsPerfil]);
 
   function irConfig(rota) {
@@ -389,10 +345,7 @@ export default function TelaUsuario() {
   }
 
   function abrirEdicao(post) {
-    if (!post.editavel) {
-      Alert.alert('Demonstração', 'Este é um exemplo fixo. Suas publicações reais podem ser editadas.');
-      return;
-    }
+    if (!post.editavel) return;
     setTextoEdicao(post.descricao ?? '');
     setEditandoPost(post);
   }
@@ -409,10 +362,7 @@ export default function TelaUsuario() {
   }
 
   function confirmarExclusao(post) {
-    if (!post.editavel) {
-      Alert.alert('Demonstração', 'Este é um exemplo fixo. Suas publicações reais podem ser excluídas.');
-      return;
-    }
+    if (!post.editavel) return;
     Alert.alert('Excluir publicação', 'Esta ação não pode ser desfeita.', [
       { text: 'Cancelar', style: 'cancel' },
       {
@@ -542,18 +492,22 @@ export default function TelaUsuario() {
         ) : null}
 
         <Text style={styles.usuarioName}>{carregando ? 'Carregando...' : nomeExibido}</Text>
-        <View style={styles.usuarioLocationRow}>
-          <Ionicons name="location-outline" size={14} color={colors.textSecondary} />
-          <Text style={[styles.usuarioLocationText, { marginLeft: 4 }]}>São Paulo, Brasil</Text>
-        </View>
+        {cidade ? (
+          <View style={styles.usuarioLocationRow}>
+            <Ionicons name="location-outline" size={14} color={colors.textSecondary} />
+            <Text style={[styles.usuarioLocationText, { marginLeft: 4 }]}>{cidade}</Text>
+          </View>
+        ) : null}
 
-        <View style={styles.usuarioTagsRow}>
-          {['Skate', 'Basquete', 'Futebol'].map((t) => (
-            <View key={t} style={styles.usuarioTagPill}>
-              <Text style={styles.usuarioTagText}>{t}</Text>
-            </View>
-          ))}
-        </View>
+        {tags.length > 0 ? (
+          <View style={styles.usuarioTagsRow}>
+            {tags.map((t) => (
+              <View key={t} style={styles.usuarioTagPill}>
+                <Text style={styles.usuarioTagText}>{t}</Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
 
         <View style={styles.usuarioStatsRow}>
           <TouchableOpacity
@@ -605,16 +559,21 @@ export default function TelaUsuario() {
 
         <View style={styles.usuarioFeedSection}>
           {aba === 'pub' ? (
-            <>
-              <View style={styles.usuarioFeedGrid}>
-                {publicacoesExibidas.map(renderCelulaGrid)}
+            publicacoesExibidas.length > 0 ? (
+              <>
+                <View style={styles.usuarioFeedGrid}>
+                  {publicacoesExibidas.map(renderCelulaGrid)}
+                </View>
+                <Text style={styles.usuarioFeedCaption}>
+                  Toque para abrir · segure para editar ou excluir.
+                </Text>
+              </>
+            ) : (
+              <View style={styles.usuarioEmptyTab}>
+                <Ionicons name="images-outline" size={36} color={colors.purpleLight} />
+                <Text style={styles.usuarioEmptyTabText}>Nenhuma publicação ainda.</Text>
               </View>
-              <Text style={styles.usuarioFeedCaption}>
-                {dataPost.length > 0 || postsPerfil.length > 0
-                  ? 'Toque para abrir · segure para editar ou excluir.'
-                  : 'Toque para ver · segure o post para editar ou excluir.'}
-              </Text>
-            </>
+            )
           ) : aba === 'liked' ? (
             postsCurtidos.length > 0 ? (
               <>
