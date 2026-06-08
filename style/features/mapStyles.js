@@ -16,7 +16,7 @@ export const mapStyles = {
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 10,
+    zIndex: 14,
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.sm,
   },
@@ -84,6 +84,19 @@ export const mapStyles = {
   },
   selectedPlaceCardWrap: {
     position: 'relative',
+  },
+  selectedPlaceImageWrap: {
+    width: 104,
+    flexShrink: 0,
+    alignSelf: 'stretch',
+    overflow: 'hidden',
+    backgroundColor: colors.purpleMuted,
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 16,
+  },
+  selectedPlaceImage: {
+    width: '100%',
+    height: '100%',
   },
   selectedPlaceCardPressable: {
     flex: 1,

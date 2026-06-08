@@ -4,6 +4,7 @@ import ScreenSafe from '../components/ScreenSafe';
 import { useNavigation } from '@react-navigation/native';
 import styles from '../../style';
 import { colors } from '../../style/tokens';
+import { TAB_IDS } from '../domain/places';
 
 const OPCOES = [
   {
@@ -17,6 +18,12 @@ const OPCOES = [
     icon: 'football',
     title: 'Abrir partida',
     hint: 'Organize peladas e campeonatos abertos.',
+  },
+  {
+    id: 'publicacao',
+    icon: 'image',
+    title: 'Publicar no feed',
+    hint: 'Compartilhe fotos e momentos com a comunidade.',
   },
   {
     id: 'buscar_partidas',
@@ -36,6 +43,10 @@ export default function TelaCriar() {
     }
     if (opcao.id === 'partida') {
       navigation.navigate('TelaCriarPartida');
+      return;
+    }
+    if (opcao.id === 'publicacao') {
+      navigation.getParent()?.navigate(TAB_IDS.FEED, { screen: 'TelaCriarPost' });
       return;
     }
     if (opcao.id === 'buscar_partidas') {

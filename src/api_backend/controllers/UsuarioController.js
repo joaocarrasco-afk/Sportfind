@@ -15,7 +15,7 @@ class UsuarioController{
         } catch (error) {
             // Retorna erro quando não for possível concluir o cadastro
             
-            res.status(400).json({ mensagem: 'Não foi possível criar a conta.', resultado});
+            res.status(400).json({ mensagem: 'Não foi possível criar a conta.', error: error?.message });
         }
     }
     // Recebe credenciais e aciona o serviço de autenticação

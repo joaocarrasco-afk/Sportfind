@@ -93,7 +93,7 @@ export default function FeedPostCard({
 
     const novosLikes = eraCurtido ? Math.max(0, curtidas - 1) : curtidas + 1;
     setCurtidas(novosLikes);
-    onLikeChange?.(item.id, { curtido: resultado.curtido, likes: novosLikes }, post);
+    onLikeChange?.(item.id, { curtido: resultado.curtido, likes: novosLikes });
   }
 
   async function compartilhar() {

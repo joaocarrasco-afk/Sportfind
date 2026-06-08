@@ -9,7 +9,7 @@ export default function MapaPinPicker({ lat, lng, onPinMove, style }) {
   const iframeRef = useRef(null);
   const ignorarProximoComando = useRef(false);
 
-  const mapHtml = useMemo(() => createPickerMapHtml(lat, lng), []);
+  const mapHtml = useMemo(() => createPickerMapHtml(lat, lng), [lat, lng]);
 
   const enviarComando = useCallback(
     (payload) => {

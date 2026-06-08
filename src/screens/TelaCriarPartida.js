@@ -102,6 +102,20 @@ export default function TelaCriarPartida() {
     }
   }
 
+  function limparFormulario() {
+    setEsporte('');
+    setNomePartida('');
+    const d = new Date();
+    d.setHours(d.getHours() + 2, 0, 0, 0);
+    setDataPartida(d);
+    setMostrarDataPicker(false);
+    setPickerAndroid(null);
+    setBuscaLocal('');
+    setLocalSelecionadoId(null);
+    setMaxParticipantes(10);
+    setLimiteParticipantes(true);
+  }
+
   async function salvar() {
     if (!authUid) {
       Alert.alert('Login necessário', 'Faça login para criar uma partida.');
@@ -143,6 +157,8 @@ export default function TelaCriarPartida() {
         localizacaoId: String(localSelecionadoId),
         publicar_feed: true,
       });
+
+      limparFormulario();
 
       Alert.alert(
         'Partida criada!',

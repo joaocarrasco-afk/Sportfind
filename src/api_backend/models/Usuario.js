@@ -103,7 +103,7 @@ class Usuario{
             }
 
         }catch(error){
-            if(error.code == auth/invalid-email){
+            if(error.code == "auth/invalid-email"){
                 return "E-mail inválido";
             }
             throw new Error(`Erro ao enviar o link de redefinição de senha: ${error.message}`);

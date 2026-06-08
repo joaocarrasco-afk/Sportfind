@@ -184,7 +184,7 @@ export default function AppNavigator() {
     <NavigationContainer>
       <RootStack.Navigator initialRouteName="TelaLogin" screenOptions={{ headerShown: true }}>
         <RootStack.Screen name="TelaSplash" component={TelaSplash} />
-        <RootStack.Screen name="TelaLogin" component={TelaLogin} />
+        <RootStack.Screen name="TelaLogin" component={TelaLogin} options={{ headerShown: false }} />
         <RootStack.Screen name="TelaCadastro" component={TelaCadastro} />
         <RootStack.Screen name="TelaSenha" component={TelaSenha} />
         <RootStack.Screen name="TelaNovaSenha" component={TelaNovaSenha} />

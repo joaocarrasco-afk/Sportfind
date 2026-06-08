@@ -1,4 +1,5 @@
-import { use, useState } from 'react';
+import { useState } from 'react';
+import { maskDataNascimento } from '../utils/masks';
 import { SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
 import styles from '../../style';
 import { useAppState } from '../state/AppStateContext';
@@ -93,8 +94,9 @@ export default function TelaCadastro({ navigation }) {
               style={styles.authInput}
               placeholder="Data de nascimento (DD/MM/AAAA)"
               value={birthDate}
-              onChangeText={setBirthDate}
+              onChangeText={(texto) => setBirthDate(maskDataNascimento(texto))}
               keyboardType="number-pad"
+              maxLength={10}
             />
 
             <TextInput

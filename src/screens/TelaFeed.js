@@ -187,9 +187,9 @@ export default function TelaFeed() {
         <TouchableOpacity
           style={[styles.feedHeaderIconBtn, styles.feedToolbarSideBtn]}
           activeOpacity={0.75}
-          onPress={() => navigation.navigate('TelaMensagens')}
+          onPress={() => navigation.navigate('TelaBuscaFeed')}
         >
-          <Ionicons name="chatbubble-outline" size={20} color={colors.purple} />
+          <Ionicons name="search" size={20} color={colors.purple} />
         </TouchableOpacity>
 
         <ScrollView
@@ -218,9 +218,9 @@ export default function TelaFeed() {
         <TouchableOpacity
           style={[styles.feedHeaderIconBtn, styles.feedToolbarSideBtn]}
           activeOpacity={0.75}
-          onPress={() => navigation.navigate('TelaBuscaFeed')}
+          onPress={() => navigation.navigate('TelaMensagens')}
         >
-          <Ionicons name="search" size={20} color={colors.purple} />
+          <Ionicons name="chatbubble-outline" size={20} color={colors.purple} />
         </TouchableOpacity>
       </View>
     </View>

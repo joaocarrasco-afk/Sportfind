@@ -14,6 +14,14 @@ import { FILTER_ALL, rotuloInfraestrutura } from '../domain/places';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 
 const MAP_APP_MESSAGE_TYPE = 'sportfind:map:command';
+const DEFAULT_PLACE_IMAGE =
+  'https://images.unsplash.com/photo-1556300673-04df21735615?w=800&auto=format&fit=crop&q=80';
+
+function uriImagemLocal(place) {
+  const uri = place?.image || place?.imageurl;
+  if (typeof uri === 'string' && uri.trim()) return uri.trim();
+  return DEFAULT_PLACE_IMAGE;
+}
 
 function rotuloAcesso(acesso) {
   if (acesso === FILTER_ALL) return null;
@@ -171,21 +179,23 @@ export default function TelaMapa({ navigation }) {
         )}
       </View>
 
-      <View
-        style={[styles.mapFabColumn, { bottom: spacing.xl + insets.bottom }]}
-        pointerEvents="box-none"
-      >
-        <TouchableOpacity
-          style={styles.mapFab}
-          activeOpacity={0.9}
-          onPress={() => navigation.navigate('TelaPartidas')}
+      {!mostrarCard ? (
+        <View
+          style={[styles.mapFabColumn, { bottom: spacing.xl + insets.bottom }]}
+          pointerEvents="box-none"
         >
-          <Ionicons name="calendar-outline" size={24} color={colors.textOnPurple} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.mapFab} activeOpacity={0.9} onPress={relocalizar}>
-          <Ionicons name="locate-outline" size={24} color={colors.textOnPurple} />
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={styles.mapFab}
+            activeOpacity={0.9}
+            onPress={() => navigation.navigate('TelaPartidas')}
+          >
+            <Ionicons name="calendar-outline" size={24} color={colors.textOnPurple} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.mapFab} activeOpacity={0.9} onPress={relocalizar}>
+            <Ionicons name="locate-outline" size={24} color={colors.textOnPurple} />
+          </TouchableOpacity>
+        </View>
+      ) : null}
 
       <View
         style={[styles.mapTopOverlayAbsolute, { paddingTop: insets.topWithPadding }]}
@@ -262,7 +272,13 @@ export default function TelaMapa({ navigation }) {
               onPress={abrirDetalheLocal}
               android_ripple={{ color: colors.purpleLight }}
             >
-              <Image source={{ uri: selectedPlace.image }} style={styles.selectedPlaceImage} />
+              <View style={styles.selectedPlaceImageWrap}>
+                <Image
+                  source={{ uri: uriImagemLocal(selectedPlace) }}
+                  style={styles.selectedPlaceImage}
+                  resizeMode="cover"
+                />
+              </View>
               <View style={styles.selectedPlaceCardBody}>
                 <Text style={styles.selectedPlaceTitle} numberOfLines={1}>
                   {selectedPlace.name}

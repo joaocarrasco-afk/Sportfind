@@ -67,7 +67,7 @@ export function AppStateProvider({ children }) {
   useEffect(() => {
     if (!userLocation?.lat || !userLocation?.lng) return;
     setPlaces((prev) => withPlaceDistances(prev, userLocation));
-  }, [userLocation?.lat, userLocation?.lng]);
+  }, [userLocation]);
 
   const refreshUserLocation = useCallback(async () => {
     try {

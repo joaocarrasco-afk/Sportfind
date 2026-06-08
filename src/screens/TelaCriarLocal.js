@@ -145,6 +145,24 @@ export default function TelaCriarLocal() {
     );
   }
 
+  function limparFormulario() {
+    setNome('');
+    setRua('');
+    setNumero('');
+    setBairro('');
+    setCidade('');
+    setEstado('');
+    setCep('');
+    setDescricao('');
+    setInfraestrutura([]);
+    setEsportes([]);
+    setAcesso('Publico');
+    setFotoUri(null);
+    setLat(MAP_CENTER.lat);
+    setLng(MAP_CENTER.lng);
+    ultimoCepProcessado.current = '';
+  }
+
   async function enviarParaApi(endereco) {
     const formData = new FormData();
     formData.append('name', nome.trim());
@@ -212,6 +230,8 @@ export default function TelaCriarLocal() {
       if (fotoUri) {
         await enviarParaApi(endereco);
       }
+
+      limparFormulario();
 
       Alert.alert('Local cadastrado!', 'O local já aparece no mapa com o ícone correspondente.', [
         {

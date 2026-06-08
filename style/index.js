@@ -30,7 +30,6 @@ const baseStyles = {
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
   },
-  selectedPlaceImage: { width: 90, height: 90 },
   selectedPlaceTitle: { fontSize: 15, fontWeight: '600', color: colors.black },
   selectedPlaceInfo: { fontSize: 12, color: colors.textSecondary, marginTop: 4 },
   detailImage: { width: '100%', height: 280 },
