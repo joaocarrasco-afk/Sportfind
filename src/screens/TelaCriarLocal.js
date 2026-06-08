@@ -42,7 +42,7 @@ function rotuloAcesso(acesso) {
 
 export default function TelaCriarLocal() {
   const navigation = useNavigation();
-  const { addPlace } = useAppState();
+  const { addPlace, removePlaceById, refreshPlaces } = useAppState();
 
   const [nome, setNome] = useState('');
   const [rua, setRua] = useState('');
@@ -183,9 +183,16 @@ export default function TelaCriarLocal() {
     formData.append('image', { uri: fotoUri, type: 'image/jpeg', name: 'local.jpg' });
 
     try {
-      await fetch(`${process.env.EXPO_PUBLIC_API_URL}/localizacao`, { method: 'POST', body: formData });
+      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/localizacao`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data?.localizacaoId ?? null;
     } catch {
       /* mapa local segue funcionando mesmo se a API falhar */
+      return null;
     }
   }
 
@@ -214,7 +221,7 @@ export default function TelaCriarLocal() {
 
     setSalvando(true);
     try {
-      addPlace({
+      const novo = addPlace({
         name: nome,
         address: enderecoResumo,
         endereco,
@@ -228,7 +235,11 @@ export default function TelaCriarLocal() {
       });
 
       if (fotoUri) {
-        await enviarParaApi(endereco);
+        const apiId = await enviarParaApi(endereco);
+        if (apiId) {
+          removePlaceById(novo.id);
+          await refreshPlaces?.();
+        }
       }
 
       limparFormulario();

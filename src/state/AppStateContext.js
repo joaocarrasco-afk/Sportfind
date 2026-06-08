@@ -49,8 +49,19 @@ export function AppStateProvider({ children }) {
         .filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng));
 
       setPlaces((prev) => {
-        const locaisCriadosNoApp = prev.filter((p) => typeof p.id === 'number');
-        return [...fromApi, ...locaisCriadosNoApp];
+        const locaisCriadosNoApp = prev.filter(
+          (p) => typeof p.id === 'number' && Number.isFinite(p.id),
+        );
+        const localJaSincronizado = (local) =>
+          fromApi.some(
+            (api) =>
+              Number.isFinite(api.lat) &&
+              Number.isFinite(api.lng) &&
+              Math.abs(api.lat - local.lat) < 0.0002 &&
+              Math.abs(api.lng - local.lng) < 0.0002,
+          );
+        const pendentes = locaisCriadosNoApp.filter((local) => !localJaSincronizado(local));
+        return [...fromApi, ...pendentes];
       });
     } catch {
       /* mantém locais em cache se a API estiver indisponível */
@@ -125,10 +136,21 @@ export function AppStateProvider({ children }) {
     return partes.join(' • ');
   }
 
+  function nextLocalPlaceId(lista) {
+    return (
+      lista.reduce((max, p) => {
+        if (typeof p.id === 'number' && Number.isFinite(p.id)) {
+          return Math.max(max, p.id);
+        }
+        return max;
+      }, 0) + 1
+    );
+  }
+
   function addPlace(dados) {
     const esportes = dados.sports ?? [];
     const meta = resolvePlaceSportMeta(esportes);
-    const maxId = places.reduce((max, p) => Math.max(max, p.id), 0);
+    const maxId = nextLocalPlaceId(places);
     const offset = (maxId % 10) * 0.0008;
     const enderecoTexto =
       dados.address?.trim() ||
@@ -156,6 +178,12 @@ export function AppStateProvider({ children }) {
     setPlaces((prev) => [...prev, novo]);
     return novo;
   }
+
+  const removePlaceById = useCallback((id) => {
+    if (id == null || id === '') return;
+    setPlaces((prev) => prev.filter((p) => !samePlaceId(p.id, id)));
+    setSelectedPlaceId((current) => (samePlaceId(current, id) ? null : current));
+  }, []);
 
   function addPartida({ nome, esporte, data, placeId, maxParticipantes, autorUsername }) {
     const place = findPlaceById(places, placeId);
@@ -407,6 +435,7 @@ export function AppStateProvider({ children }) {
     refreshPlaces,
     filteredPlaces,
     addPlace,
+    removePlaceById,
     partidas,
     postsPartidasFeed,
     addPartida,
