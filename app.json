@@ -47,6 +47,9 @@
         "projectId": "9753329b-c710-43ec-9281-59ba9e062510"
       }
     },
-    "owner": "fellpnoob"
+    "owner": "fellpnoob",
+    "updates": {
+      "url": "https://u.expo.dev/9753329b-c710-43ec-9281-59ba9e062510"
+    }
   }
 }
