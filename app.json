@@ -1,8 +1,11 @@
 {
   "expo": {
     "name": "Sportfind",
-    "slug": "snack-70ba397a-763b-4fca-97fa-d511fad8f435",
+    "slug": "sportfind",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -21,7 +24,11 @@
         "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.snack70ba397a763b4fca97fad511fad8f435"
+      "package": "com.sportfind.app",
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/icon.png"
@@ -34,6 +41,12 @@
           "locationWhenInUsePermission": "O Sportfind usa sua localização para mostrar onde você está no mapa e encontrar locais perto de você."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "9753329b-c710-43ec-9281-59ba9e062510"
+      }
+    },
+    "owner": "fellpnoob"
   }
 }

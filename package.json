@@ -9,7 +9,10 @@
     "lint": "eslint src __tests__ App.js index.js --ext .js,.jsx --quiet",
     "format": "prettier --write .",
     "test": "jest",
-    "test:ci": "jest --ci --coverage --passWithNoTests"
+    "test:ci": "jest --ci --coverage --passWithNoTests",
+    "build:apk": "eas build -p android --profile preview",
+    "build:apk:prod": "eas build -p android --profile production",
+    "update": "eas update --branch production --message \"update\""
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
