@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { FlatList, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import ScreenSafe from '../components/ScreenSafe';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import FeedPostCard from '../components/FeedPostCard';
 import { useAppState } from '../state/AppStateContext';
 import styles from '../../style';
@@ -10,6 +10,7 @@ import { colors } from '../../style/tokens';
 import { montarPublicacoesDemo } from '../domain/feed/feedDemo';
 import { usernameParaUserId } from '../domain/users';
 import { abrirPerfilUsuario } from '../navigation/perfilNavigation';
+import { listarEventos, normalizarEventosParaFeed, participarEvento } from '../utils/eventoApi';
 
 const CHIPS = [
   { id: 'todos', label: 'Todos' },
@@ -65,64 +66,91 @@ export default function TelaFeed() {
   const [ocultos, setOcultos] = useState(() => new Set());
   const [carregando, setCarregando] = useState(true);
   const [chipAtivo, setChipAtivo] = useState('todos');
-  const {
-    authUid,
-    postsPartidasFeed,
-    partidas,
-    seguindo,
-    curtidos,
-    alternarSeguir,
-    participarPartida,
-    desistirPartida,
-  } = useAppState();
+  const { authUid, seguindo, curtidos, alternarSeguir } = useAppState();
+
+  const atualizarParticipantes = useCallback((partidaId, participantes) => {
+    setPublicacoes((prev) =>
+      prev.map((p) => (p.id === partidaId ? { ...p, participantes } : p)),
+    );
+  }, []);
 
   const participarEAbrirDetalhes = useCallback(
-    (partidaId) => {
-      participarPartida?.(partidaId);
-      navigation.navigate('TelaPartidaDetalhes', { partidaId });
+    async (partidaId) => {
+      if (!authUid) {
+        Alert.alert('Login necessário', 'Faça login para participar da partida.');
+        return;
+      }
+
+      const post = publicacoes.find((p) => p.id === partidaId);
+      if (post?.participantes?.includes(authUid)) {
+        navigation.navigate('TelaPartidaDetalhes', { partidaId });
+        return;
+      }
+
+      try {
+        const resultado = await participarEvento(partidaId, authUid);
+        const participantes =
+          resultado.participantes ?? [...(post?.participantes ?? []), authUid];
+        atualizarParticipantes(partidaId, participantes);
+        navigation.navigate('TelaPartidaDetalhes', { partidaId });
+      } catch (error) {
+        Alert.alert('Erro', error?.message ?? 'Não foi possível participar da partida.');
+      }
     },
-    [navigation, participarPartida],
+    [authUid, publicacoes, navigation, atualizarParticipantes],
+  );
+
+  const desistirDaPartida = useCallback(
+    (partidaId) => {
+      if (!authUid) return;
+      setPublicacoes((prev) =>
+        prev.map((p) =>
+          p.id === partidaId
+            ? {
+                ...p,
+                participantes: (p.participantes ?? []).filter(
+                  (id) => id !== authUid && id !== 'voce',
+                ),
+              }
+            : p,
+        ),
+      );
+    },
+    [authUid],
   );
 
   const carregarPublicacoes = useCallback(async () => {
     setCarregando(true);
     const demo = montarPublicacoesDemo();
     try {
-      const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/feed`, {
-        method: 'GET',
-        headers: authUid ? { 'X-User-Id': String(authUid) } : undefined,
-      });
-      const data = await res.json();
-      const daApi = normalizarPostsApi(data);
-      const base = daApi.length > 0 ? daApi : demo;
-      const idsPartidas = new Set(postsPartidasFeed.map((p) => p.id));
-      const semDuplicata = base.filter((p) => !idsPartidas.has(p.id));
-      setPublicacoes([...postsPartidasFeed, ...semDuplicata]);
+      const [feedRes, eventos] = await Promise.all([
+        fetch(`${process.env.EXPO_PUBLIC_API_URL}/feed`, {
+          method: 'GET',
+          headers: authUid ? { 'X-User-Id': String(authUid) } : undefined,
+        }),
+        listarEventos().catch(() => []),
+      ]);
+
+      const feedData = feedRes.ok ? await feedRes.json() : [];
+      const postsFeed = normalizarPostsApi(feedData).filter((p) => p.kind !== 'partida');
+      const postsPartidas = normalizarEventosParaFeed(eventos);
+      const idsPartidas = new Set(postsPartidas.map((p) => p.id));
+      const semDuplicata = postsFeed.filter((p) => !idsPartidas.has(p.id));
+      const merged = [...postsPartidas, ...semDuplicata];
+
+      setPublicacoes(merged.length > 0 ? merged : demo);
     } catch {
       setPublicacoes(demo);
     } finally {
       setCarregando(false);
     }
-  }, [authUid, postsPartidasFeed]);
-
-  const mesclarPartidas = useCallback(
-    (lista) => {
-      const ids = new Set(postsPartidasFeed.map((p) => p.id));
-      const filtrada = lista.filter((p) => !ids.has(p.id));
-      return [...postsPartidasFeed, ...filtrada];
-    },
-    [postsPartidasFeed],
-  );
+  }, [authUid]);
 
   useFocusEffect(
     useCallback(() => {
       carregarPublicacoes();
     }, [carregarPublicacoes]),
   );
-
-  useEffect(() => {
-    setPublicacoes((prev) => mesclarPartidas(prev));
-  }, [partidas, postsPartidasFeed, mesclarPartidas]);
 
   const publicacoesFiltradas = useMemo(() => {
     let lista = publicacoes.filter((p) => !ocultos.has(p.id));
@@ -131,16 +159,6 @@ export default function TelaFeed() {
     if (chipAtivo === 'fotos') lista = lista.filter((p) => p.kind === 'imagem');
     return lista;
   }, [publicacoes, chipAtivo, ocultos]);
-
-  function obterParticipantesPost(postId) {
-    const partida = partidas.find((p) => p.id === postId);
-    return partida?.participantes ?? [];
-  }
-
-  function postComParticipantes(item) {
-    if (item.kind !== 'partida') return item;
-    return { ...item, participantes: obterParticipantesPost(item.id) ?? item.participantes };
-  }
 
   function idSeguirPost(post) {
     return post.userId ?? usernameParaUserId(post.username);
@@ -213,7 +231,7 @@ export default function TelaFeed() {
       <FlatList
         data={publicacoesFiltradas}
         keyExtractor={(item) => String(item.id)}
-        extraData={[seguindo, curtidos]}
+        extraData={[seguindo, curtidos, publicacoes]}
         ListHeaderComponent={ListHeader}
         contentContainerStyle={styles.feedList}
         showsVerticalScrollIndicator={false}
@@ -234,27 +252,27 @@ export default function TelaFeed() {
             </View>
           ) : null
         }
-        renderItem={({ item }) => {
-          const post = postComParticipantes(item);
-          return (
-            <FeedPostCard
-              item={post}
-              onOcultar={ocultarPost}
-              seguindo={postJaSeguido(post)}
-              onSeguir={alternarSeguir}
-              onLikeChange={atualizarLikesPost}
-              onPressAutor={() =>
-                abrirPerfilUsuario(navigation, {
-                  userId: post.userId,
-                  username: post.username,
-                  authUid,
-                })
-              }
-              onParticipar={participarEAbrirDetalhes}
-              onDesistir={desistirPartida}
-            />
-          );
-        }}
+        renderItem={({ item }) => (
+          <FeedPostCard
+            item={item}
+            onOcultar={ocultarPost}
+            seguindo={postJaSeguido(item)}
+            onSeguir={alternarSeguir}
+            onLikeChange={atualizarLikesPost}
+            onPressAutor={() =>
+              abrirPerfilUsuario(navigation, {
+                userId: item.userId,
+                username: item.username,
+                authUid,
+              })
+            }
+            onParticipar={participarEAbrirDetalhes}
+            onDesistir={desistirDaPartida}
+            onPressPartida={(partidaId) =>
+              navigation.navigate('TelaPartidaDetalhes', { partidaId })
+            }
+          />
+        )}
       />
     </ScreenSafe>
   );

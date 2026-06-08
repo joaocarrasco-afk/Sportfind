@@ -19,10 +19,11 @@ import styles from '../../style';
 import { colors, spacing } from '../../style/tokens';
 import { CREATABLE_SPORTS, formatPartidaData, placeSupportsSport } from '../domain/places';
 import { useAppState } from '../state/AppStateContext';
+import { criarEvento } from '../utils/eventoApi';
 
 export default function TelaCriarPartida() {
   const navigation = useNavigation();
-  const { places, addPartida, username } = useAppState();
+  const { places, authUid } = useAppState();
 
   const [esporte, setEsporte] = useState('');
   const [nomePartida, setNomePartida] = useState('');
@@ -101,7 +102,11 @@ export default function TelaCriarPartida() {
     }
   }
 
-  function salvar() {
+  async function salvar() {
+    if (!authUid) {
+      Alert.alert('Login necessário', 'Faça login para criar uma partida.');
+      return;
+    }
     if (!esporte) {
       Alert.alert('Esporte obrigatório', 'Selecione o esporte da partida.');
       return;
@@ -114,6 +119,13 @@ export default function TelaCriarPartida() {
       Alert.alert('Local obrigatório', 'Escolha onde a partida vai acontecer.');
       return;
     }
+    if (typeof localSelecionadoId === 'number') {
+      Alert.alert(
+        'Local inválido',
+        'Selecione um local cadastrado no servidor (não use apenas locais de demonstração).',
+      );
+      return;
+    }
     if (dataPartida.getTime() < Date.now()) {
       Alert.alert('Data inválida', 'A partida precisa ser em uma data futura.');
       return;
@@ -121,25 +133,24 @@ export default function TelaCriarPartida() {
 
     setSalvando(true);
     try {
-      const criada = addPartida({
-        nome: nomePartida,
+      await criarEvento({
+        userId: authUid,
+        nome: nomePartida.trim(),
+        tipo_evento: 'publico',
+        max_participantes: limiteParticipantes ? maxParticipantes : 0,
+        data_evento: dataPartida.toISOString(),
         esporte,
-        data: dataPartida,
-        placeId: localSelecionadoId,
-        maxParticipantes: limiteParticipantes ? maxParticipantes : null,
-        autorUsername: username,
+        localizacaoId: String(localSelecionadoId),
+        publicar_feed: true,
       });
-
-      if (!criada) {
-        Alert.alert('Erro', 'Não foi possível salvar a partida.');
-        return;
-      }
 
       Alert.alert(
         'Partida criada!',
         'A partida foi publicada no feed. Outros usuários podem participar pelo botão Participar.',
         [{ text: 'OK', onPress: () => navigation.goBack() }],
       );
+    } catch (error) {
+      Alert.alert('Erro', error?.message ?? 'Não foi possível salvar a partida.');
     } finally {
       setSalvando(false);
     }

@@ -4,8 +4,26 @@ class EventoController{
 
     async criarEvento(req, res){
         try{
-            const { userId, tipo_evento, max_participantes, data_evento, esporte, localizacaoId, publicar_feed } = req.body;
-            const evento = await Evento.criarEvento(userId, tipo_evento, max_participantes, data_evento, esporte, localizacaoId, publicar_feed);
+            const {
+                userId,
+                nome,
+                tipo_evento,
+                max_participantes,
+                data_evento,
+                esporte,
+                localizacaoId,
+                publicar_feed,
+            } = req.body;
+            const evento = await Evento.criarEvento(
+                userId,
+                nome,
+                tipo_evento,
+                max_participantes,
+                data_evento,
+                esporte,
+                localizacaoId,
+                publicar_feed,
+            );
             res.status(201).json(evento);
         }catch(error){
             console.error('Não foi possível criar o evento:', error);
@@ -16,7 +34,7 @@ class EventoController{
     async listarEventos(req, res){
         try{
             const eventos = await Evento.listarEventos();
-            res.status(200).json(eventos);
+            res.status(200).json(eventos ?? []);
         }catch(error){
             console.error('Não foi possível mostrar os eventos:', error);
             res.status(500).json({ error: 'Não foi possível mostrar os eventos' });
@@ -25,8 +43,8 @@ class EventoController{
 
     async mostrarEvento(req, res){
         try{
-            const { eventoId } = req.params;
-            const evento = await Evento.mostrarEvento(eventoId);
+            const { id } = req.params;
+            const evento = await Evento.mostrarEvento(id);
             if (!evento) return res.status(404).json({ error: 'Evento não encontrado' });
             res.status(200).json(evento);
         }catch(error){
@@ -37,9 +55,9 @@ class EventoController{
 
     async editarEvento(req, res){
         try{
-            const { eventoId } = req.params;
+            const { id } = req.params;
             const campos = req.body;
-            const eventoAtualizado = await Evento.editarEvento(eventoId, campos);
+            const eventoAtualizado = await Evento.editarEvento(id, campos);
             if (!eventoAtualizado) return res.status(404).json({ error: 'Evento não encontrado' });
             res.status(200).json(eventoAtualizado);
         }catch(error){
@@ -50,8 +68,8 @@ class EventoController{
 
     async deletarEvento(req, res){
         try{
-            const { eventoId } = req.params;
-            await Evento.deletarEvento(eventoId);
+            const { id } = req.params;
+            await Evento.deletarEvento(id);
             res.status(200).json({ message: 'Evento deletado com sucesso' });
         }catch(error){
             console.error('Não foi possível deletar o evento:', error);
@@ -61,11 +79,12 @@ class EventoController{
 
     async participarEvento(req, res){
         try{
-            const { eventoId } = req.params;
+            const { id } = req.params;
             const { userId } = req.body;
-            const resultado = await Evento.participarEvento(eventoId, userId);
+            const resultado = await Evento.participarEvento(id, userId);
+            if (!resultado) return res.status(404).json({ error: 'Evento não encontrado' });
             if (resultado.error) return res.status(400).json({ error: resultado.error });
-            res.status(200).json({ message: resultado.message });
+            res.status(200).json(resultado);
         }catch(error){
             console.error('Não foi possível participar do evento:', error);
             res.status(500).json({ error: 'Não foi possível participar do evento' });

@@ -3,32 +3,109 @@ const {addDoc, doc, getDoc, collection, query, getDocs, where, updateDoc, delete
 
 class Evento{
 
-    async criarEvento(userId, tipo_evento, max_participantes, data_evento, esporte, localizacaoId, publicar_feed) {
+    async criarEvento(userId, nome, tipo_evento, max_participantes, data_evento, esporte, localizacaoId, publicar_feed) {
         try{
             const eventoRef = await addDoc(collection(db, 'eventos'), {
-                adm: userId,
+                adm: this.idDocumento(userId),
+                nome: nome?.trim() || 'Partida',
                 tipo_evento,
                 max_participantes,
                 data_evento,
                 esporte,
-                localizacaoId,
+                localizacaoId: this.idDocumento(localizacaoId),
                 dataCriacao: new Date(),
-                publicar_feed: publicar_feed || false,
+                publicar_feed: publicar_feed !== false,
                 participantes: [],
                 solicitacao_participacao: []
             });
-            return { id: eventoRef.id, userId, tipo_evento, max_participantes, data_evento, esporte, localizacaoId };
+            return { id: eventoRef.id, userId, nome, tipo_evento, max_participantes, data_evento, esporte, localizacaoId };
         }catch(error){
             console.error('Não foi possível criar o evento:', error);
         }
     }
 
+    formatarData(valor) {
+        if (!valor) return '';
+        if (typeof valor?.toDate === 'function') return valor.toDate().toISOString();
+        if (valor instanceof Date) return valor.toISOString();
+        return String(valor);
+    }
+
+    montarEnderecoLocal(endereco) {
+        if (!endereco || typeof endereco !== 'object') return '';
+        const { rua, numero, bairro, cidade, estado, cep } = endereco;
+        const partes = [
+            [rua, numero].filter(Boolean).join(', '),
+            bairro,
+            [cidade, estado].filter(Boolean).join(' - '),
+            cep ? `CEP ${cep}` : '',
+        ].filter(Boolean);
+        return partes.join(' • ');
+    }
+
+    idDocumento(valor) {
+        if (valor == null || valor === '') return null;
+        if (typeof valor === 'string') {
+            const id = valor.trim();
+            return id || null;
+        }
+        if (typeof valor === 'number' && Number.isFinite(valor)) {
+            return String(valor);
+        }
+        return null;
+    }
+
+    async buscarUsuarioEvento(admId) {
+        const id = this.idDocumento(admId);
+        if (!id) {
+            return { username: 'Usuário', url_perfil: null };
+        }
+        const userDoc = await getDoc(doc(db, 'usuario', id));
+        return {
+            username: userDoc.exists() ? userDoc.data().username : 'Usuário',
+            url_perfil: userDoc.exists() ? userDoc.data().url ?? null : null,
+        };
+    }
+
+    async buscarLocalEvento(localizacaoId) {
+        const id = this.idDocumento(localizacaoId);
+        if (!id) return null;
+
+        const locDoc = await getDoc(doc(db, 'localizacao', id));
+        if (!locDoc.exists()) return null;
+
+        const loc = locDoc.data();
+        return {
+            id,
+            name: loc.name ?? 'Local',
+            address: this.montarEnderecoLocal(loc.endereco),
+            emoji: loc.emoji ?? '📍',
+        };
+    }
+
     async listarEventos() {
         try{
-            const eventosRef = collection(db, 'eventos');
-            const eventosSnapshot = await getDocs(eventosRef);
-            const eventos = eventosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            return eventos;
+            const eventosSnapshot = await getDocs(collection(db, 'eventos'));
+            const eventos = await Promise.all(eventosSnapshot.docs.map(async (docSnap) => {
+                const data = docSnap.data();
+                const { username, url_perfil } = await this.buscarUsuarioEvento(data.adm);
+                const local = await this.buscarLocalEvento(data.localizacaoId);
+
+                return {
+                    id: docSnap.id,
+                    ...data,
+                    username,
+                    url_perfil,
+                    local,
+                    dataCriacao: this.formatarData(data.dataCriacao),
+                    data_evento: this.formatarData(data.data_evento),
+                    participantes: data.participantes ?? [],
+                };
+            }));
+
+            return eventos
+                .filter((evento) => evento.publicar_feed !== false)
+                .sort((a, b) => new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime());
         }catch(error){
             console.error('Não foi possível mostrar os eventos:', error);
         }
@@ -41,7 +118,20 @@ class Evento{
             if (!eventoDoc.exists()) {
                 return null;
             }
-            return { id: eventoDoc.id, ...eventoDoc.data() };
+            const data = eventoDoc.data();
+            const { username, url_perfil } = await this.buscarUsuarioEvento(data.adm);
+            const local = await this.buscarLocalEvento(data.localizacaoId);
+
+            return {
+                id: eventoDoc.id,
+                ...data,
+                username,
+                url_perfil,
+                local,
+                dataCriacao: this.formatarData(data.dataCriacao),
+                data_evento: this.formatarData(data.data_evento),
+                participantes: data.participantes ?? [],
+            };
         }catch(error){
             console.error('Não foi possível mostrar o evento:', error);
         }
@@ -85,13 +175,19 @@ class Evento{
                 });
                 return { message: 'Solicitação de participação enviada com sucesso' };
             }
-            if (eventoData.participantes && eventoData.participantes.length >= eventoData.max_participantes) {
+            const participantes = eventoData.participantes || [];
+            if (participantes.includes(userId)) {
+                return { message: 'Já está participando', participantes };
+            }
+            if (
+                eventoData.max_participantes > 0 &&
+                participantes.length >= eventoData.max_participantes
+            ) {
                 return { error: 'Evento já atingiu o número máximo de participantes' };
             }
-            await updateDoc(eventoRef, {
-                participantes: [...(eventoData.participantes || []), userId]
-            });
-            return { message: 'Participação realizada com sucesso' };
+            const atualizados = [...participantes, userId];
+            await updateDoc(eventoRef, { participantes: atualizados });
+            return { message: 'Participação realizada com sucesso', participantes: atualizados };
         }catch(error){
             console.error('Não foi possível participar do evento:', error);
         }

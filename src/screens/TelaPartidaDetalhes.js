@@ -1,11 +1,26 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useMemo } from 'react';
-import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import styles from '../../style';
 import { colors, spacing } from '../../style/tokens';
 import { useAppState } from '../state/AppStateContext';
 import { rotuloEsporte } from '../domain/feed/posts';
+import {
+  buscarEvento,
+  carregarPerfisParticipantes,
+  eventoParaDetalhes,
+  participarEvento,
+} from '../utils/eventoApi';
 
 function asDate(value) {
   if (!value) return null;
@@ -36,17 +51,99 @@ export default function TelaPartidaDetalhes() {
   const navigation = useNavigation();
   const route = useRoute();
   const { partidaId } = route.params ?? {};
-  const { partidas, participarPartida, desistirPartida, username } = useAppState();
+  const { authUid, username } = useAppState();
+  const [partida, setPartida] = useState(null);
+  const [perfisParticipantes, setPerfisParticipantes] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [salvando, setSalvando] = useState(false);
 
-  const partida = useMemo(
-    () => (partidas ?? []).find((p) => String(p.id) === String(partidaId)) ?? null,
-    [partidaId, partidas],
-  );
+  const carregarPartida = useCallback(async () => {
+    if (!partidaId) {
+      setPartida(null);
+      setCarregando(false);
+      return;
+    }
 
-  const participando = Boolean(partida?.participantes?.includes('voce'));
+    setCarregando(true);
+    try {
+      const evento = await buscarEvento(partidaId);
+      setPartida(eventoParaDetalhes(evento));
+    } catch {
+      setPartida(null);
+    } finally {
+      setCarregando(false);
+    }
+  }, [partidaId]);
+
+  useEffect(() => {
+    carregarPartida();
+  }, [carregarPartida]);
+
+  useEffect(() => {
+    let cancelado = false;
+
+    async function carregarPerfis() {
+      if (!partida?.participantes?.length) {
+        setPerfisParticipantes([]);
+        return;
+      }
+
+      const perfis = await carregarPerfisParticipantes(
+        partida.participantes,
+        authUid,
+        username,
+      );
+      if (!cancelado) setPerfisParticipantes(perfis);
+    }
+
+    carregarPerfis();
+    return () => {
+      cancelado = true;
+    };
+  }, [partida?.participantes, authUid, username]);
+
+  const ehDono = Boolean(authUid && partida?.admId === authUid);
+  const participando = Boolean(authUid && partida?.participantes?.includes(authUid));
   const total = partida?.participantes?.length ?? 0;
   const max = partida?.maxParticipantes ?? null;
   const vagas = max != null ? Math.max(0, max - total + (participando ? 1 : 0)) : null;
+
+  async function alternarParticipacao() {
+    if (!authUid) {
+      Alert.alert('Login necessário', 'Faça login para participar da partida.');
+      return;
+    }
+    if (!partida) return;
+
+    if (participando) {
+      setPartida((prev) => ({
+        ...prev,
+        participantes: (prev.participantes ?? []).filter((id) => id !== authUid),
+      }));
+      return;
+    }
+
+    setSalvando(true);
+    try {
+      const resultado = await participarEvento(partida.id, authUid);
+      setPartida((prev) => ({
+        ...prev,
+        participantes: resultado.participantes ?? [...(prev.participantes ?? []), authUid],
+      }));
+    } catch (error) {
+      Alert.alert('Erro', error?.message ?? 'Não foi possível participar da partida.');
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  if (carregando) {
+    return (
+      <SafeAreaView style={styles.centeredScreen}>
+        <ActivityIndicator size="large" color={colors.purple} />
+      </SafeAreaView>
+    );
+  }
 
   if (!partida) {
     return (
@@ -59,16 +156,6 @@ export default function TelaPartidaDetalhes() {
       </SafeAreaView>
     );
   }
-
-  function alternarParticipacao() {
-    if (participando) {
-      desistirPartida?.(partida.id);
-      return;
-    }
-    participarPartida?.(partida.id);
-  }
-
-  const participantes = partida.participantes ?? [];
 
   return (
     <SafeAreaView style={styles.createLocalScreen}>
@@ -111,66 +198,96 @@ export default function TelaPartidaDetalhes() {
           <Text style={{ fontSize: 14, fontWeight: '800', color: colors.purple, marginBottom: spacing.sm }}>
             Participantes
           </Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-            {participantes.length === 0 ? (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
+            {perfisParticipantes.length === 0 ? (
               <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
                 Ninguém participou ainda.
               </Text>
             ) : (
-              participantes.map((p, idx) => {
-                const label = p === 'voce' ? username ?? 'Você' : String(p);
-                return (
-                  <View
-                    key={`${p}-${idx}`}
+              perfisParticipantes.map((perfil) => (
+                <View key={perfil.id} style={{ alignItems: 'center', width: 64 }}>
+                  {perfil.url ? (
+                    <Image
+                      source={{ uri: perfil.url }}
+                      style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 24,
+                        borderWidth: 1,
+                        borderColor: colors.purpleMuted,
+                      }}
+                    />
+                  ) : (
+                    <View
+                      style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 24,
+                        backgroundColor: colors.purpleLight,
+                        borderWidth: 1,
+                        borderColor: colors.purpleMuted,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Text style={{ color: colors.purple, fontWeight: '800' }}>
+                        {initials(perfil.username)}
+                      </Text>
+                    </View>
+                  )}
+                  <Text
                     style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 22,
-                      backgroundColor: colors.purpleLight,
-                      borderWidth: 1,
-                      borderColor: colors.purpleMuted,
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      marginTop: 4,
+                      fontSize: 11,
+                      color: colors.textSecondary,
+                      textAlign: 'center',
                     }}
+                    numberOfLines={1}
                   >
-                    <Text style={{ color: colors.purple, fontWeight: '800' }}>{initials(label)}</Text>
-                  </View>
-                );
-              })
+                    {perfil.username}
+                  </Text>
+                </View>
+              ))
             )}
           </View>
         </View>
 
-        <View style={{ gap: 10 }}>
-          <TouchableOpacity
-            style={[
-              styles.createPrimaryBtn,
-              participando && {
-                backgroundColor: colors.white,
-                borderWidth: 1.5,
-                borderColor: colors.purple,
-              },
-            ]}
-            activeOpacity={0.9}
-            onPress={alternarParticipacao}
-          >
-            <Text
+        {!ehDono ? (
+          <View style={{ gap: 10 }}>
+            <TouchableOpacity
               style={[
-                styles.createPrimaryBtnText,
-                participando && { color: colors.purple },
+                styles.createPrimaryBtn,
+                participando && {
+                  backgroundColor: colors.white,
+                  borderWidth: 1.5,
+                  borderColor: colors.purple,
+                },
               ]}
+              activeOpacity={0.9}
+              onPress={alternarParticipacao}
+              disabled={salvando}
             >
-              {participando ? 'Cancelar participação' : 'Participar'}
-            </Text>
-          </TouchableOpacity>
-          {max != null ? (
-            <Text style={{ textAlign: 'center', color: colors.textSecondary, fontSize: 12 }}>
-              Limite de vagas: {max}
-            </Text>
-          ) : null}
-        </View>
+              {salvando ? (
+                <ActivityIndicator color={colors.textOnPurple} />
+              ) : (
+                <Text
+                  style={[
+                    styles.createPrimaryBtnText,
+                    participando && { color: colors.purple },
+                  ]}
+                >
+                  {participando ? 'Cancelar participação' : 'Participar'}
+                </Text>
+              )}
+            </TouchableOpacity>
+            {max != null ? (
+              <Text style={{ textAlign: 'center', color: colors.textSecondary, fontSize: 12 }}>
+                Limite de vagas: {max}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
 }
-

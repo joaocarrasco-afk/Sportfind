@@ -33,6 +33,7 @@ export default function FeedPostCard({
   onPressAutor,
   onParticipar,
   onDesistir,
+  onPressPartida,
   onLikeChange,
 }) {
   const { authUid, username, curtidos, alternarCurtida } = useAppState();
@@ -67,7 +68,9 @@ export default function FeedPostCard({
     contagemInicial: item.comentarios ?? 0,
   });
 
-  const participando = item.participantes?.includes('voce');
+  const participando = authUid
+    ? item.participantes?.includes(authUid)
+    : item.participantes?.includes('voce');
   const totalParticipantes = item.participantes?.length ?? 0;
   const maxParticipantes = item.maxParticipantes;
   const vagasCheias =
@@ -192,7 +195,11 @@ export default function FeedPostCard({
 
       {item.kind === 'partida' ? (
         <>
-          <View style={styles.feedPartidaCard}>
+          <TouchableOpacity
+            style={styles.feedPartidaCard}
+            onPress={() => onPressPartida?.(item.id)}
+            activeOpacity={0.85}
+          >
             <Text style={styles.feedPartidaTitle}>{item.nomePartida}</Text>
             <View style={styles.feedPartidaMetaRow}>
               <Text style={{ fontSize: 18 }}>{emojiEsporte(item.esporte)}</Text>
@@ -214,26 +221,28 @@ export default function FeedPostCard({
                 {totalParticipantes}/{maxParticipantes} participantes
               </Text>
             ) : null}
-          </View>
-          <TouchableOpacity
-            style={[
-              styles.feedPartidaParticiparBtn,
-              participando && styles.feedPartidaParticiparBtnOutline,
-              vagasCheias && !participando && { opacity: 0.45 },
-            ]}
-            onPress={acaoParticipar}
-            disabled={vagasCheias && !participando}
-            activeOpacity={0.85}
-          >
-            <Text
-              style={[
-                styles.feedPartidaParticiparText,
-                participando && styles.feedPartidaParticiparTextOutline,
-              ]}
-            >
-              {participando ? 'Participando ✓' : 'Participar'}
-            </Text>
           </TouchableOpacity>
+          {!ehProprioPost ? (
+            <TouchableOpacity
+              style={[
+                styles.feedPartidaParticiparBtn,
+                participando && styles.feedPartidaParticiparBtnOutline,
+                vagasCheias && !participando && { opacity: 0.45 },
+              ]}
+              onPress={acaoParticipar}
+              disabled={vagasCheias && !participando}
+              activeOpacity={0.85}
+            >
+              <Text
+                style={[
+                  styles.feedPartidaParticiparText,
+                  participando && styles.feedPartidaParticiparTextOutline,
+                ]}
+              >
+                {participando ? 'Participando ✓' : 'Participar'}
+              </Text>
+            </TouchableOpacity>
+          ) : null}
         </>
       ) : (
         <>
