@@ -196,6 +196,46 @@ class Usuario{
         }
     }
 
+    async buscarUsuarios({ termo = '', excluirId = null, limite = 20 } = {}) {
+        try {
+            const snap = await getDocs(collection(db, 'usuario'));
+            const q = String(termo ?? '').trim().toLowerCase();
+
+            let usuarios = snap.docs.map((docSnap) => {
+                const data = docSnap.data();
+                return {
+                    id: docSnap.id,
+                    username: data.username ?? 'Usuário',
+                    cidade: data.cidade ?? '',
+                    tags: Array.isArray(data.tags) ? data.tags : [],
+                    url: data.url ?? null,
+                    seguidores: data.seguidores ?? 0,
+                };
+            });
+
+            if (excluirId) {
+                usuarios = usuarios.filter((u) => u.id !== excluirId);
+            }
+
+            if (q) {
+                usuarios = usuarios.filter(
+                    (u) =>
+                        u.username.toLowerCase().includes(q) ||
+                        u.cidade.toLowerCase().includes(q) ||
+                        u.tags.some((tag) => String(tag).toLowerCase().includes(q)),
+                );
+            } else {
+                usuarios.sort((a, b) => b.seguidores - a.seguidores);
+            }
+
+            const max = Math.max(1, Number(limite) || 20);
+            return usuarios.slice(0, max);
+        } catch (error) {
+            console.error(`Erro ao buscar usuários: ${error.message}`);
+            throw error;
+        }
+    }
+
     async deixarSeguirUsuario(user_id, seguindo_id ){
         try{
             const ref_user = doc(db, 'usuario', user_id);

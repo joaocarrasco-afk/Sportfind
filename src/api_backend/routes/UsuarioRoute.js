@@ -15,6 +15,8 @@ route.post('/usuario/redefinirsenha', UsuarioController.linkRedefinirSenha);
 
 route.get('/usuario/perfil/:id', UsuarioController.dadosPerfil);
 
+route.get('/usuario/busca', UsuarioController.buscarUsuarios);
+
 route.put('/usuario/conta/:id', UsuarioController.atualizarDados);
 
 route.put('/usuario/perfil/:id', upload.single('image'), UsuarioController.editarFoto );

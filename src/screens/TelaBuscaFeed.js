@@ -1,22 +1,52 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useMemo, useState } from 'react';
-import { FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import ScreenSafe from '../components/ScreenSafe';
-import { buscarUsuarios } from '../domain/users';
 import { abrirPerfilUsuario } from '../navigation/perfilNavigation';
 import { useAppState } from '../state/AppStateContext';
+import { buscarUsuariosApi } from '../utils/usuarioApi';
 import styles from '../../style';
 import { colors, spacing } from '../../style/tokens';
 
 export default function TelaBuscaFeed({ navigation }) {
   const { authUid } = useAppState();
   const [termo, setTermo] = useState('');
+  const [resultados, setResultados] = useState([]);
+  const [carregando, setCarregando] = useState(true);
 
-  const resultados = useMemo(() => buscarUsuarios(termo), [termo]);
+  useEffect(() => {
+    let cancelado = false;
+    const timer = setTimeout(async () => {
+      setCarregando(true);
+      try {
+        const lista = await buscarUsuariosApi(termo, { excluirId: authUid });
+        if (!cancelado) setResultados(lista);
+      } catch {
+        if (!cancelado) setResultados([]);
+      } finally {
+        if (!cancelado) setCarregando(false);
+      }
+    }, termo.trim() === '' ? 0 : 300);
+
+    return () => {
+      cancelado = true;
+      clearTimeout(timer);
+    };
+  }, [termo, authUid]);
 
   function abrirPerfil(usuario) {
     abrirPerfilUsuario(navigation, { userId: usuario.id, authUid });
   }
+
+  const buscando = termo.trim() !== '';
 
   return (
     <ScreenSafe style={styles.screen} edges={['top', 'left', 'right', 'bottom']}>
@@ -40,41 +70,53 @@ export default function TelaBuscaFeed({ navigation }) {
       </View>
 
       <Text style={styles.sectionLabel}>
-        {termo.trim() === '' ? 'Sugestões' : `${resultados.length} pessoa(s)`}
+        {buscando ? `${resultados.length} pessoa(s)` : 'Sugestões'}
       </Text>
 
-      <FlatList
-        data={resultados}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.userSearchList}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        ListEmptyComponent={
-          <View style={styles.userSearchEmpty}>
-            <Ionicons name="person-outline" size={40} color={colors.purpleLight} />
-            <Text style={styles.userSearchEmptyText}>Nenhuma pessoa encontrada.</Text>
-          </View>
-        }
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.userSearchCard}
-            activeOpacity={0.85}
-            onPress={() => abrirPerfil(item)}
-          >
-            <View style={styles.userSearchAvatar}>
-              <Text style={styles.userSearchAvatarText}>{item.username.charAt(0)}</Text>
-            </View>
-            <View style={styles.userSearchCardBody}>
-              <Text style={styles.userSearchNome}>{item.username}</Text>
-              <Text style={styles.userSearchMeta} numberOfLines={1}>
-                {item.cidade}
-                {item.tags?.length ? ` · ${item.tags.slice(0, 2).join(', ')}` : ''}
+      {carregando ? (
+        <View style={styles.userSearchEmpty}>
+          <ActivityIndicator size="large" color={colors.purple} />
+        </View>
+      ) : (
+        <FlatList
+          data={resultados}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.userSearchList}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          ListEmptyComponent={
+            <View style={styles.userSearchEmpty}>
+              <Ionicons name="person-outline" size={40} color={colors.purpleLight} />
+              <Text style={styles.userSearchEmptyText}>
+                {buscando ? 'Nenhuma pessoa encontrada.' : 'Nenhuma sugestão no momento.'}
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.purple} />
-          </TouchableOpacity>
-        )}
-      />
+          }
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.userSearchCard}
+              activeOpacity={0.85}
+              onPress={() => abrirPerfil(item)}
+            >
+              {item.url ? (
+                <Image source={{ uri: item.url }} style={styles.userSearchAvatarImage} />
+              ) : (
+                <View style={styles.userSearchAvatar}>
+                  <Text style={styles.userSearchAvatarText}>{item.username.charAt(0)}</Text>
+                </View>
+              )}
+              <View style={styles.userSearchCardBody}>
+                <Text style={styles.userSearchNome}>{item.username}</Text>
+                <Text style={styles.userSearchMeta} numberOfLines={1}>
+                  {item.cidade || 'Sem cidade'}
+                  {item.tags?.length ? ` · ${item.tags.slice(0, 2).join(', ')}` : ''}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.purple} />
+            </TouchableOpacity>
+          )}
+        />
+      )}
     </ScreenSafe>
   );
 }

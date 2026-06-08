@@ -57,6 +57,12 @@ export const searchStyles = {
     alignItems: 'center',
     justifyContent: 'center',
   },
+  userSearchAvatarImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.purpleMuted,
+  },
   userSearchAvatarText: {
     fontSize: 18,
     fontWeight: '700',

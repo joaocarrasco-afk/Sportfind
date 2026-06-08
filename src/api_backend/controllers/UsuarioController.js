@@ -101,6 +101,22 @@ class UsuarioController{
         }
     }
 
+    async buscarUsuarios(req, res) {
+        try {
+            const { q = '', excluir, limite } = req.query;
+            const usuarios = await Usuario.buscarUsuarios({
+                termo: q,
+                excluirId: excluir || null,
+                limite: limite ? Number(limite) : q ? 20 : 8,
+            });
+            res.status(200).json(usuarios);
+        } catch (error) {
+            res.status(400).json({
+                mensagem: error.message || 'Não foi possível buscar usuários.',
+            });
+        }
+    }
+
     async deixarSeguirUsuario(req, res){
         try{
             const { id } = req.params;
