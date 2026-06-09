@@ -71,7 +71,7 @@ function AppTabBarLabel({ focused, label, iconName, iconFocused, isCreate }) {
 
 function MapStackScreen() {
   return (
-    <MapStack.Navigator screenOptions={{ headerShown: false }}>
+    <MapStack.Navigator screenOptions={{ headerShown: false, contentStyle: { flex: 1 } }}>
       <MapStack.Screen name="TelaMapa" component={TelaMapa} />
       <MapStack.Screen name="TelaBusca" component={TelaBusca} />
       <MapStack.Screen name="TelaLocal" component={TelaLocal} />
@@ -81,7 +81,7 @@ function MapStackScreen() {
 
 function FeedStackScreen() {
   return (
-    <FeedStack.Navigator screenOptions={{ headerShown: false }}>
+    <FeedStack.Navigator screenOptions={{ headerShown: false, contentStyle: { flex: 1 } }}>
       <FeedStack.Screen name="TelaFeed" component={TelaFeed} />
       <FeedStack.Screen name="TelaBusca" component={TelaBusca} />
       <FeedStack.Screen name="TelaMensagens" component={TelaMensagens} />
@@ -111,6 +111,7 @@ function PerfilStackScreen() {
       screenOptions={{
         headerTintColor: colors.purple,
         headerTitleStyle: { fontWeight: '700' },
+        contentStyle: { flex: 1 },
       }}
     >
       <PerfilStack.Screen name="PerfilPrincipal" component={TelaUsuario} options={{ headerShown: false }} />

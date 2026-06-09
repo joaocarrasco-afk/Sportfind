@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Keyboard, Platform, Pressable, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, Pressable, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styles from '../../style';
@@ -15,10 +15,24 @@ function resetScroll(ref) {
   }
 }
 
-export default function AuthKeyboardScreen({ header = null, children }) {
+export default function AuthKeyboardScreen({
+  header = null,
+  children,
+  aboveTabBar = false,
+  layout = 'scroll',
+  style,
+}) {
   const insets = useSafeAreaInsets();
   const scrollRef = useRef(null);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const containerStyle = [
+    styles.authScreen,
+    {
+      paddingTop: insets.top,
+      paddingBottom: aboveTabBar ? 0 : insets.bottom,
+    },
+    style,
+  ];
 
   function fecharTeclado() {
     Keyboard.dismiss();
@@ -41,13 +55,22 @@ export default function AuthKeyboardScreen({ header = null, children }) {
     };
   }, []);
 
+  if (layout === 'flex') {
+    return (
+      <View style={containerStyle}>
+        {header}
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          {children}
+        </KeyboardAvoidingView>
+      </View>
+    );
+  }
+
   return (
-    <View
-      style={[
-        styles.authScreen,
-        { paddingTop: insets.top, paddingBottom: insets.bottom },
-      ]}
-    >
+    <View style={containerStyle}>
       <KeyboardAwareScrollView
         innerRef={(ref) => {
           scrollRef.current = ref;

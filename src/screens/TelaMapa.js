@@ -181,7 +181,7 @@ export default function TelaMapa({ navigation }) {
 
       {!mostrarCard ? (
         <View
-          style={[styles.mapFabColumn, { bottom: spacing.xl + insets.bottom }]}
+          style={[styles.mapFabColumn, { bottom: spacing.xl }]}
           pointerEvents="box-none"
         >
           <TouchableOpacity
@@ -262,7 +262,7 @@ export default function TelaMapa({ navigation }) {
       </View>
 
       {mostrarCard ? (
-        <View style={[styles.mapBottomCardOverlay, { paddingBottom: insets.bottomAboveTabBar }]}>
+        <View style={[styles.mapBottomCardOverlay, { paddingBottom: spacing.md }]}>
           <View style={styles.selectedPlaceCardWrap}>
             <Pressable
               style={({ pressed }) => [

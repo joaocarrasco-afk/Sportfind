@@ -5,14 +5,12 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
-  KeyboardAvoidingView,
-  Platform,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import ScreenSafe from '../components/ScreenSafe';
+import AuthKeyboardScreen from '../components/AuthKeyboardScreen';
 import { abrirPerfilUsuario } from '../navigation/perfilNavigation';
 import { useAppState } from '../state/AppStateContext';
 import { enviarMensagem, escutarMensagens, formatarHoraMensagem, carregarPerfilUsuario } from '../utils/chatApi';
@@ -88,39 +86,39 @@ export default function TelaChatConversa() {
   }
 
   return (
-    <ScreenSafe style={styles.chatScreen} edges={['top', 'left', 'right', 'bottom']}>
-      <View style={styles.chatHeader}>
-        <TouchableOpacity
-          style={styles.messageBackBtn}
-          onPress={() => navigation.goBack()}
-          activeOpacity={0.75}
-        >
-          <Ionicons name="arrow-back" size={22} color={colors.purple} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.chatHeaderCenter}
-          activeOpacity={0.75}
-          onPress={() => abrirPerfilUsuario(navigation, { userId, username: nome })}
-        >
-          {fotoPerfil ? (
-            <Image source={{ uri: fotoPerfil }} style={styles.messageAvatar} />
-          ) : (
-            <View style={styles.messageAvatar}>
-              <Text style={styles.messageAvatarText}>{iniciais}</Text>
-            </View>
-          )}
-          <Text style={[styles.chatHeaderNome, styles.messageCardNomeLink]} numberOfLines={1}>
-            {nome ?? 'Conversa'}
-          </Text>
-        </TouchableOpacity>
-        <View style={styles.messageHeaderSpacer} />
-      </View>
-
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
-      >
+    <AuthKeyboardScreen
+      aboveTabBar
+      layout="flex"
+      style={styles.chatScreen}
+      header={
+        <View style={styles.chatHeader}>
+          <TouchableOpacity
+            style={styles.messageBackBtn}
+            onPress={() => navigation.goBack()}
+            activeOpacity={0.75}
+          >
+            <Ionicons name="arrow-back" size={22} color={colors.purple} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.chatHeaderCenter}
+            activeOpacity={0.75}
+            onPress={() => abrirPerfilUsuario(navigation, { userId, username: nome })}
+          >
+            {fotoPerfil ? (
+              <Image source={{ uri: fotoPerfil }} style={styles.messageAvatar} />
+            ) : (
+              <View style={styles.messageAvatar}>
+                <Text style={styles.messageAvatarText}>{iniciais}</Text>
+              </View>
+            )}
+            <Text style={[styles.chatHeaderNome, styles.messageCardNomeLink]} numberOfLines={1}>
+              {nome ?? 'Conversa'}
+            </Text>
+          </TouchableOpacity>
+          <View style={styles.messageHeaderSpacer} />
+        </View>
+      }
+    >
         {carregando ? (
           <View style={styles.messageEmpty}>
             <ActivityIndicator size="large" color={colors.purple} />
@@ -198,7 +196,6 @@ export default function TelaChatConversa() {
             )}
           </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
-    </ScreenSafe>
+    </AuthKeyboardScreen>
   );
 }
