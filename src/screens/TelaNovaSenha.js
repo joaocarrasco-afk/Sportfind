@@ -1,39 +1,45 @@
 import { useState } from 'react';
-import { Image, SafeAreaView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import AuthHero from '../components/AuthHero';
+import AuthKeyboardScreen from '../components/AuthKeyboardScreen';
 import styles from '../../style';
 
-export default function TelaNovaSenha ({ navigation }) {
+export default function TelaNovaSenha({ navigation }) {
+  const [newpassword, setNewPassword] = useState('');
 
-    const [newpassword, setNewPassword] = useState('');
-
-return (
-    <SafeAreaView style={styles.authScreen}>
-      <View style={styles.authCenter}>
-        <Image
-          source={require('../../assets/logoesqueci.png')}
-          resizeMode="contain"
-          style={{ width: 200, height: 200, marginBottom: 14 }}
+  return (
+    <AuthKeyboardScreen
+      header={
+        <AuthHero
+          logoSource={require('../../assets/logoesqueci.png')}
+          subtitle="Defina uma nova senha segura"
         />
-        <View style={styles.authCard}>
-          <Text style={styles.authTitle}>Digite sua nova senha</Text>
-          <TextInput
-              style={styles.authInput}
-              placeholder="Senha"
-              value={newpassword}
-              onChangeText={setNewPassword}
-              autoCapitalize="none"
-              autoCorrect={false}
-              secureTextEntry
-            />
+      }
+    >
+      <View style={styles.authCard}>
+        <Text style={styles.authTitle}>Nova senha</Text>
+        <Text style={styles.authSubtitle}>Digite sua nova senha abaixo</Text>
 
+        <Text style={styles.createLocalFieldLabel}>Senha</Text>
+        <TextInput
+          style={styles.createLocalInput}
+          placeholder="Nova senha"
+          placeholderTextColor="#999"
+          value={newpassword}
+          onChangeText={setNewPassword}
+          autoCapitalize="none"
+          autoCorrect={false}
+          secureTextEntry
+        />
 
-          <TouchableOpacity style={styles.authButton} onPress={() => navigation.navigate('TelaLogin')}>
-            <Text style={styles.authButtonText}>Confirmar</Text>
-          </TouchableOpacity>
-
-        </View>
-
+        <TouchableOpacity
+          style={styles.authButton}
+          onPress={() => navigation.navigate('TelaLogin')}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.authButtonText}>Confirmar</Text>
+        </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </AuthKeyboardScreen>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import AuthHero from '../components/AuthHero';
 import AuthKeyboardScreen from '../components/AuthKeyboardScreen';
 import { maskDataNascimento } from '../utils/masks';
 import styles from '../../style';
@@ -56,59 +57,69 @@ export default function TelaCadastro({ navigation }) {
   }
 
   return (
-    <AuthKeyboardScreen>
+    <AuthKeyboardScreen header={<AuthHero subtitle="Junte-se à comunidade esportiva" />}>
       <View style={styles.authCard}>
         <Text style={styles.authTitle}>Cadastrar</Text>
-        <Text style={styles.authSubtitle}>Crie sua conta</Text>
+        <Text style={styles.authSubtitle}>Preencha seus dados para criar sua conta</Text>
 
-        <Text style={styles.createLocalFieldLabel}>Email: </Text>
+        <Text style={styles.createLocalFieldLabel}>E-mail</Text>
         <TextInput
-          style={styles.authInput}
-          placeholder="Número / e-mail"
+          style={styles.createLocalInput}
+          placeholder="Número ou e-mail"
+          placeholderTextColor="#999"
           value={contact}
           onChangeText={setContact}
           autoCapitalize="none"
           autoCorrect={false}
+          keyboardType="email-address"
         />
-        <Text style={styles.createLocalFieldLabel}>Senha: </Text>
+
+        <Text style={styles.createLocalFieldLabel}>Senha</Text>
         <TextInput
-          style={styles.authInput}
-          placeholder="Senha"
+          style={styles.createLocalInput}
+          placeholder="Crie uma senha"
+          placeholderTextColor="#999"
           value={password}
           onChangeText={setPassword}
           autoCapitalize="none"
           autoCorrect={false}
           secureTextEntry
         />
-        <Text style={styles.createLocalFieldLabel}>Data de nascimento: </Text>
+
+        <Text style={styles.createLocalFieldLabel}>Data de nascimento</Text>
         <TextInput
-          style={styles.authInput}
-          placeholder="Data de nascimento (DD/MM/AAAA)"
+          style={styles.createLocalInput}
+          placeholder="DD/MM/AAAA"
+          placeholderTextColor="#999"
           value={birthDate}
           onChangeText={(texto) => setBirthDate(maskDataNascimento(texto))}
           keyboardType="number-pad"
           maxLength={10}
         />
-        <Text style={styles.createLocalFieldLabel}>Nome completo: </Text>
+
+        <Text style={styles.createLocalFieldLabel}>Nome completo</Text>
         <TextInput
-          style={styles.authInput}
-          placeholder="Nome completo"
+          style={styles.createLocalInput}
+          placeholder="Seu nome completo"
+          placeholderTextColor="#999"
           value={fullName}
           onChangeText={setFullName}
           autoCapitalize="words"
           autoCorrect={false}
         />
-        <Text style={styles.createLocalFieldLabel}>Nome de usuário: </Text>
+
+        <Text style={styles.createLocalFieldLabel}>Nome de usuário</Text>
         <TextInput
-          style={styles.authInput}
-          placeholder="Nome de usuário"
+          style={styles.createLocalInput}
+          placeholder="Como você quer ser chamado"
+          placeholderTextColor="#999"
           value={username}
           onChangeText={setUsername}
           autoCapitalize="none"
           autoCorrect={false}
         />
 
-        <TouchableOpacity style={styles.authButton} onPress={GravarUsuario}>
+        <TouchableOpacity style={styles.authButton} onPress={GravarUsuario} activeOpacity={0.85}>
           <Text style={styles.authButtonText}>Cadastrar</Text>
         </TouchableOpacity>
 

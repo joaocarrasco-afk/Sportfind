@@ -6,7 +6,8 @@ import { searchStyles } from './features/searchStyles';
 import { notificationStyles } from './features/notificationStyles';
 import { createStyles } from './features/createStyles';
 import { messageStyles } from './features/messageStyles';
-import { colors, spacing, radii } from './tokens';
+import { authStyles } from './features/authStyles';
+import { colors, spacing } from './tokens';
 
 const baseStyles = {
   card: {
@@ -159,80 +160,7 @@ const baseStyles = {
   },
   tabLabel: { fontSize: 11, fontWeight: '500', color: colors.textSecondary },
   tabLabelActive: { color: colors.purple, fontWeight: '700' },
-  authScreen: { flex: 1, backgroundColor: colors.white },
-  authCenter: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.xl,
-  },
-  authScrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: spacing.xl,
-  },
-  authPressableArea: {
-    flexGrow: 1,
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.lg,
-  },
-  authPressableAreaKeyboard: {
-    justifyContent: 'flex-start',
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.xl * 3,
-  },
-  authCard: {
-    width: '100%',
-    maxWidth: 380,
-    backgroundColor: colors.purple,
-    borderRadius: 18,
-    padding: 22,
-    paddingTop: 26,
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 8 },
-  },
-  authTitle: {
-    fontSize: 26,
-    fontWeight: '800',
-    letterSpacing: 1,
-    color: '#1C052C',
-    marginBottom: 6,
-  },
-  authSubtitle: {
-    fontSize: 16,
-    letterSpacing: 2,
-    color: '#1C052C',
-    marginBottom: 18,
-  },
-  authInput: {
-    height: 48,
-    backgroundColor: colors.white,
-    borderRadius: 8,
-    paddingHorizontal: spacing.lg,
-    fontSize: 14,
-    color: '#1C052C',
-    marginBottom: spacing.md,
-  },
-  authButton: {
-    height: 50,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#2A0648',
-    marginTop: 6,
-  },
-  authButtonText: { color: colors.white, fontSize: 16, fontWeight: '500' },
-  authLinks: { marginTop: 14, gap: 10 },
-  authLink: {
-    color: 'rgba(255,255,255,0.92)',
-    fontSize: 13,
-    fontWeight: '599',
-    textAlign: 'center',
-  },
+  ...authStyles,
 };
 
 export default StyleSheet.create({

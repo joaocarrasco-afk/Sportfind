@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Image, SafeAreaView, Text, View } from 'react-native';
-import { colors } from '../../style/tokens';
+import { colors, spacing } from '../../style/tokens';
+import styles from '../../style';
 
 const DURATION_MS = 2500;
 
@@ -22,26 +23,38 @@ export default function TelaSplash({ navigation }) {
   }, [navigation]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center' }}>
-      <Image
-        source={require('../../assets/logo.png')}
-        resizeMode="contain"
-        style={{ width: 220, height: 220, marginBottom: 20 }}
-      />
-      <Text style={{ fontSize: 26, fontWeight: '800', color: '#1a1f3a', marginBottom: 8 }}>SportFind</Text>
-      <Text style={{ fontSize: 14, color: '#757575', marginBottom: 32, paddingHorizontal: 24, textAlign: 'center' }}>
-        SportFind te mostra o Caminho
-      </Text>
+    <SafeAreaView style={styles.authScreen}>
+      <View style={[styles.authCenter, { gap: spacing.sm }]}>
+        <View style={styles.authLogoCircle}>
+          <Image
+            source={require('../../assets/logo.png')}
+            resizeMode="contain"
+            style={styles.authLogo}
+          />
+        </View>
+        <Text style={styles.authBrandTitle}>SportFind</Text>
+        <Text style={styles.authBrandSubtitle}>SportFind te mostra o caminho</Text>
 
-      <View style={{ width: '70%', maxWidth: 280, height: 5, backgroundColor: '#000', borderRadius: 4, overflow: 'hidden' }}>
         <View
           style={{
-            height: '100%',
-            width: `${progress}%`,
+            width: '70%',
+            maxWidth: 280,
+            height: 5,
+            backgroundColor: colors.border,
             borderRadius: 4,
-            backgroundColor: colors.purple,
+            overflow: 'hidden',
+            marginTop: spacing.xl,
           }}
-        />
+        >
+          <View
+            style={{
+              height: '100%',
+              width: `${progress}%`,
+              borderRadius: 4,
+              backgroundColor: colors.purple,
+            }}
+          />
+        </View>
       </View>
     </SafeAreaView>
   );

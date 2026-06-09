@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import AuthHero from '../components/AuthHero';
 import AuthKeyboardScreen from '../components/AuthKeyboardScreen';
 import styles from '../../style';
 import { useAppState } from '../state/AppStateContext';
@@ -51,21 +52,17 @@ export default function TelaLogin({ navigation }) {
 
   return (
     <AuthKeyboardScreen
-      header={
-        <Image
-          source={require('../../assets/logo.png')}
-          resizeMode="contain"
-          style={{ width: 200, height: 200, marginBottom: 14 }}
-        />
-      }
+      header={<AuthHero subtitle="SportFind te mostra o caminho" />}
     >
       <View style={styles.authCard}>
-        <Text style={styles.authTitle}>Bem vindo</Text>
-        <Text style={styles.authSubtitle}>Entre com sua conta</Text>
-        <Text style={styles.createLocalFieldLabel}>Login: </Text>
+        <Text style={styles.authTitle}>Bem-vindo</Text>
+        <Text style={styles.authSubtitle}>Entre com sua conta para continuar</Text>
+
+        <Text style={styles.createLocalFieldLabel}>Login</Text>
         <TextInput
-          style={styles.authInput}
-          placeholder="Email / usuário / telefone"
+          style={styles.createLocalInput}
+          placeholder="E-mail, usuário ou telefone"
+          placeholderTextColor="#999"
           value={identifier}
           onChangeText={setIdentifier}
           autoCapitalize="none"
@@ -73,10 +70,12 @@ export default function TelaLogin({ navigation }) {
           keyboardType="default"
           textContentType="username"
         />
-        <Text style={styles.createLocalFieldLabel}>Senha: </Text>
+
+        <Text style={styles.createLocalFieldLabel}>Senha</Text>
         <TextInput
-          style={styles.authInput}
-          placeholder="Senha"
+          style={styles.createLocalInput}
+          placeholder="Sua senha"
+          placeholderTextColor="#999"
           value={password}
           onChangeText={setPassword}
           autoCapitalize="none"
@@ -85,17 +84,17 @@ export default function TelaLogin({ navigation }) {
           textContentType="password"
         />
 
-        <TouchableOpacity style={styles.authButton} onPress={Entrar}>
+        <TouchableOpacity style={styles.authButton} onPress={Entrar} activeOpacity={0.85}>
           <Text style={styles.authButtonText}>Entrar</Text>
         </TouchableOpacity>
 
         <View style={styles.authLinks}>
           <TouchableOpacity onPress={() => navigation.navigate('TelaSenha')}>
-            <Text style={styles.authLink}>Esqueceu a senha</Text>
+            <Text style={styles.authLink}>Esqueceu a senha?</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => navigation.navigate('TelaCadastro')}>
-            <Text style={styles.authLink}>Cadastrar conta</Text>
+            <Text style={styles.authLink}>Criar conta</Text>
           </TouchableOpacity>
         </View>
       </View>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import AuthHero from '../components/AuthHero';
 import AuthKeyboardScreen from '../components/AuthKeyboardScreen';
 import styles from '../../style';
 
@@ -27,20 +28,23 @@ export default function TelaSenha({ navigation }) {
   return (
     <AuthKeyboardScreen
       header={
-        <Image
-          source={require('../../assets/logoesqueci.png')}
-          resizeMode="contain"
-          style={{ width: 200, height: 200, marginBottom: 14 }}
+        <AuthHero
+          logoSource={require('../../assets/logoesqueci.png')}
+          subtitle="Recupere o acesso à sua conta"
         />
       }
     >
       <View style={styles.authCard}>
         <Text style={styles.authTitle}>Encontre sua conta</Text>
-        <Text style={styles.authSubtitle}>Insira seu número de celular ou email. </Text>
+        <Text style={styles.authSubtitle}>
+          Insira seu e-mail ou número de celular cadastrado
+        </Text>
 
+        <Text style={styles.createLocalFieldLabel}>E-mail ou telefone</Text>
         <TextInput
-          style={styles.authInput}
-          placeholder="Email / telefone"
+          style={styles.createLocalInput}
+          placeholder="E-mail ou telefone"
+          placeholderTextColor="#999"
           autoCapitalize="none"
           autoCorrect={false}
           keyboardType="default"
@@ -49,10 +53,11 @@ export default function TelaSenha({ navigation }) {
           onChangeText={setEmail}
         />
 
-        <Text style={styles.authSubtitle}>
-          Enviaremos um código para seu email ou número de celular.
+        <Text style={styles.authHint}>
+          Enviaremos um código para seu e-mail ou número de celular.
         </Text>
-        <TouchableOpacity style={styles.authButton} onPress={linkRedefinirSenha}>
+
+        <TouchableOpacity style={styles.authButton} onPress={linkRedefinirSenha} activeOpacity={0.85}>
           <Text style={styles.authButtonText}>Continuar</Text>
         </TouchableOpacity>
 
