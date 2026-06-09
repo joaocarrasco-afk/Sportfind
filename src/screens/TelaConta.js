@@ -6,7 +6,7 @@ import { useAppState } from '../state/AppStateContext';
 export default function TelaConta() {
   const { authUid } = useAppState();
   const [carregando, setCarregando] = useState(!!authUid);
-  const [salvando, setSalvando] = useState(false)
+  const [salvando, setSalvando] = useState(false);
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
@@ -43,17 +43,10 @@ export default function TelaConta() {
           return;
         }
 
-        if (data?.username != null){ 
-          setUsername(data.username)
-        };
-        if (data?.nome != null){ 
-          setNome(data.nome)
-        };
-        if (data?.email != null){ 
-          setEmail(data.email)
-        };
-
-        
+        if (data?.username != null) setUsername(data.username);
+        if (data?.nome != null) setNome(data.nome);
+        if (data?.email != null) setEmail(data.email);
+        if (data?.telefone != null) setTelefone(data.telefone);
       } catch {
         if (!cancelado) {
           Alert.alert('Perfil', 'Erro de rede ao carregar o perfil.');
@@ -70,8 +63,8 @@ export default function TelaConta() {
   }, [authUid]);
 
   async function salvarDados() {
-    
-    
+    if (!authUid || salvando) return;
+
     setSalvando(true);
     try {
       const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/usuario/conta/${encodeURIComponent(authUid)}`, {
@@ -80,15 +73,12 @@ export default function TelaConta() {
         body: JSON.stringify({
           nome: nome.trim(),
           username: username.trim(),
-       
           telefone: telefone.trim(),
-         
         }),
       });
       let data = null;
       try {
         data = await res.json();
-        alert(data);
       } catch {
         data = null;
       }
@@ -96,16 +86,9 @@ export default function TelaConta() {
         Alert.alert('Erro', data?.mensagem || data?.messagem || 'Não foi possível salvar.');
         return;
       }
-      if (data?.nome != null){
-         setNome(data.nome)
-        };
-      if (data?.username != null){
-         setUsername(data.username)
-        };
-      if (data?.telefone != null){
-         setTelefone(data.telefone)
-
-      };
+      if (data?.nome != null) setNome(data.nome);
+      if (data?.username != null) setUsername(data.username);
+      if (data?.telefone != null) setTelefone(data.telefone);
       Alert.alert('Conta', 'Dados atualizados com sucesso.');
     } catch {
       Alert.alert('Conta', 'Erro de rede ao salvar.');
@@ -123,7 +106,7 @@ export default function TelaConta() {
       Alert.alert('Senhas diferentes', 'A confirmação não coincide com a nova senha.');
       return;
     }
-    Alert.alert('Senha', 'Fluxo apenas de interface — nenhuma requisição foi enviada.');
+    Alert.alert('Senha', 'Funcionalidade em desenvolvimento.');
     setSenhaAtual('');
     setSenhaNova('');
     setSenhaConfirmar('');
@@ -140,7 +123,7 @@ export default function TelaConta() {
           style: 'destructive',
           onPress: () => Alert.alert('Conta', 'Funcionalidade em desenvolvimento.'),
         },
-      ]
+      ],
     );
   }
 
@@ -159,6 +142,7 @@ export default function TelaConta() {
           placeholder="E-mail"
           keyboardType="email-address"
           autoCapitalize="none"
+          editable={false}
         />
 
         <Text style={styles.perfilFieldLabel}>Nome de usuário</Text>
@@ -173,11 +157,7 @@ export default function TelaConta() {
           keyboardType="phone-pad"
         />
 
-        <Text style={styles.perfilHint}>
-          Complete ou atualize suas informações. Os dados ficam apenas neste aparelho até você ligar o backend.
-        </Text>
-
-        <TouchableOpacity style={styles.perfilPrimaryBtn} onPress={salvarDados}>
+        <TouchableOpacity style={styles.perfilPrimaryBtn} onPress={salvarDados} disabled={salvando || carregando}>
           <Text style={styles.perfilPrimaryBtnText}>Salvar alterações</Text>
         </TouchableOpacity>
 
@@ -200,7 +180,7 @@ export default function TelaConta() {
         <View style={styles.perfilDivider} />
 
         <Text style={styles.perfilSectionTitle}>Zona de risco</Text>
-        <Text style={styles.perfilHint}>Remover conta e dados associados. Irreversível após confirmar na API.</Text>
+        <Text style={styles.perfilHint}>Remover conta e dados associados. Irreversível após confirmar.</Text>
         <TouchableOpacity style={styles.perfilDangerBtn} onPress={excluirConta}>
           <Text style={styles.perfilDangerBtnText}>Excluir minha conta</Text>
         </TouchableOpacity>

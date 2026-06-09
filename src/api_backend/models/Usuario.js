@@ -1,6 +1,6 @@
 const { db, auth } = require('../factory/config');
-const {setDoc, doc, getDoc, updateDoc, where, query, collection, getDocs} = require('firebase/firestore');
-const {createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail} = require('firebase/auth'); 
+const {setDoc, doc, getDoc, updateDoc, where, query, collection, getDocs, deleteDoc} = require('firebase/firestore');
+const {createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, signOut} = require('firebase/auth'); 
 const CloudinaryMedia = require('./cloudinaryMedia');
 const cloudinary = require('../factory/cloudinary');
 class Usuario{
@@ -275,6 +275,16 @@ class Usuario{
             return {message: 'Usuário deixou de seguir com sucesso'};       
         }catch(error){
             console.error(`Erro ao deixar de seguir: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async sair(){
+        try{
+            await signOut(auth);
+            return {message: 'Usuário deslogado com sucesso'};
+        }catch(error){
+            console.error(`Erro ao sair: ${error.message}`);
             throw error;
         }
     }

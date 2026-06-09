@@ -269,7 +269,12 @@ export default function TelaUsuario() {
       {
         text: 'Sair',
         style: 'destructive',
-        onPress: () => {
+        onPress: async () => {
+          try {
+            await fetch(`${process.env.EXPO_PUBLIC_API_URL}/usuario/logout`, { method: 'POST' });
+          } catch {
+            /* encerra sessão local mesmo se a API falhar */
+          }
           logout();
           setAuthUid(null);
           navigation.dispatch(

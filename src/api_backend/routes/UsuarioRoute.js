@@ -25,6 +25,8 @@ route.put('/usuario/seguir/:id', UsuarioController.seguirUsuario);
 
 route.put('/usuario/deixarseguir/:id', UsuarioController.deixarSeguirUsuario);
 
+route.post('/usuario/logout', UsuarioController.sair);
+
 module.exports = route;
 
 

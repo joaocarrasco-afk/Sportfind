@@ -128,6 +128,15 @@ class UsuarioController{
         }
     }
 
+    async sair(req, res) {
+        try {
+            const resultado = await Usuario.sair();
+            res.status(200).json(resultado);
+        } catch (error) {
+            res.status(400).json({ mensagem: error.message || 'Não foi possível encerrar a sessão.' });
+        }
+    }
+
 }
 
 module.exports = new UsuarioController();
