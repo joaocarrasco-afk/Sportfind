@@ -24,6 +24,7 @@
         "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true,
+      "softwareKeyboardLayoutMode": "resize",
       "package": "com.sportfind.app",
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",

@@ -166,6 +166,22 @@ const baseStyles = {
     justifyContent: 'center',
     paddingHorizontal: spacing.xl,
   },
+  authScrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: spacing.xl,
+  },
+  authPressableArea: {
+    flexGrow: 1,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.lg,
+  },
+  authPressableAreaKeyboard: {
+    justifyContent: 'flex-start',
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xl * 3,
+  },
   authCard: {
     width: '100%',
     maxWidth: 380,
