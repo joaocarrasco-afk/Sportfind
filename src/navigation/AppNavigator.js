@@ -118,6 +118,7 @@ function PerfilStackScreen() {
       <PerfilStack.Screen name="TelaPreferencias" component={TelaPreferencias} options={{ title: 'Preferências' }} />
       <PerfilStack.Screen name="TelaPrivacidade" component={TelaPrivacidade} options={{ title: 'Privacidade' }} />
       <PerfilStack.Screen name="TelaPerfilUsuario" component={TelaPerfilUsuario} options={{ headerShown: false }} />
+      <PerfilStack.Screen name="TelaChatConversa" component={TelaChatConversa} options={{ headerShown: false }} />
       <PerfilStack.Screen name="TelaListaConexoes" component={TelaListaConexoes} options={{ headerShown: false }} />
     </PerfilStack.Navigator>
   );

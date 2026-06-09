@@ -13,6 +13,7 @@ import {
 import PerfilPostModal from '../components/PerfilPostModal';
 import ScreenSafe from '../components/ScreenSafe';
 import { useAppState } from '../state/AppStateContext';
+import { buscarOuCriarChatPV } from '../utils/chatApi';
 import styles from '../../style';
 import { colors } from '../../style/tokens';
 
@@ -58,8 +59,10 @@ export default function TelaPerfilUsuario({ navigation }) {
   const [usuario, setUsuario] = useState(null);
   const [publicacoes, setPublicacoes] = useState([]);
   const [carregando, setCarregando] = useState(Boolean(userId));
+  const [abrindoMensagem, setAbrindoMensagem] = useState(false);
   const fotoPerfil = usuario?.url ?? null;
   const jaSeguindo = usuario ? seguindo.has(usuario.id) : false;
+  const podeEnviarMensagem = Boolean(authUid && usuario?.id && authUid !== usuario.id);
 
   const alternarSeguirPerfil = useCallback(async () => {
     if (!usuario?.id) return;
@@ -78,6 +81,25 @@ export default function TelaPerfilUsuario({ navigation }) {
       };
     });
   }, [usuario, seguindo, alternarSeguir, authUid]);
+
+  const abrirMensagem = useCallback(async () => {
+    if (!authUid || !usuario?.id || abrindoMensagem || authUid === usuario.id) return;
+
+    setAbrindoMensagem(true);
+    try {
+      const { chatId } = await buscarOuCriarChatPV(authUid, usuario.id);
+      navigation.navigate('TelaChatConversa', {
+        conversaId: chatId,
+        nome: usuario.username,
+        userId: usuario.id,
+        url: usuario.url,
+      });
+    } catch {
+      /* falha silenciosa — usuário pode tentar de novo */
+    } finally {
+      setAbrindoMensagem(false);
+    }
+  }, [authUid, usuario, abrindoMensagem, navigation]);
 
   const handleLikeChange = useCallback((postId, { likes }) => {
     setPublicacoes((prev) => prev.map((p) => (p.id === postId ? { ...p, likes } : p)));
@@ -204,7 +226,22 @@ export default function TelaPerfilUsuario({ navigation }) {
         <Text style={styles.perfilOutroTopTitle} numberOfLines={1}>
           {usuario.username} {/*nome do usuario*/}
         </Text>
-        <View style={styles.messageHeaderSpacer} />
+        {podeEnviarMensagem ? (
+          <TouchableOpacity
+            style={styles.messageBackBtn}
+            onPress={abrirMensagem}
+            activeOpacity={0.75}
+            disabled={abrindoMensagem}
+          >
+            {abrindoMensagem ? (
+              <ActivityIndicator size="small" color={colors.purple} />
+            ) : (
+              <Ionicons name="chatbubble-outline" size={20} color={colors.purple} />
+            )}
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.messageHeaderSpacer} />
+        )}
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
