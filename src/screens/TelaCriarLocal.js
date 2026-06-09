@@ -7,7 +7,6 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
@@ -15,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import ScreenSafe from '../components/ScreenSafe';
 import styles from '../../style';
 import { colors, spacing } from '../../style/tokens';
 import {
@@ -260,7 +260,7 @@ export default function TelaCriarLocal() {
     nome.trim() && rua.trim() && cidade.trim() && esportes.length > 0 && !salvando;
 
   return (
-    <SafeAreaView style={styles.createLocalScreen}>
+    <ScreenSafe style={styles.createLocalScreen}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -535,6 +535,6 @@ export default function TelaCriarLocal() {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ScreenSafe>
   );
 }

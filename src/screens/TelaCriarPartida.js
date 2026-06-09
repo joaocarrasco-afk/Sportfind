@@ -7,7 +7,6 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
@@ -15,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import ScreenSafe from '../components/ScreenSafe';
 import styles from '../../style';
 import { colors, spacing } from '../../style/tokens';
 import { CREATABLE_SPORTS, formatPartidaData, placeSupportsSport } from '../domain/places';
@@ -176,7 +176,7 @@ export default function TelaCriarPartida() {
     dadosPreenchidos && localSelecionadoId != null && !salvando && dataPartida.getTime() >= Date.now();
 
   return (
-    <SafeAreaView style={styles.createLocalScreen}>
+    <ScreenSafe style={styles.createLocalScreen}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -401,6 +401,6 @@ export default function TelaCriarPartida() {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ScreenSafe>
   );
 }

@@ -5,13 +5,13 @@ import {
   ActivityIndicator,
   FlatList,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+import ScreenSafe from '../components/ScreenSafe';
 import styles from '../../style';
 import { colors, spacing } from '../../style/tokens';
 import { rotuloEsporte } from '../domain/feed/posts';
@@ -130,7 +130,7 @@ export default function TelaPartidas() {
   }
 
   return (
-    <SafeAreaView style={styles.createLocalScreen}>
+    <ScreenSafe style={styles.createLocalScreen}>
       <View style={styles.createLocalHeader}>
         <TouchableOpacity style={styles.createLocalBackBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={22} color={colors.purple} />
@@ -254,7 +254,7 @@ export default function TelaPartidas() {
         showsVerticalScrollIndicator={false}
       />
       )}
-    </SafeAreaView>
+    </ScreenSafe>
   );
 }
 

@@ -4,8 +4,6 @@ import ScreenSafe from '../components/ScreenSafe';
 import { useNavigation } from '@react-navigation/native';
 import styles from '../../style';
 import { colors } from '../../style/tokens';
-import { TAB_IDS } from '../domain/places';
-
 const OPCOES = [
   {
     id: 'local',
@@ -46,7 +44,7 @@ export default function TelaCriar() {
       return;
     }
     if (opcao.id === 'publicacao') {
-      navigation.getParent()?.navigate(TAB_IDS.FEED, { screen: 'TelaCriarPost' });
+      navigation.navigate('TelaCriarPost');
       return;
     }
     if (opcao.id === 'buscar_partidas') {

@@ -84,7 +84,6 @@ function FeedStackScreen() {
     <FeedStack.Navigator screenOptions={{ headerShown: false }}>
       <FeedStack.Screen name="TelaFeed" component={TelaFeed} />
       <FeedStack.Screen name="TelaBusca" component={TelaBusca} />
-      <FeedStack.Screen name="TelaCriarPost" component={TelaCriarPost} />
       <FeedStack.Screen name="TelaMensagens" component={TelaMensagens} />
       <FeedStack.Screen name="TelaChatConversa" component={TelaChatConversa} />
       <FeedStack.Screen name="TelaBuscaFeed" component={TelaBuscaFeed} />
@@ -101,6 +100,7 @@ function CreateStackScreen() {
       <CreateStack.Screen name="TelaCriar" component={TelaCriar} />
       <CreateStack.Screen name="TelaCriarLocal" component={TelaCriarLocal} />
       <CreateStack.Screen name="TelaCriarPartida" component={TelaCriarPartida} />
+      <CreateStack.Screen name="TelaCriarPost" component={TelaCriarPost} />
     </CreateStack.Navigator>
   );
 }
@@ -171,7 +171,16 @@ function AppTabs() {
           },
         })}
       />
-      <Tab.Screen name={TAB_IDS.FEED} component={FeedStackScreen} />
+      <Tab.Screen
+        name={TAB_IDS.FEED}
+        component={FeedStackScreen}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate(TAB_IDS.FEED, { screen: 'TelaFeed' });
+          },
+        })}
+      />
       <Tab.Screen name={TAB_IDS.CREATE} component={CreateStackScreen} />
       <Tab.Screen name={TAB_IDS.NOTIFICATION} component={TelaNotificacao} />
       <Tab.Screen name={TAB_IDS.PROFILE} component={PerfilStackScreen} />

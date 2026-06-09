@@ -7,7 +7,6 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
@@ -15,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import ScreenSafe from '../components/ScreenSafe';
 import styles from '../../style';
 import { colors } from '../../style/tokens';
 import { useAppState } from '../state/AppStateContext';
@@ -96,7 +96,7 @@ export default function TelaCriarPost() {
   const podePublicar = Boolean(imagemUri) && !publicando;
 
   return (
-    <SafeAreaView style={styles.createPostScreen}>
+    <ScreenSafe style={styles.createPostScreen}>
       <KeyboardAvoidingView
         style={styles.createPostFlex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -170,6 +170,6 @@ export default function TelaCriarPost() {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ScreenSafe>
   );
 }

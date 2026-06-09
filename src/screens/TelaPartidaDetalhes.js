@@ -4,13 +4,13 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import ScreenSafe from '../components/ScreenSafe';
 import styles from '../../style';
 import { colors, spacing } from '../../style/tokens';
 import { useAppState } from '../state/AppStateContext';
@@ -139,26 +139,26 @@ export default function TelaPartidaDetalhes() {
 
   if (carregando) {
     return (
-      <SafeAreaView style={styles.centeredScreen}>
+      <ScreenSafe style={styles.centeredScreen}>
         <ActivityIndicator size="large" color={colors.purple} />
-      </SafeAreaView>
+      </ScreenSafe>
     );
   }
 
   if (!partida) {
     return (
-      <SafeAreaView style={styles.centeredScreen}>
+      <ScreenSafe style={styles.centeredScreen}>
         <Ionicons name="alert-circle-outline" size={42} color={colors.purpleLight} />
         <Text style={styles.screenTitle}>Partida não encontrada</Text>
         <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginTop: 10 }}>
           <Text style={{ color: colors.purple, fontWeight: '700' }}>Voltar</Text>
         </TouchableOpacity>
-      </SafeAreaView>
+      </ScreenSafe>
     );
   }
 
   return (
-    <SafeAreaView style={styles.createLocalScreen}>
+    <ScreenSafe style={styles.createLocalScreen}>
       <View style={styles.createLocalHeader}>
         <TouchableOpacity style={styles.createLocalBackBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={22} color={colors.purple} />
@@ -288,6 +288,6 @@ export default function TelaPartidaDetalhes() {
           </View>
         ) : null}
       </ScrollView>
-    </SafeAreaView>
+    </ScreenSafe>
   );
 }
