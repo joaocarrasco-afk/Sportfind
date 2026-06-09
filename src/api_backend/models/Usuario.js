@@ -2,6 +2,7 @@ const { db, auth } = require('../factory/config');
 const {setDoc, doc, getDoc, updateDoc, where, query, collection, getDocs} = require('firebase/firestore');
 const {createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail} = require('firebase/auth'); 
 const CloudinaryMedia = require('./cloudinaryMedia');
+const cloudinary = require('../factory/cloudinary');
 class Usuario{
 //ok
     async consultarUsername(username){
@@ -150,6 +151,12 @@ class Usuario{
         try{
             const pasta = 'usuario';
             const tipo = 'image';
+            const snap = await getDoc(doc(db, 'usuario', id));
+            if (!snap.exists()) throw new Error('Usuário não encontrado');
+            const publicId = snap.data().publicId;
+            if (publicId) {
+                await cloudinary.uploader.destroy(publicId);
+            }
             const media = await CloudinaryMedia.salvarMedia(fileBuffer, tipo, pasta);
             const ref = doc(db, 'usuario', id);
             await updateDoc(ref, {publicId: media.publicId, url: media.url});
@@ -157,7 +164,7 @@ class Usuario{
         }catch(error){
             console.error(`Erro ao editar a foto: ${error.message}`);
             throw error;
-        }
+        }   
     }
 
     async seguirUsuario(user_id, seguindo_id ){
