@@ -10,10 +10,10 @@
     "format": "prettier --write .",
     "test": "jest",
     "test:ci": "jest --ci --coverage --passWithNoTests",
-    "build:apk": "eas build -p android --profile preview",
-    "build:apk:prod": "eas build -p android --profile production",
-    "update": "eas update --channel preview --message \"update\"",
-    "update:prod": "eas update --channel production --message \"update\""
+    "build:apk": "npx eas-cli build -p android --profile preview",
+    "build:apk:prod": "npx eas-cli build -p android --profile production",
+    "update": "npx eas-cli update --channel preview --environment preview --message \"update\"",
+    "update:prod": "npx eas-cli update --channel production --environment production --message \"update\""
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
