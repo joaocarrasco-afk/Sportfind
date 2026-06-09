@@ -92,6 +92,10 @@ async function buscarPostsPorIds(ids) {
   return resultados.filter(Boolean);
 }
 
+function ehPostLocal(postId) {
+  return String(postId).startsWith('perfil-');
+}
+
 
 const ABAS = [
   { id: 'pub', label: 'Publicações' },
@@ -109,6 +113,8 @@ export default function TelaUsuario() {
   const [postSelecionado, setPostSelecionado] = useState(null);
   const [postAcoes, setPostAcoes] = useState(null);
   const [textoEdicao, setTextoEdicao] = useState('');
+  const [salvandoEdicao, setSalvandoEdicao] = useState(false);
+  const [excluindoPostId, setExcluindoPostId] = useState(null);
   const {
     authUid,
     setAuthUid,
@@ -350,28 +356,125 @@ export default function TelaUsuario() {
     setEditandoPost(post);
   }
 
-  function salvarEdicao() {
-    if (!editandoPost) return;
+  function aplicarEdicaoLocal(postId, descricao) {
+    atualizarPostPerfil(postId, { descricao });
+    setDataPost((prev) => prev.map((p) => (p.id === postId ? { ...p, descricao } : p)));
+    setPostSelecionado((prev) => (prev?.id === postId ? { ...prev, descricao } : prev));
+  }
+
+  function aplicarExclusaoLocal(postId) {
+    removerPostPerfil(postId);
+    setDataPost((prev) => prev.filter((p) => p.id !== postId));
+    setPostSelecionado((prev) => (prev?.id === postId ? null : prev));
+  }
+
+  async function salvarEdicao() {
+    if (!editandoPost || salvandoEdicao) return;
+
     const descricao = textoEdicao.trim();
-    atualizarPostPerfil(editandoPost.id, { descricao });
-    setDataPost((prev) =>
-      prev.map((p) => (p.id === editandoPost.id ? { ...p, descricao } : p)),
-    );
-    setEditandoPost(null);
-    setTextoEdicao('');
+    const postId = editandoPost.id;
+
+    if (ehPostLocal(postId)) {
+      aplicarEdicaoLocal(postId, descricao);
+      setEditandoPost(null);
+      setTextoEdicao('');
+      return;
+    }
+
+    if (!authUid) {
+      Alert.alert('Editar publicação', 'Faça login para editar a publicação.');
+      return;
+    }
+
+    setSalvandoEdicao(true);
+    try {
+      const res = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/feed/post/${encodeURIComponent(postId)}/${encodeURIComponent(authUid)}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ descricao }),
+        },
+      );
+
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+
+      if (!res.ok) {
+        Alert.alert(
+          'Editar publicação',
+          data?.mensagem || data?.messagem || data?.error || 'Não foi possível editar a publicação.',
+        );
+        return;
+      }
+
+      aplicarEdicaoLocal(postId, descricao);
+      setEditandoPost(null);
+      setTextoEdicao('');
+    } catch {
+      Alert.alert('Editar publicação', 'Erro de rede ao editar a publicação.');
+    } finally {
+      setSalvandoEdicao(false);
+    }
+  }
+
+  async function excluirPost(post) {
+    if (!post?.editavel || excluindoPostId) return;
+
+    const postId = post.id;
+
+    if (ehPostLocal(postId)) {
+      aplicarExclusaoLocal(postId);
+      return;
+    }
+
+    if (!authUid) {
+      Alert.alert('Excluir publicação', 'Faça login para excluir a publicação.');
+      return;
+    }
+
+    setExcluindoPostId(postId);
+    try {
+      const res = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/feed/post/${encodeURIComponent(postId)}/${encodeURIComponent(authUid)}`,
+        { method: 'DELETE' },
+      );
+
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+
+      if (!res.ok) {
+        Alert.alert(
+          'Excluir publicação',
+          data?.mensagem || data?.messagem || data?.error || 'Não foi possível excluir a publicação.',
+        );
+        return;
+      }
+
+      aplicarExclusaoLocal(postId);
+    } catch {
+      Alert.alert('Excluir publicação', 'Erro de rede ao excluir a publicação.');
+    } finally {
+      setExcluindoPostId(null);
+    }
   }
 
   function confirmarExclusao(post) {
-    if (!post.editavel) return;
+    if (!post?.editavel) return;
     Alert.alert('Excluir publicação', 'Esta ação não pode ser desfeita.', [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Excluir',
         style: 'destructive',
-        onPress: () => {
-          removerPostPerfil(post.id);
-          setDataPost((prev) => prev.filter((p) => p.id !== post.id));
-        },
+        onPress: () => excluirPost(post),
       },
     ]);
   }
@@ -702,12 +805,21 @@ export default function TelaUsuario() {
               onChangeText={setTextoEdicao}
               multiline
             />
-            <TouchableOpacity style={styles.perfilModalCloseBtn} onPress={salvarEdicao}>
-              <Text style={styles.perfilModalCloseText}>Salvar</Text>
+            <TouchableOpacity
+              style={styles.perfilModalCloseBtn}
+              onPress={salvarEdicao}
+              disabled={salvandoEdicao}
+            >
+              {salvandoEdicao ? (
+                <ActivityIndicator size="small" color={colors.textOnPurple} />
+              ) : (
+                <Text style={styles.perfilModalCloseText}>Salvar</Text>
+              )}
             </TouchableOpacity>
             <TouchableOpacity
               style={{ marginTop: spacing.sm, alignSelf: 'center' }}
               onPress={() => setEditandoPost(null)}
+              disabled={salvandoEdicao}
             >
               <Text style={{ color: colors.textSecondary }}>Cancelar</Text>
             </TouchableOpacity>
