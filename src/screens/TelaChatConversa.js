@@ -5,6 +5,8 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
+  Keyboard,
+  Platform,
   Text,
   TextInput,
   TouchableOpacity,
@@ -28,6 +30,7 @@ export default function TelaChatConversa() {
   const [carregando, setCarregando] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [fotoPerfil, setFotoPerfil] = useState(urlInicial ?? null);
+  const [tecladoAltura, setTecladoAltura] = useState(0);
   const listaRef = useRef(null);
 
   const iniciais = useMemo(() => (nome ?? '?').charAt(0), [nome]);
@@ -69,6 +72,32 @@ export default function TelaChatConversa() {
     if (mensagens.length === 0) return;
     listaRef.current?.scrollToEnd({ animated: true });
   }, [mensagens]);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const onShow = Keyboard.addListener(showEvent, (event) => {
+      if (Platform.OS === 'android') {
+        setTecladoAltura(event.endCoordinates.height);
+      }
+      setTimeout(() => listaRef.current?.scrollToEnd({ animated: true }), 50);
+    });
+    const onHide = Keyboard.addListener(hideEvent, () => {
+      if (Platform.OS === 'android') {
+        setTecladoAltura(0);
+      }
+    });
+
+    return () => {
+      onShow.remove();
+      onHide.remove();
+    };
+  }, []);
+
+  function focarInput() {
+    setTimeout(() => listaRef.current?.scrollToEnd({ animated: true }), 50);
+  }
 
   async function enviar() {
     const t = texto.trim();
@@ -119,6 +148,7 @@ export default function TelaChatConversa() {
         </View>
       }
     >
+      <View style={{ flex: 1, paddingBottom: Platform.OS === 'android' ? tecladoAltura : 0 }}>
         {carregando ? (
           <View style={styles.messageEmpty}>
             <ActivityIndicator size="large" color={colors.purple} />
@@ -126,10 +156,13 @@ export default function TelaChatConversa() {
         ) : (
           <FlatList
             ref={listaRef}
+            style={{ flex: 1 }}
             data={mensagens}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.chatList}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="interactive"
             onContentSizeChange={() => listaRef.current?.scrollToEnd({ animated: false })}
             ListEmptyComponent={
               <View style={styles.messageEmpty}>
@@ -179,6 +212,7 @@ export default function TelaChatConversa() {
             placeholderTextColor={colors.textSecondary}
             value={texto}
             onChangeText={setTexto}
+            onFocus={focarInput}
             onSubmitEditing={enviar}
             returnKeyType="send"
             editable={Boolean(conversaId && authUid) && !enviando}
@@ -196,6 +230,7 @@ export default function TelaChatConversa() {
             )}
           </TouchableOpacity>
         </View>
+      </View>
     </AuthKeyboardScreen>
   );
 }

@@ -137,6 +137,7 @@ function AppTabs() {
         return {
           headerShown: false,
           tabBarShowLabel: false,
+          tabBarHideOnKeyboard: true,
           tabBarStyle: {
             ...styles.tabBar,
             height: tabBarHeight,
